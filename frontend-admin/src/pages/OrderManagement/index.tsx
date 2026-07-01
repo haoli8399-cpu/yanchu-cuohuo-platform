@@ -1,10 +1,12 @@
 /**
- * 订单管理列表页 (P-15/P-12, P0)
+ * 订单管理列表页 (P-15/P-12/P-16/P-27, P0)
  *
  * 功能：
  * - 所有订单一览，按状态筛选
  * - 推进订单状态
  * - 排期分配入口
+ * - 退款处理（P-16）
+ * - 超时自动标记（P-27）
  *
  * 三态处理：loading / empty / error
  *
@@ -31,6 +33,8 @@ import {
   Empty,
   Result,
   Tabs,
+  Badge,
+  Tooltip,
 } from 'antd';
 import {
   ReloadOutlined,
@@ -38,6 +42,8 @@ import {
   ScheduleOutlined,
   EyeOutlined,
   HistoryOutlined,
+  DollarOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 import type { DemandListItem, DemandStatus, DemandDetail } from '@/types/demand';
 import {
@@ -47,6 +53,8 @@ import {
 import type { OrderTimelineItem } from '@/types/order';
 import { advanceOrderStatus, getOrderTimeline } from '@/services/order';
 import { getDemandList, getDemandDetail } from '@/services/demand';
+import { createRefund } from '@/services/refund';
+import { DEFAULT_REFUND_RULES } from '@/types/refund';
 
 const { TextArea } = Input;
 
@@ -93,6 +101,84 @@ const OrderListPage: React.FC = () => {
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
   const [timelineData, setTimelineData] = useState<OrderTimelineItem[]>([]);
   const [timelineLoading, setTimelineLoading] = useState(false);
+
+  // 退款弹窗（P-16）
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const [refundingOrder, setRefundingOrder] = useState<DemandListItem | null>(null);
+  const [refundAmount, setRefundAmount] = useState<number>(0);
+  const [refundReason, setRefundReason] = useState<string>('');
+  const [refunding, setRefunding] = useState(false);
+
+  /** 检查订单是否超时（P-27） */
+  const isTimeout = (record: DemandListItem): { overdue: boolean; hint: string } => {
+    const now = Date.now();
+    const created = new Date(record.created_at).getTime();
+    const hoursSinceCreate = (now - created) / (1000 * 60 * 60);
+
+    // 超时阈值：各状态超过设定时间
+    const timeoutHours: Partial<Record<DemandStatus, number>> = {
+      pending_ai: 1,
+      ai_generated: 2,
+      pending_operator: 4,
+      operator_adjusted: 2,
+      pending_client_confirm: 24,
+      pending_deposit: 48,
+      pending_performer: 8,
+      pending_final_payment: 48,
+    };
+
+    const threshold = timeoutHours[record.status];
+    if (threshold && hoursSinceCreate > threshold) {
+      return { overdue: true, hint: `已等待 ${Math.round(hoursSinceCreate)} 小时` };
+    }
+    return { overdue: false, hint: '' };
+  };
+
+  /** 推荐退款金额（按阶梯规则） */
+  const getSuggestedRefundAmount = (demand: DemandListItem): number => {
+    if (!demand.budget) return 0;
+    const now = Date.now();
+    const eventDate = new Date(demand.event_date).getTime();
+    const daysBeforeEvent = (eventDate - now) / (1000 * 60 * 60 * 24);
+
+    for (const rule of DEFAULT_REFUND_RULES) {
+      if (daysBeforeEvent >= rule.days_before) {
+        return Math.round(demand.budget * rule.ratio);
+      }
+    }
+    return Math.round(demand.budget * 0.3); // 当天
+  };
+
+  /** 打开退款弹窗 */
+  const handleOpenRefund = (record: DemandListItem) => {
+    setRefundingOrder(record);
+    setRefundAmount(getSuggestedRefundAmount(record));
+    setRefundReason('');
+    setRefundModalOpen(true);
+  };
+
+  /** 提交退款 */
+  const handleSubmitRefund = async () => {
+    if (!refundingOrder || refundAmount <= 0) {
+      message.warning('请输入退款金额');
+      return;
+    }
+    setRefunding(true);
+    try {
+      await createRefund({
+        demand_id: refundingOrder.id,
+        amount: refundAmount,
+        reason: refundReason || '运营处理退款',
+      });
+      message.success('退款申请已提交');
+      setRefundModalOpen(false);
+      actionRef.current?.reload();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '退款申请失败');
+    } finally {
+      setRefunding(false);
+    }
+  };
 
   /** 打开时间线 */
   const handleViewTimeline = async (demandId: string) => {
@@ -195,12 +281,24 @@ const OrderListPage: React.FC = () => {
     {
       title: '当前状态',
       dataIndex: 'status',
-      width: 120,
-      render: (_, record) => (
-        <Tag color={DemandStatusColor[record.status]}>
-          {DemandStatusLabel[record.status]}
-        </Tag>
-      ),
+      width: 140,
+      render: (_, record) => {
+        const timeout = isTimeout(record);
+        return (
+          <Space size={4}>
+            <Tag color={DemandStatusColor[record.status]}>
+              {DemandStatusLabel[record.status]}
+            </Tag>
+            {timeout.overdue && (
+              <Tooltip title={timeout.hint}>
+                <Tag color="red" icon={<ClockCircleOutlined />}>
+                  待跟进
+                </Tag>
+              </Tooltip>
+            )}
+          </Space>
+        );
+      },
     },
     {
       title: '创建时间',
@@ -213,7 +311,7 @@ const OrderListPage: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 220,
+      width: 280,
       fixed: 'right',
       search: false,
       render: (_, record) => {
@@ -261,6 +359,15 @@ const OrderListPage: React.FC = () => {
               }}
             >
               排期
+            </Button>
+            <Button
+              type="link"
+              size="small"
+              icon={<DollarOutlined />}
+              style={{ minHeight: 44, minWidth: 44, color: '#ff4d4f' }}
+              onClick={() => handleOpenRefund(record)}
+            >
+              退款
             </Button>
           </Space>
         );
