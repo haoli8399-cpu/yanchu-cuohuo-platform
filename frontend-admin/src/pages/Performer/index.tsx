@@ -112,7 +112,7 @@ const PerformerListPage: React.FC = () => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
+              Authorization: *** ${localStorage.getItem('token') || ''}`,
             },
             body: JSON.stringify({
               name: item.data.name,

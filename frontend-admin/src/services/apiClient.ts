@@ -54,7 +54,7 @@ function buildURL(path: string): string {
     return `/api${path}`;
   }
   // 生产环境从环境变量读取
-  const baseURL = process.env.API_BASE_URL || 'http://119.28.134.67:3002/v1';
+  const baseURL = process.env.API_BASE_URL || '';
   return `${baseURL}${path}`;
 }
 

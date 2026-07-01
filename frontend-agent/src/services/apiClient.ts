@@ -1,6 +1,6 @@
 import type { ApiResponse } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://119.28.134.67:3002/v1';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 
 /** 业务错误 */
 export class ApiError extends Error {
