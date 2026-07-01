@@ -8,6 +8,7 @@ import cors from '@fastify/cors';
 import fjwt from '@fastify/jwt';
 import { registerErrorHandler } from './middleware/error.js';
 import type { JwtPayload } from './types/index.js';
+import skuRoutes from './api/skus.js';
 
 // ---- 扩展 @fastify/jwt 类型 ----
 declare module '@fastify/jwt' {
@@ -68,6 +69,12 @@ app.get('/v1/health', async (_request, reply) => {
     message: 'ok',
   });
 });
+
+// ============================================================
+// 业务路由注册
+// ============================================================
+
+await app.register(skuRoutes, { prefix: '/v1/skus' });
 
 // ============================================================
 // 启动服务器

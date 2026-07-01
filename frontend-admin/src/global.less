@@ -1,0 +1,37 @@
+/**
+ * 全局样式
+ */
+
+/* 全局重置 */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ant Design Pro 布局微调 */
+.ant-pro-layout .ant-pro-layout-content {
+  padding: 16px;
+}
+
+/* 确保触控目标 ≥ 44px (CODE_STANDARDS UX-1) */
+.ant-btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ant-btn-sm {
+  min-height: 32px;
+}
+
+/* ProTable 操作列按钮对齐 */
+.ant-pro-table-list-toolbar-container {
+  padding: 16px 0;
+}
+
+/* 骨架屏间距 */
+.ant-skeleton {
+  margin-bottom: 12px;
+}

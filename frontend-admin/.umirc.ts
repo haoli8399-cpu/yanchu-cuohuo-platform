@@ -1,0 +1,98 @@
+import { defineConfig } from '@umijs/max';
+
+export default defineConfig({
+  title: '演出供应链保障平台 · 运营后台',
+  antd: {},
+  access: {},
+  model: {},
+  initialState: {},
+  request: {},
+  layout: {
+    title: '演出运营后台',
+    locale: false,
+  },
+  routes: [
+    {
+      path: '/',
+      redirect: '/dashboard',
+    },
+    {
+      name: '工作台',
+      path: '/dashboard',
+      component: './Dashboard',
+      icon: 'DashboardOutlined',
+    },
+    {
+      name: 'SKU管理',
+      path: '/sku',
+      icon: 'GoldOutlined',
+      routes: [
+        {
+          name: 'SKU列表',
+          path: '/sku/list',
+          component: './SKU/index',
+        },
+        {
+          name: 'SKU详情',
+          path: '/sku/detail/:id',
+          component: './SKU/Detail',
+          hideInMenu: true,
+        },
+        {
+          name: '新增SKU',
+          path: '/sku/create',
+          component: './SKU/Detail',
+          hideInMenu: true,
+        },
+      ],
+    },
+    {
+      name: '演员管理',
+      path: '/actors',
+      icon: 'TeamOutlined',
+      routes: [
+        {
+          name: '演员库',
+          path: '/actors/list',
+          component: './Placeholder',
+        },
+        {
+          name: '咖位管理',
+          path: '/actors/tier',
+          component: './Placeholder',
+        },
+      ],
+    },
+    {
+      name: '订单管理',
+      path: '/orders',
+      icon: 'OrderedListOutlined',
+      component: './Placeholder',
+    },
+    {
+      name: '系统管理',
+      path: '/system',
+      icon: 'SettingOutlined',
+      routes: [
+        {
+          name: '操作日志',
+          path: '/system/logs',
+          component: './Placeholder',
+        },
+        {
+          name: '角色权限',
+          path: '/system/roles',
+          component: './Placeholder',
+        },
+      ],
+    },
+  ],
+  npmClient: 'npm',
+  proxy: {
+    '/api': {
+      target: 'http://119.28.134.67:3002/v1',
+      changeOrigin: true,
+      pathRewrite: { '^/api': '' },
+    },
+  },
+});
