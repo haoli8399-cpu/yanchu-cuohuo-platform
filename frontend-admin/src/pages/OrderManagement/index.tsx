@@ -606,6 +606,97 @@ const OrderListPage: React.FC = () => {
           </div>
         )}
       </Modal>
+
+      {/* 退款弹窗（P-16） */}
+      <Modal
+        title="申请退款"
+        open={refundModalOpen}
+        onCancel={() => setRefundModalOpen(false)}
+        onOk={handleSubmitRefund}
+        confirmLoading={refunding}
+        okText="提交退款"
+        okButtonProps={{ danger: true }}
+        cancelText="取消"
+        destroyOnClose
+      >
+        {refundingOrder && (
+          <>
+            <Descriptions column={1} size="small" bordered style={{ marginBottom: 16 }}>
+              <Descriptions.Item label="订单">
+                {refundingOrder.title}
+              </Descriptions.Item>
+              <Descriptions.Item label="活动公司">
+                {refundingOrder.client?.name || '-'}
+              </Descriptions.Item>
+              <Descriptions.Item label="预算金额">
+                ¥{refundingOrder.budget?.toLocaleString() || '-'}
+              </Descriptions.Item>
+              <Descriptions.Item label="活动日期">
+                {refundingOrder.event_date || '-'}
+              </Descriptions.Item>
+            </Descriptions>
+
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 8, fontWeight: 500 }}>退款阶梯规则参考：</div>
+              <div style={{ background: '#f6f8fa', padding: 12, borderRadius: 6, fontSize: 13 }}>
+                {DEFAULT_REFUND_RULES.map((rule, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      padding: '4px 0',
+                      color: rule.days_before === DEFAULT_REFUND_RULES.find(
+                        (r) => {
+                          const now = Date.now();
+                          const eventDate = new Date(refundingOrder.event_date).getTime();
+                          const daysBeforeEvent = (eventDate - now) / (1000 * 60 * 60 * 24);
+                          return daysBeforeEvent >= r.days_before;
+                        },
+                      )?.days_before
+                        ? '#1677ff'
+                        : '#666',
+                      fontWeight:
+                        rule.days_before === DEFAULT_REFUND_RULES.find(
+                          (r) => {
+                            const now = Date.now();
+                            const eventDate = new Date(refundingOrder.event_date).getTime();
+                            const daysBeforeEvent = (eventDate - now) / (1000 * 60 * 60 * 24);
+                            return daysBeforeEvent >= r.days_before;
+                          },
+                        )?.days_before
+                          ? 600
+                          : 400,
+                    }}
+                  >
+                    {rule.label}：退款 {(rule.ratio * 100).toFixed(0)}%
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 8, fontWeight: 500 }}>退款金额（元）：</div>
+              <InputNumber
+                style={{ width: '100%' }}
+                placeholder="请输入退款金额"
+                min={0}
+                precision={2}
+                value={refundAmount}
+                onChange={(v) => setRefundAmount(v || 0)}
+              />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 8, fontWeight: 500 }}>退款原因：</div>
+              <TextArea
+                rows={2}
+                placeholder="请输入退款原因..."
+                value={refundReason}
+                onChange={(e) => setRefundReason(e.target.value)}
+              />
+            </div>
+          </>
+        )}
+      </Modal>
     </PageContainer>
   );
 };

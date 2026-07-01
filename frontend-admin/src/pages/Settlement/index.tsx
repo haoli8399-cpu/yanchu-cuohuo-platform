@@ -34,10 +34,11 @@ import {
   ReloadOutlined,
   CheckOutlined,
   DollarOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import type { SettlementItem, SettlementDetailItem } from '@/types/settlement';
 import { PerformerTierLabel, PerformerTierColor } from '@/types/performer';
-import { getSettlementList, markSettled } from '@/services/settlement';
+import { getSettlementList, markSettled, exportSettlement } from '@/services/settlement';
 import dayjs from 'dayjs';
 
 /** 格式化金额（元） */
@@ -95,6 +96,23 @@ const SettlementPage: React.FC = () => {
       message.error(err instanceof Error ? err.message : '操作失败');
     } finally {
       setSettling(false);
+    }
+  };
+
+  /** 导出结算明细（P-20） */
+  const handleExport = async () => {
+    try {
+      message.loading({ content: '正在生成导出文件...', key: 'export' });
+      const res = await exportSettlement(period);
+      if (res.data.download_url) {
+        window.open(res.data.download_url, '_blank');
+      }
+      message.success({ content: '导出成功', key: 'export' });
+    } catch (err) {
+      message.error({
+        content: err instanceof Error ? err.message : '导出失败',
+        key: 'export',
+      });
     }
   };
 
@@ -220,13 +238,23 @@ const SettlementPage: React.FC = () => {
                 />
               </Col>
               <Col span={8}>
-                <Button
-                  icon={<ReloadOutlined />}
-                  style={{ minHeight: 44, marginTop: 16 }}
-                  onClick={loadData}
-                >
-                  刷新
-                </Button>
+                <Space>
+                  <Button
+                    icon={<DownloadOutlined />}
+                    type="primary"
+                    style={{ minHeight: 44, marginTop: 16 }}
+                    onClick={handleExport}
+                  >
+                    导出Excel
+                  </Button>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    style={{ minHeight: 44, marginTop: 16 }}
+                    onClick={loadData}
+                  >
+                    刷新
+                  </Button>
+                </Space>
               </Col>
             </Row>
           </Col>

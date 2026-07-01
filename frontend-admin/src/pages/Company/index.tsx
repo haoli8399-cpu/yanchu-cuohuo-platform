@@ -31,13 +31,22 @@ import {
   EyeOutlined,
   CheckOutlined,
   CloseOutlined,
+  DownloadOutlined,
+  HistoryOutlined,
 } from '@ant-design/icons';
 import type { CompanyListItem, CompanyStatus } from '@/types/company';
 import {
   CompanyStatusLabel,
   CompanyStatusColor,
 } from '@/types/company';
-import { getCompanyList, verifyCompany, getCompanyDetail } from '@/services/company';
+import {
+  getCompanyList,
+  verifyCompany,
+  getCompanyDetail,
+  getCompanyConsumption,
+  exportCompanyConsumption,
+  getCompanyHistoryOrders,
+} from '@/services/company';
 import type { CompanyDetail } from '@/types/company';
 
 const { TextArea } = Input;
@@ -64,17 +73,52 @@ const CompanyListPage: React.FC = () => {
   const [detailData, setDetailData] = useState<CompanyDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  // 消费统计 + 历史订单（P-21 + P-28）
+  const [consumptionData, setConsumptionData] = useState<{
+    total_spent: number;
+    order_count: number;
+    monthly_stats: { month: string; amount: number; count: number }[];
+    orders: { id: string; title: string; amount: number; date: string; status: string }[];
+  } | null>(null);
+  const [consumptionLoading, setConsumptionLoading] = useState(false);
+
   /** 查看详情 */
   const handleViewDetail = async (id: string) => {
     setDetailModalOpen(true);
     setDetailLoading(true);
+    setConsumptionData(null);
+    setConsumptionLoading(true);
     try {
-      const res = await getCompanyDetail(id);
-      setDetailData(res.data);
+      const [detailRes, consumptionRes] = await Promise.all([
+        getCompanyDetail(id),
+        getCompanyConsumption(id).catch(() => null),
+      ]);
+      setDetailData(detailRes.data);
+      if (consumptionRes) {
+        setConsumptionData(consumptionRes.data);
+      }
     } catch {
       message.error('加载公司详情失败');
     } finally {
       setDetailLoading(false);
+      setConsumptionLoading(false);
+    }
+  };
+
+  /** 导出消费明细（P-21） */
+  const handleExportConsumption = async (companyId: string) => {
+    try {
+      message.loading({ content: '正在生成导出文件...', key: 'export' });
+      const res = await exportCompanyConsumption(companyId);
+      if (res.data.download_url) {
+        window.open(res.data.download_url, '_blank');
+      }
+      message.success({ content: '导出成功', key: 'export' });
+    } catch (err) {
+      message.error({
+        content: err instanceof Error ? err.message : '导出失败',
+        key: 'export',
+      });
     }
   };
 
@@ -345,59 +389,241 @@ const CompanyListPage: React.FC = () => {
         open={detailModalOpen}
         onCancel={() => setDetailModalOpen(false)}
         footer={null}
-        width={700}
+        width={750}
       >
         {detailLoading ? (
           <div style={{ textAlign: 'center', padding: 60 }}>加载中...</div>
         ) : detailData ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <tbody>
-              {[
-                ['公司简称', detailData.short_name],
-                ['公司全称', detailData.full_name || '-'],
-                ['联系人', detailData.contact_person],
-                ['手机号', detailData.phone || '-'],
-                ['城市', detailData.city],
-                ['服务类目', (detailData.service_categories || []).join('、') || '-'],
-                [
-                  '认证状态',
-                  <Tag key="s" color={CompanyStatusColor[detailData.status]}>
-                    {CompanyStatusLabel[detailData.status]}
-                  </Tag>,
-                ],
-                ['订单数', String(detailData.total_orders)],
-                ['累计消费', detailData.total_spent ? formatMoney(detailData.total_spent) : '-'],
-                [
-                  '注册时间',
-                  detailData.created_at
-                    ? new Date(detailData.created_at).toLocaleString('zh-CN')
-                    : '-',
-                ],
-                ['统一信用代码', detailData.credit_code || '-'],
-                ['法人姓名', detailData.legal_person_name || '-'],
-                ['开户行', detailData.bank_name || '-'],
-                ['对公账户', detailData.bank_account || '-'],
-              ].map(([label, value], i) => (
-                <tr
-                  key={i}
-                  style={{ borderBottom: '1px solid #f0f0f0' }}
+          <div>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                {[
+                  ['公司简称', detailData.short_name],
+                  ['公司全称', detailData.full_name || '-'],
+                  ['联系人', detailData.contact_person],
+                  ['手机号', detailData.phone || '-'],
+                  ['城市', detailData.city],
+                  ['服务类目', (detailData.service_categories || []).join('、') || '-'],
+                  [
+                    '认证状态',
+                    <Tag key="s" color={CompanyStatusColor[detailData.status]}>
+                      {CompanyStatusLabel[detailData.status]}
+                    </Tag>,
+                  ],
+                  ['订单数', String(detailData.total_orders)],
+                  ['累计消费', detailData.total_spent ? formatMoney(detailData.total_spent) : '-'],
+                  [
+                    '注册时间',
+                    detailData.created_at
+                      ? new Date(detailData.created_at).toLocaleString('zh-CN')
+                      : '-',
+                  ],
+                  ['统一信用代码', detailData.credit_code || '-'],
+                  ['法人姓名', detailData.legal_person_name || '-'],
+                  ['开户行', detailData.bank_name || '-'],
+                  ['对公账户', detailData.bank_account || '-'],
+                ].map(([label, value], i) => (
+                  <tr
+                    key={i}
+                    style={{ borderBottom: '1px solid #f0f0f0' }}
+                  >
+                    <td
+                      style={{
+                        padding: '10px 16px',
+                        fontWeight: 500,
+                        color: '#666',
+                        width: 140,
+                        verticalAlign: 'top',
+                      }}
+                    >
+                      {label}
+                    </td>
+                    <td style={{ padding: '10px 16px' }}>{value as React.ReactNode}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* 消费统计（P-21）+ 历史订单（P-28） */}
+            <div style={{ marginTop: 20, borderTop: '2px solid #1677ff', paddingTop: 16 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: 12,
+                }}
+              >
+                <h4 style={{ margin: 0 }}>
+                  <HistoryOutlined style={{ marginRight: 8 }} />
+                  消费统计与历史订单
+                </h4>
+                <Button
+                  size="small"
+                  icon={<DownloadOutlined />}
+                  style={{ minHeight: 44 }}
+                  onClick={() => handleExportConsumption(detailData.id)}
                 >
-                  <td
+                  导出消费明细
+                </Button>
+              </div>
+
+              {consumptionLoading ? (
+                <div style={{ textAlign: 'center', padding: 20, color: '#999' }}>
+                  加载消费数据...
+                </div>
+              ) : consumptionData ? (
+                <div>
+                  {/* 汇总卡片 */}
+                  <div
                     style={{
-                      padding: '10px 16px',
-                      fontWeight: 500,
-                      color: '#666',
-                      width: 140,
-                      verticalAlign: 'top',
+                      display: 'flex',
+                      gap: 16,
+                      marginBottom: 16,
                     }}
                   >
-                    {label}
-                  </td>
-                  <td style={{ padding: '10px 16px' }}>{value as React.ReactNode}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <div
+                      style={{
+                        flex: 1,
+                        background: '#f6ffed',
+                        padding: 12,
+                        borderRadius: 6,
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div style={{ fontSize: 12, color: '#666' }}>历史订单数</div>
+                      <div style={{ fontSize: 24, fontWeight: 600, color: '#52c41a' }}>
+                        {consumptionData.order_count}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        flex: 1,
+                        background: '#e6f7ff',
+                        padding: 12,
+                        borderRadius: 6,
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div style={{ fontSize: 12, color: '#666' }}>累计消费</div>
+                      <div style={{ fontSize: 24, fontWeight: 600, color: '#1677ff' }}>
+                        {formatMoney(consumptionData.total_spent)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 月度统计 */}
+                  {consumptionData.monthly_stats.length > 0 && (
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ fontWeight: 500, marginBottom: 8, color: '#666' }}>
+                        月度消费趋势：
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {consumptionData.monthly_stats.slice(0, 12).map((m) => (
+                          <Tag key={m.month} color="blue">
+                            {m.month}: {formatMoney(m.amount)} ({m.count}单)
+                          </Tag>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 历史订单列表（P-28：客户历史卡片） */}
+                  <div style={{ fontWeight: 500, marginBottom: 8, color: '#666' }}>
+                    历史订单（最近 {consumptionData.orders.length} 笔）：
+                  </div>
+                  {consumptionData.orders.length === 0 ? (
+                    <div style={{ color: '#999', fontSize: 13 }}>暂无历史订单</div>
+                  ) : (
+                    <table
+                      style={{
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        fontSize: 13,
+                      }}
+                    >
+                      <thead>
+                        <tr style={{ background: '#fafafa' }}>
+                          <th
+                            style={{
+                              padding: '8px 12px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #f0f0f0',
+                            }}
+                          >
+                            订单标题
+                          </th>
+                          <th
+                            style={{
+                              padding: '8px 12px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #f0f0f0',
+                              width: 100,
+                            }}
+                          >
+                            金额
+                          </th>
+                          <th
+                            style={{
+                              padding: '8px 12px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #f0f0f0',
+                              width: 110,
+                            }}
+                          >
+                            日期
+                          </th>
+                          <th
+                            style={{
+                              padding: '8px 12px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #f0f0f0',
+                              width: 90,
+                            }}
+                          >
+                            状态
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {consumptionData.orders.map((order) => (
+                          <tr
+                            key={order.id}
+                            style={{ borderBottom: '1px solid #f0f0f0' }}
+                          >
+                            <td
+                              style={{
+                                padding: '8px 12px',
+                                cursor: 'pointer',
+                                color: '#1677ff',
+                              }}
+                              onClick={() => {
+                                setDetailModalOpen(false);
+                                window.location.hash = `#/demand/detail/${order.id}`;
+                              }}
+                            >
+                              {order.title}
+                            </td>
+                            <td style={{ padding: '8px 12px' }}>
+                              {formatMoney(order.amount)}
+                            </td>
+                            <td style={{ padding: '8px 12px' }}>{order.date}</td>
+                            <td style={{ padding: '8px 12px' }}>
+                              <Tag>{order.status}</Tag>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              ) : (
+                <div style={{ color: '#999', fontSize: 13, padding: 12 }}>
+                  暂无消费统计数据
+                </div>
+              )}
+            </div>
+          </div>
         ) : (
           <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
             暂无数据

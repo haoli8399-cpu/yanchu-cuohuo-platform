@@ -104,6 +104,11 @@ export default defineConfig({
           component: './Performer/Detail',
           hideInMenu: true,
         },
+        {
+          name: '演员档期看板',
+          path: '/performer/calendar',
+          component: './ScheduleCalendar/index',
+        },
       ],
     },
     {
@@ -121,6 +126,23 @@ export default defineConfig({
           path: '/orders/assign/:id',
           component: './Placeholder',
           hideInMenu: true,
+        },
+      ],
+    },
+    {
+      name: '内容管理',
+      path: '/content',
+      icon: 'FileTextOutlined',
+      routes: [
+        {
+          name: '案例管理',
+          path: '/content/cases',
+          component: './CaseManagement/index',
+        },
+        {
+          name: 'AI模板管理',
+          path: '/content/templates',
+          component: './TemplateManagement/index',
         },
       ],
     },
