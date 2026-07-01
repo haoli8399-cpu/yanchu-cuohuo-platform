@@ -18,6 +18,11 @@ import type {
   TimelineEntry,
 } from '../types/index.js';
 
+const refundBodySchema = z.object({
+  amount: z.number().positive(),
+  reason: z.string().min(1),
+});
+
 // ============================================================
 // Zod 校验 Schema
 // ============================================================
@@ -332,6 +337,110 @@ export default async function orderRoutes(app: FastifyInstance): Promise<void> {
       }));
 
       reply.status(200).send(successResponse(timeline));
+    }
+  );
+
+  // ==========================================================
+  // POST /v1/orders/:demand_id/refund - 退款处理 (P-16)
+  // 运营发起退款，状态→refunding
+  // ==========================================================
+  app.post(
+    '/:demand_id/refund',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('admin'),
+        validate({ params: demandIdParamSchema }),
+      ],
+    },
+    async function refundOrder(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { demand_id } = request.params as z.infer<
+        typeof demandIdParamSchema
+      >;
+      const body = request.body as { amount: number; reason: string };
+      const user = request.user;
+
+      // 校验参数
+      if (!body.amount || body.amount <= 0) {
+        reply.status(400).send(errorResponse(4003, '请提供退款金额'));
+        return;
+      }
+      if (!body.reason) {
+        reply.status(400).send(errorResponse(4004, '请提供退款原因'));
+        return;
+      }
+
+      // 查询订单当前状态
+      const existing = await query<DemandRow>(
+        'SELECT id, status, status_history FROM demands WHERE id = $1',
+        [demand_id]
+      );
+
+      if (existing.rows.length === 0) {
+        reply.status(404).send(errorResponse(4002, '订单不存在'));
+        return;
+      }
+
+      const demand = existing.rows[0];
+      const currentStatus = demand.status as DemandStatus;
+
+      // 仅已收款和之后的状态可退款
+      const refundableStatuses: DemandStatus[] = [
+        'deposit_received',
+        'performer_confirmed',
+        'performing',
+        'finished',
+        'final_payment_received',
+        'settled',
+      ];
+
+      if (!refundableStatuses.includes(currentStatus)) {
+        reply.status(409).send(errorResponse(4005, `当前状态 [${STATUS_LABELS[currentStatus]}] 不可退款`));
+        return;
+      }
+
+      // 将状态改为 refunding
+      const newEntry: StatusHistoryEntry = {
+        status: 'refunding' as DemandStatus,
+        at: new Date().toISOString(),
+        operator_id: user.sub,
+      };
+
+      const currentHistory = demand.status_history || [];
+      const updatedHistory = [...currentHistory, newEntry];
+
+      await transaction(async (client) => {
+        await client.query(
+          `UPDATE demands
+           SET status = 'refunding',
+               status_history = $2::jsonb,
+               updated_at = NOW()
+           WHERE id = $1`,
+          [demand_id, JSON.stringify(updatedHistory)]
+        );
+
+        // 记录退款操作日志
+        await client.query(
+          `INSERT INTO operation_logs (
+             operator_id, module, action, target_type, target_id, detail
+           ) VALUES ($1, 'order', 'refund', 'demand', $2, $3)`,
+          [user.sub, demand_id, JSON.stringify({
+            amount: body.amount,
+            reason: body.reason,
+            previous_status: currentStatus,
+          })]
+        );
+      });
+
+      reply.status(200).send(successResponse({
+        id: demand_id,
+        status: 'refunding',
+        refund_amount: body.amount,
+        reason: body.reason,
+      }, '退款申请已提交'));
     }
   );
 }

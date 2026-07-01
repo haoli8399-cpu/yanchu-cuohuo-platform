@@ -61,4 +61,55 @@ export default async function settlementRoutes(app: FastifyInstance) {
 
       return reply.send(successResponse({ id, status: 'settled' }, '已标记为已结算'));
     });
+
+  // ==========================================================
+  // GET /v1/settlements/export - 导出结算明细 (P-20)
+  // 生成 CSV (BOM + 中文表头)
+  // ==========================================================
+  app.get('/export', { preHandler: [authMiddleware, requireRole('admin', 'finance')] },
+    async (req, reply) => {
+      const { period, performer_id } = req.query as Record<string, string>;
+
+      let where = "WHERE 1=1";
+      const params: unknown[] = [];
+      let i = 1;
+      if (period) { where += ` AND s.period = $${i++}`; params.push(period); }
+      if (performer_id) { where += ` AND s.performer_id = $${i++}`; params.push(performer_id); }
+
+      const result = await query(
+        `SELECT s.id, s.amount, s.period, s.status, s.settled_at, s.paid_at,
+                p.name AS performer_name, p.tier,
+                d.title AS demand_title, d.event_date, d.city
+         FROM settlements s
+         JOIN performers p ON s.performer_id = p.id
+         JOIN demands d ON s.demand_id = d.id
+         ${where}
+         ORDER BY s.period DESC, p.name ASC`,
+        params
+      );
+
+      // 构建 CSV (BOM + 中文表头)
+      const headers = ['结算ID', '演员名称', '咖位', '需求标题', '活动日期', '城市', '金额', '结算周期', '状态', '结算时间', '打款时间'];
+      const rows = result.rows.map((r: Record<string, unknown>) => [
+        r.id,
+        r.performer_name,
+        r.tier,
+        (r.demand_title as string || '').replace(/"/g, '""'),
+        (r.event_date as string || '').substring(0, 10),
+        r.city,
+        Number(r.amount).toFixed(2),
+        r.period,
+        r.status === 'settled' ? '已结算' : '待结算',
+        (r.settled_at as string || '').substring(0, 10),
+        (r.paid_at as string || '').substring(0, 10),
+      ]);
+
+      const csvContent = '\uFEFF' + headers.join(',') + '\n' +
+        rows.map((row: unknown[]) => row.map((cell: unknown) => `"${cell ?? ''}"`).join(',')).join('\n');
+
+      reply
+        .header('Content-Type', 'text/csv; charset=utf-8')
+        .header('Content-Disposition', `attachment; filename=settlements_${period || 'all'}_${new Date().toISOString().substring(0,10)}.csv`)
+        .send(csvContent);
+    });
 }

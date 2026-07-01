@@ -27,3 +27,12 @@ export async function getOperationLogs(
     `/admin/operation-logs?${query.toString()}`,
   );
 }
+
+/** 撤销操作（P-06: 5分钟内） */
+export async function undoOperation(
+  logId: string,
+): Promise<ApiResponse<{ success: boolean }>> {
+  return apiClient.post<{ success: boolean }>(
+    `/admin/operation-logs/${logId}/undo`,
+  );
+}

@@ -123,3 +123,28 @@ export async function getDemandList(params: Record<string, string | number | und
   }
   return request('/demands?' + query.toString());
 }
+
+/** 获取需求详情 */
+export async function getDemandDetail(id: string): Promise<unknown> {
+  return request(`/demands/${id}`);
+}
+
+/** 确认方案 */
+export async function confirmPlan(demandId: string, planId: string): Promise<unknown> {
+  return request(`/demands/${demandId}/confirm`, {
+    method: 'POST',
+    body: JSON.stringify({ plan_id: planId }),
+  });
+}
+
+/** 获取消费统计 */
+export async function getConsumptionStats(): Promise<unknown> {
+  return request('/demands/stats');
+}
+
+/** 生成邀请链接 */
+export async function generateInviteLink(): Promise<unknown> {
+  return request('/invite/generate', {
+    method: 'POST',
+  });
+}

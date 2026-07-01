@@ -34,3 +34,15 @@ export async function markSettled(
     (data as Record<string, unknown>) || {},
   );
 }
+
+/** 导出结算明细 Excel（P-20） */
+export async function exportSettlement(
+  period?: string,
+): Promise<ApiResponse<{ download_url: string }>> {
+  const query = new URLSearchParams();
+  if (period) query.set('period', period);
+
+  return apiClient.get<{ download_url: string }>(
+    `/settlements/export?${query.toString()}`,
+  );
+}

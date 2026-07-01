@@ -8,7 +8,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { authMiddleware, requireRole, optionalAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validation.js';
-import { query } from '../utils/db.js';
+import { query, transaction } from '../utils/db.js';
 import {
   successResponse,
   errorResponse,
@@ -1155,6 +1155,100 @@ export default async function performerRoutes(app: FastifyInstance): Promise<voi
             pageSize,
           })
         );
+    }
+  );
+
+  // ==========================================================
+  // POST /v1/performers/import - 批量导入演员 (P-14)
+  // 接收 JSON 数组，批量创建
+  // ==========================================================
+  const importBodySchema = z.object({
+    performers: z.array(z.object({
+      name: z.string().min(1).max(100),
+      phone: z.string().min(1).max(11),
+      style_tags: z.array(z.string().min(1)).optional(),
+      introduction: z.string().optional(),
+      highlights: z.string().optional(),
+      media_urls: z.array(z.string()).optional(),
+      experience_years: z.number().int().min(0).optional(),
+      tier: performerTierSchema.optional().default('T6'),
+    })).min(1).max(500),
+  });
+
+  app.post(
+    '/import',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('admin'),
+        validate({ body: importBodySchema }),
+      ],
+    },
+    async function importPerformers(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const body = request.body as z.infer<typeof importBodySchema>;
+      const operatorId = request.user.sub;
+      const { performers: performerList } = body;
+
+      const results: { success: string[]; skipped: { name: string; phone: string; reason: string }[] } = {
+        success: [],
+        skipped: [],
+      };
+
+      await transaction(async (client) => {
+        for (const p of performerList) {
+          // 检查手机号是否已被使用
+          const existing = await client.query<{ id: string }>(
+            'SELECT id FROM performers WHERE phone = $1',
+            [p.phone]
+          );
+
+          if (existing.rows.length > 0) {
+            results.skipped.push({ name: p.name, phone: p.phone, reason: '手机号已存在' });
+            continue;
+          }
+
+          // 插入新演员
+          const result = await client.query<{ id: string }>(
+            `INSERT INTO performers (
+               name, phone, style_tags, introduction, highlights,
+               media_urls, experience_years, tier,
+               credit_score, credit_level, status, protection_remaining,
+               tier_updated_at, tier_updated_by
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::performer_tier, 3.50, 'C'::credit_level, 'active'::performer_status, 3, NOW(), $9)
+             RETURNING id`,
+            [
+              p.name,
+              p.phone,
+              JSON.stringify(p.style_tags ?? []),
+              p.introduction ?? null,
+              p.highlights ?? null,
+              JSON.stringify(p.media_urls ?? []),
+              p.experience_years ?? 0,
+              p.tier,
+              operatorId,
+            ]
+          );
+
+          results.success.push(result.rows[0].id);
+        }
+      });
+
+      // 批量导入操作日志
+      await query(
+        `INSERT INTO operation_logs (operator_id, module, action, target_type, target_id, detail)
+         VALUES ($1, 'performer', 'batch_import', 'performer', NULL, $2)`,
+        [operatorId, JSON.stringify({ total: performerList.length, success: results.success.length, skipped: results.skipped.length })]
+      );
+
+      reply.status(201).send(createdResponse({
+        imported: results.success.length,
+        skipped: results.skipped.length,
+        success_ids: results.success,
+        skipped_details: results.skipped,
+      }, `成功导入 ${results.success.length} 名演员，跳过 ${results.skipped.length} 名`));
     }
   );
 }

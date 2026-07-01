@@ -16,10 +16,14 @@
 import React, { useRef, useState } from 'react';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { Button, Tag, Result, Empty, Modal } from 'antd';
-import { ReloadOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button, Tag, Result, Empty, Modal, message } from 'antd';
+import {
+  ReloadOutlined,
+  EyeOutlined,
+  UndoOutlined,
+} from '@ant-design/icons';
 import type { OperationLogItem } from '@/types/operationLog';
-import { getOperationLogs } from '@/services/operationLog';
+import { getOperationLogs, undoOperation } from '@/services/operationLog';
 
 /** 模块中文映射 */
 const ModuleLabel: Record<string, string> = {
@@ -39,6 +43,35 @@ const OperationLogsPage: React.FC = () => {
   const [error, setError] = useState<Error | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailItem, setDetailItem] = useState<OperationLogItem | null>(null);
+  const [undoing, setUndoing] = useState<string | null>(null);
+
+  /** 检查是否在5分钟内可撤销 */
+  const canUndo = (log: OperationLogItem): boolean => {
+    const elapsed = Date.now() - new Date(log.created_at).getTime();
+    return elapsed < 5 * 60 * 1000;
+  };
+
+  /** 执行撤销 */
+  const handleUndo = async (log: OperationLogItem) => {
+    Modal.confirm({
+      title: '确认撤销',
+      content: `确定要撤销此操作吗？（仅5分钟内的操作可撤销）`,
+      okText: '确认撤销',
+      cancelText: '取消',
+      onOk: async () => {
+        setUndoing(log.id);
+        try {
+          await undoOperation(log.id);
+          message.success('操作已撤销');
+          actionRef.current?.reload();
+        } catch (err) {
+          message.error(err instanceof Error ? err.message : '撤销失败');
+        } finally {
+          setUndoing(null);
+        }
+      },
+    });
+  };
 
   const columns: ProColumns<OperationLogItem>[] = [
     {
@@ -86,22 +119,36 @@ const OperationLogsPage: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 80,
+      width: 140,
       fixed: 'right',
       search: false,
       render: (_, record) => (
-        <Button
-          type="link"
-          size="small"
-          icon={<EyeOutlined />}
-          style={{ minHeight: 44, minWidth: 44 }}
-          onClick={() => {
-            setDetailItem(record);
-            setDetailModalOpen(true);
-          }}
-        >
-          详情
-        </Button>
+        <Space size="small">
+          <Button
+            type="link"
+            size="small"
+            icon={<EyeOutlined />}
+            style={{ minHeight: 44, minWidth: 44 }}
+            onClick={() => {
+              setDetailItem(record);
+              setDetailModalOpen(true);
+            }}
+          >
+            详情
+          </Button>
+          {canUndo(record) && (
+            <Button
+              type="link"
+              size="small"
+              icon={<UndoOutlined />}
+              loading={undoing === record.id}
+              style={{ minHeight: 44, minWidth: 44, color: '#fa8c16' }}
+              onClick={() => handleUndo(record)}
+            >
+              撤销
+            </Button>
+          )}
+        </Space>
       ),
     },
   ];

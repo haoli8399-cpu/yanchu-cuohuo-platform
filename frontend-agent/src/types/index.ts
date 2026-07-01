@@ -209,6 +209,79 @@ export const DEMAND_STATUS_COLORS: Record<DemandStatus, string> = {
   refunding: 'error',
 };
 
+// ============ 需求详情 ============
+
+/** 方案计划 */
+export interface SchemePlan {
+  id: string;
+  name: string;
+  sku_name: string;
+  performer_count: number;
+  duration_minutes: number;
+  total_price: number;
+  agent_price: number;
+  performer_profile: string;
+  style_tags: string[];
+  highlights: string[];
+  cover_url?: string;
+}
+
+/** 需求详情 */
+export interface DemandDetail {
+  id: string;
+  title: string;
+  event_type: string;
+  event_date: string;
+  event_time?: string;
+  city: string;
+  address: string;
+  audience_count?: number;
+  budget?: number;
+  duration_minutes?: number;
+  comedy_style?: string;
+  special_requirements?: string;
+  venue_name?: string;
+  venue_type?: string;
+  status: DemandStatus;
+  urgency: 'normal' | 'urgent' | 'emergency';
+  created_at: string;
+  updated_at: string;
+  /** W-07: 多方案对比 */
+  plans: SchemePlan[];
+  /** W-09: 订单时间线步骤 */
+  timeline: TimelineStep[];
+  client?: {
+    id: string;
+    name: string;
+  };
+}
+
+/** 订单时间线步骤 */
+export interface TimelineStep {
+  status: DemandStatus;
+  label: string;
+  time?: string;
+  description?: string;
+  is_current: boolean;
+  is_completed: boolean;
+}
+
+/** 消费统计 */
+export interface ConsumptionStats {
+  total_orders: number;
+  total_spent: number;
+  completed_orders: number;
+  pending_orders: number;
+  avg_order_amount: number;
+}
+
+/** 邀请链接 */
+export interface InviteLink {
+  url: string;
+  code: string;
+  expire_at: string;
+}
+
 export const EVENT_TYPE_OPTIONS = [
   { label: '企业年会', value: '企业年会' },
   { label: '客户答谢', value: '客户答谢' },

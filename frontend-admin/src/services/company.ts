@@ -47,3 +47,42 @@ export async function verifyCompany(
     data as Record<string, unknown>,
   );
 }
+
+/** 获取活动公司消费统计（P-21） */
+export async function getCompanyConsumption(
+  companyId: string,
+): Promise<ApiResponse<{
+  total_spent: number;
+  order_count: number;
+  monthly_stats: { month: string; amount: number; count: number }[];
+  orders: { id: string; title: string; amount: number; date: string; status: string }[];
+}>> {
+  return apiClient.get(`/companies/${companyId}/consumption`);
+}
+
+/** 导出一家公司的消费明细 Excel（P-21） */
+export async function exportCompanyConsumption(
+  companyId: string,
+): Promise<ApiResponse<{ download_url: string }>> {
+  return apiClient.get<{ download_url: string }>(
+    `/companies/${companyId}/consumption/export`,
+  );
+}
+
+/** 获取活动公司历史订单（P-28） */
+export async function getCompanyHistoryOrders(
+  companyId: string,
+  page: number,
+  pageSize: number,
+): Promise<ApiResponse<PaginatedResponse<{
+  id: string;
+  title: string;
+  event_date: string;
+  amount: number;
+  status: string;
+  performer_name?: string;
+}>>> {
+  return apiClient.get(
+    `/companies/${companyId}/orders?page=${page}&pageSize=${pageSize}`,
+  );
+}

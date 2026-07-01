@@ -140,24 +140,73 @@ export default async function assignmentRoutes(app: FastifyInstance) {
       return reply.send(successResponse({ checkin_time: new Date().toISOString(), credit_change: { amount: 1, reason: '准时签到打卡' } }, '签到成功'));
     });
 
-  // 5. 档期日历
-  app.get('/calendar', { preHandler: [authMiddleware], validate: req => validate({ query: calendarQuery })(req) },
+  // 5. 档期日历 (P-11 Enhanced: FullCalendar format)
+  app.get('/calendar', { preHandler: [authMiddleware] },
     async (req, reply) => {
-      const { performer_id, month } = req.query as z.infer<typeof calendarQuery>;
-      const start = `${month}-01`;
-      const [y, m] = month.split('-').map(Number);
-      const end = `${month}-${new Date(y, m, 0).getDate()}`;
+      const { performer_id, month, start, end } = req.query as Record<string, string>;
 
-      let where = `a.arrival_time>=$1 AND a.arrival_time<=$2 AND a.status NOT IN ('cancelled','rejected')`;
-      const params: unknown[] = [start, end];
-      if (performer_id) { where += ` AND a.performer_id=$3`; params.push(performer_id); }
+      // FullCalendar 格式：支持 month 或 start/end 范围
+      let dateWhere: string;
+      const dateParams: unknown[] = [];
+      let di = 1;
+
+      if (start && end) {
+        dateWhere = `a.arrival_time >= $${di++} AND a.arrival_time <= $${di++}`;
+        dateParams.push(start, end);
+      } else if (month) {
+        const monthStart = `${month}-01`;
+        const [y, m] = month.split('-').map(Number);
+        const monthEnd = `${month}-${new Date(y, m, 0).getDate()}`;
+        dateWhere = `a.arrival_time >= $${di++} AND a.arrival_time <= $${di++}`;
+        dateParams.push(monthStart, monthEnd);
+      } else {
+        // 默认当月
+        const now = new Date();
+        const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const monthStart = `${monthStr}-01`;
+        const monthEnd = `${monthStr}-${new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()}`;
+        dateWhere = `a.arrival_time >= $${di++} AND a.arrival_time <= $${di++}`;
+        dateParams.push(monthStart, monthEnd);
+      }
+
+      let where = `${dateWhere} AND a.status NOT IN ('cancelled','rejected')`;
+      if (performer_id) { where += ` AND a.performer_id = $${di++}`; dateParams.push(performer_id); }
 
       const result = await query(
-        `SELECT a.id, a.arrival_time::date as date, p.name as performer_name, d.title as demand_title
-         FROM assignments a JOIN performers p ON a.performer_id=p.id JOIN demands d ON a.demand_id=d.id
-         WHERE ${where} ORDER BY a.arrival_time`,
-        params
+        `SELECT a.id, a.arrival_time, a.status,
+                p.id AS performer_id, p.name AS performer_name, p.tier,
+                d.id AS demand_id, d.title AS demand_title, d.event_date, d.city
+         FROM assignments a
+         JOIN performers p ON a.performer_id = p.id
+         JOIN demands d ON a.demand_id = d.id
+         WHERE ${where}
+         ORDER BY a.arrival_time`,
+        dateParams
       );
-      return reply.send(successResponse(result.rows));
+
+      // 转换为 FullCalendar events 格式
+      const events = result.rows.map((row: Record<string, unknown>) => ({
+        id: row.id,
+        title: `${row.performer_name} - ${row.demand_title || '演出'}`,
+        start: row.arrival_time,
+        extendedProps: {
+          performer_id: row.performer_id,
+          performer_name: row.performer_name,
+          performer_tier: row.tier,
+          demand_id: row.demand_id,
+          demand_title: row.demand_title,
+          city: row.city,
+          status: row.status,
+        },
+        backgroundColor: (row.status as string) === 'confirmed'
+          ? '#1890ff'
+          : (row.status as string) === 'completed'
+            ? '#52c41a'
+            : (row.status as string) === 'pending'
+              ? '#faad14'
+              : '#d9d9d9',
+      }));
+
+      return reply.send(successResponse(events));
     });
 }

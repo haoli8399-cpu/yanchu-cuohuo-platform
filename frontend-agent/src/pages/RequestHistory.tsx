@@ -11,8 +11,18 @@ import {
   Spin,
   Empty,
   Result,
+  Row,
+  Col,
+  Statistic,
 } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
+import {
+  ReloadOutlined,
+  DollarOutlined,
+  FileTextOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
 import dayjs from 'dayjs';
 import * as api from '../services/apiClient';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,7 +30,7 @@ import {
   DEMAND_STATUS_LABELS,
   DEMAND_STATUS_COLORS,
 } from '../types';
-import type { DemandListItem, DemandStatus, PaginatedResponse } from '../types';
+import type { DemandListItem, DemandStatus, PaginatedResponse, ConsumptionStats } from '../types';
 import type { ApiError } from '../services/apiClient';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -37,6 +47,10 @@ export default function RequestHistoryPage(): React.ReactElement {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [statusFilter, setStatusFilter] = useState<DemandStatus | ''>('');
+
+  // W-10: 消费统计
+  const [stats, setStats] = useState<ConsumptionStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   const fetchDemands = useCallback(async () => {
     setLoadState('loading');
@@ -64,13 +78,28 @@ export default function RequestHistoryPage(): React.ReactElement {
     }
   }, [page, pageSize, statusFilter]);
 
+  // W-10: 加载消费统计
+  const fetchStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      const data = (await api.getConsumptionStats()) as ConsumptionStats;
+      setStats(data);
+    } catch {
+      // 统计加载失败不影响主列表
+      setStats(null);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (isLoggedIn) {
       void fetchDemands();
+      void fetchStats();
     } else {
       setLoadState('empty');
     }
-  }, [fetchDemands, isLoggedIn]);
+  }, [fetchDemands, fetchStats, isLoggedIn]);
 
   // 未登录
   if (!isLoggedIn) {
@@ -94,10 +123,14 @@ export default function RequestHistoryPage(): React.ReactElement {
       dataIndex: 'title',
       key: 'title',
       width: 200,
-      render: (text: string) => (
-        <Typography.Text ellipsis style={{ maxWidth: 180 }}>
+      render: (text: string, record: DemandListItem) => (
+        <Typography.Link
+          ellipsis
+          style={{ maxWidth: 180 }}
+          onClick={() => navigate(`/demands/${record.id}`)}
+        >
           {text}
-        </Typography.Text>
+        </Typography.Link>
       ),
     },
     {
@@ -149,6 +182,54 @@ export default function RequestHistoryPage(): React.ReactElement {
 
   return (
     <div>
+      {/* W-10: 消费统计卡片 */}
+      {stats && (
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          <Col xs={12} sm={6}>
+            <Card loading={statsLoading} size="small">
+              <Statistic
+                title="总订单数"
+                value={stats.total_orders}
+                prefix={<FileTextOutlined />}
+                valueStyle={{ color: '#1677ff' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card loading={statsLoading} size="small">
+              <Statistic
+                title="总消费金额"
+                value={stats.total_spent}
+                precision={0}
+                prefix={<DollarOutlined />}
+                suffix="元"
+                valueStyle={{ color: '#ff4d4f' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card loading={statsLoading} size="small">
+              <Statistic
+                title="已完成"
+                value={stats.completed_orders}
+                prefix={<CheckCircleOutlined />}
+                valueStyle={{ color: '#52c41a' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card loading={statsLoading} size="small">
+              <Statistic
+                title="进行中"
+                value={stats.pending_orders}
+                prefix={<ClockCircleOutlined />}
+                valueStyle={{ color: '#faad14' }}
+              />
+            </Card>
+          </Col>
+        </Row>
+      )}
+
       <div
         style={{
           display: 'flex',
@@ -179,6 +260,7 @@ export default function RequestHistoryPage(): React.ReactElement {
           />
           <Button
             type="primary"
+            icon={<PlusOutlined />}
             onClick={() => navigate('/demands/new')}
             style={{ height: 44 }}
           >
@@ -233,6 +315,12 @@ export default function RequestHistoryPage(): React.ReactElement {
             columns={columns}
             dataSource={demands}
             rowKey="id"
+            onRow={(record) => ({
+              style: { cursor: 'pointer' },
+              onClick: () => {
+                navigate(`/demands/${record.id}`);
+              },
+            })}
             pagination={
               total > pageSize
                 ? {

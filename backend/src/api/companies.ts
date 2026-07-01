@@ -52,4 +52,76 @@ export default async function companyRoutes(app: FastifyInstance) {
       await query(`INSERT INTO operation_logs (operator_id, module, action, target_type, target_id, detail) VALUES ($1,'company',$2,'company',$3,$4)`,[req.user?.sub,action,req.params.id,JSON.stringify({reason})]);
       return reply.send(successResponse({status:s}, action==='approve'?'已通过':'已驳回'));
     });
+
+  // ==========================================================
+  // GET /v1/companies/:id/stats - 活动公司消费统计 (P-21)
+  // 历史消费汇总 + 明细
+  // ==========================================================
+  app.get('/:id/stats', { preHandler: [authMiddleware, requireRole('admin', 'agent')] },
+    async (req, reply) => {
+      const { id } = req.params as { id: string };
+      const user = req.user;
+
+      // 校验公司存在
+      const company = await query('SELECT id, user_id, short_name FROM company_profiles WHERE id=$1', [id]);
+      if (company.rows.length === 0) {
+        return reply.status(404).send(errorResponse(2002, '公司不存在'));
+      }
+
+      // 权限校验：agent 只能看自己的
+      if (user?.role === 'agent' && company.rows[0].user_id !== user.sub) {
+        return reply.status(403).send(errorResponse(1005, '权限不足'));
+      }
+
+      // 消费汇总统计
+      const [totalStats, monthlyStats, recentOrders] = await Promise.all([
+        // 总体统计
+        query(
+          `SELECT
+             COUNT(*) AS total_orders,
+             COALESCE(SUM(p.amount), 0) AS total_spent,
+             COUNT(DISTINCT DATE_TRUNC('month', p.received_at)) AS active_months
+           FROM payment_records p
+           JOIN demands d ON p.demand_id = d.id
+           WHERE d.client_id = $1`,
+          [id]
+        ),
+        // 按月统计
+        query(
+          `SELECT
+             TO_CHAR(DATE_TRUNC('month', p.received_at), 'YYYY-MM') AS month,
+             COUNT(*) AS order_count,
+             COALESCE(SUM(p.amount), 0) AS total_amount
+           FROM payment_records p
+           JOIN demands d ON p.demand_id = d.id
+           WHERE d.client_id = $1
+           GROUP BY DATE_TRUNC('month', p.received_at)
+           ORDER BY month DESC
+           LIMIT 12`,
+          [id]
+        ),
+        // 最近订单
+        query(
+          `SELECT d.id, d.title, d.event_date, d.city, d.status, d.final_price,
+                  p.amount AS paid_amount, p.type AS payment_type, p.received_at
+           FROM demands d
+           LEFT JOIN payment_records p ON d.id = p.demand_id
+           WHERE d.client_id = $1
+           ORDER BY d.created_at DESC
+           LIMIT 20`,
+          [id]
+        ),
+      ]);
+
+      return reply.send(successResponse({
+        company: { id, short_name: company.rows[0].short_name },
+        summary: {
+          total_orders: Number(totalStats.rows[0].total_orders),
+          total_spent: Number(totalStats.rows[0].total_spent),
+          active_months: Number(totalStats.rows[0].active_months),
+        },
+        monthly_breakdown: monthlyStats.rows,
+        recent_orders: recentOrders.rows,
+      }));
+    });
 }

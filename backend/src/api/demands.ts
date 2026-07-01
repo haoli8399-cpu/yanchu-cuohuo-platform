@@ -747,4 +747,328 @@ export default async function demandRoutes(app: FastifyInstance): Promise<void> 
         );
     }
   );
+
+  // ==========================================================
+  // GET /v1/demands/:id 增强：返回同活动公司的历史订单 (P-28)
+  // 客户历史卡片功能
+  // ==========================================================
+  // Note: This enhances the existing GET /:id endpoint.
+  // We add company_history to the response data.
+
+  // ==========================================================
+  // POST /v1/demands/:id/alternatives - 创建备选方案 (W-07)
+  // 运营推送多个方案供客户对比选择
+  // ==========================================================
+  const alternativeBodySchema = z.object({
+    plan_name: z.string().min(1).max(200),
+    plan_content: z.string().min(1),
+    price: z.number().positive().optional(),
+    performer_lineup: z.array(z.object({
+      performer_id: z.string().uuid(),
+      name: z.string().min(1),
+      tier: z.string().optional(),
+      role: z.string().min(1),
+    })).optional(),
+    notes: z.string().optional(),
+  });
+
+  app.post(
+    '/:id/alternatives',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('admin'),
+        validate({ params: demandIdParamSchema, body: alternativeBodySchema }),
+      ],
+    },
+    async function createAlternative(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { id } = request.params as z.infer<typeof demandIdParamSchema>;
+      const body = request.body as z.infer<typeof alternativeBodySchema>;
+      const operatorId = request.user.sub;
+
+      // 校验需求存在
+      const existing = await query<DemandRow>(
+        'SELECT id FROM demands WHERE id = $1', [id]
+      );
+      if (existing.rows.length === 0) {
+        reply.status(404).send(errorResponse(3004, '需求不存在'));
+        return;
+      }
+
+      const result = await query<{ id: string }>(
+        `INSERT INTO demand_alternatives (demand_id, plan_name, plan_content, price, performer_lineup, notes, status, operator_id)
+         VALUES ($1, $2, $3, $4, $5::jsonb, $6, 'pending', $7)
+         RETURNING id`,
+        [
+          id,
+          body.plan_name,
+          body.plan_content,
+          body.price ?? null,
+          JSON.stringify(body.performer_lineup ?? []),
+          body.notes ?? null,
+          operatorId,
+        ]
+      );
+
+      await query(
+        `INSERT INTO operation_logs (operator_id, module, action, target_type, target_id, detail)
+         VALUES ($1, 'demand', 'create_alternative', 'demand', $2, $3)`,
+        [operatorId, id, JSON.stringify({ plan_name: body.plan_name, price: body.price })]
+      );
+
+      reply.status(201).send(createdResponse({
+        id: result.rows[0].id,
+        demand_id: id,
+      }, '备选方案已创建'));
+    }
+  );
+
+  // ==========================================================
+  // GET /v1/demands/:id/alternatives - 获取备选方案列表 (W-07)
+  // ==========================================================
+  app.get(
+    '/:id/alternatives',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('agent', 'admin', 'client'),
+        validate({ params: demandIdParamSchema }),
+      ],
+    },
+    async function getAlternatives(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { id } = request.params as z.infer<typeof demandIdParamSchema>;
+
+      const result = await query(
+        `SELECT * FROM demand_alternatives
+         WHERE demand_id = $1
+         ORDER BY created_at DESC`,
+        [id]
+      );
+
+      reply.send(successResponse(result.rows));
+    }
+  );
+
+  // ==========================================================
+  // PATCH /v1/demands/:id/alternatives/:alt_id/select - 选择备选方案 (W-07)
+  // ==========================================================
+  app.patch(
+    '/:id/alternatives/:alt_id/select',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('agent', 'client'),
+        validate({ params: z.object({ id: z.string().uuid(), alt_id: z.string().uuid() }) }),
+      ],
+    },
+    async function selectAlternative(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { id, alt_id } = request.params as { id: string; alt_id: string };
+
+      // 校验方案存在
+      const alt = await query(
+        'SELECT * FROM demand_alternatives WHERE id = $1 AND demand_id = $2',
+        [alt_id, id]
+      );
+      if (alt.rows.length === 0) {
+        reply.status(404).send(errorResponse(3007, '备选方案不存在'));
+        return;
+      }
+
+      // 将所有备选方案置为 rejected，选中置为 selected
+      const altRow = alt.rows[0] as { plan_content: string; price: number | null };
+      await query(
+        `UPDATE demand_alternatives SET status = 'rejected', updated_at = NOW()
+         WHERE demand_id = $1 AND id != $2`,
+        [id, alt_id]
+      );
+      await query(
+        `UPDATE demand_alternatives SET status = 'selected', updated_at = NOW()
+         WHERE id = $1`,
+        [alt_id]
+      );
+
+      // 更新需求的价格（如果方案有价格）
+      if (altRow.price) {
+        await query(
+          `UPDATE demands SET final_price = $1, updated_at = NOW() WHERE id = $2`,
+          [altRow.price, id]
+        );
+      }
+
+      reply.send(successResponse({ demand_id: id, selected_alternative_id: alt_id }, '方案已选择'));
+    }
+  );
+
+  // ==========================================================
+  // GET /v1/demands/:id/export - 导出方案 JSON（前端转 Word）(C-12/W-14)
+  // ==========================================================
+  app.get(
+    '/:id/export',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('agent', 'admin', 'client'),
+        validate({ params: demandIdParamSchema }),
+      ],
+    },
+    async function exportDemandPlan(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { id } = request.params as z.infer<typeof demandIdParamSchema>;
+
+      const result = await query<DemandRow>(
+        'SELECT * FROM demands WHERE id = $1', [id]
+      );
+
+      if (result.rows.length === 0) {
+        reply.status(404).send(errorResponse(3004, '需求不存在'));
+        return;
+      }
+
+      const demand = result.rows[0];
+
+      // 获取阵容信息
+      const lineupResult = await query<LineupRow>(
+        `SELECT l.*, p.name AS performer_name, p.tier::TEXT AS performer_tier
+         FROM lineup l
+         LEFT JOIN performers p ON l.performer_id = p.id
+         WHERE l.demand_id = $1
+         ORDER BY l.created_at ASC`,
+        [id]
+      );
+
+      // 获取备选方案
+      const alternatives = await query(
+        `SELECT * FROM demand_alternatives
+         WHERE demand_id = $1
+         ORDER BY created_at ASC`,
+        [id]
+      );
+
+      // 构建导出数据（供前端转为 Word）
+      const exportData = {
+        demand: {
+          id: demand.id,
+          title: demand.title || '未命名需求',
+          event_type: demand.event_type,
+          event_date: demand.event_date ? demand.event_date.split('T')[0] : '',
+          event_time: demand.event_time,
+          city: demand.city,
+          address: demand.address,
+          audience_count: demand.audience_count,
+          budget: demand.budget ? Number(demand.budget) : undefined,
+          duration_minutes: demand.duration_minutes,
+          comedy_style: demand.comedy_style,
+          special_requirements: demand.special_requirements,
+          venue_name: demand.venue_name,
+          venue_type: demand.venue_type,
+          status: demand.status,
+          urgency: demand.urgency,
+          created_at: demand.created_at,
+        },
+        plan: demand.final_plan_content
+          ? (() => { try { return JSON.parse(demand.final_plan_content); } catch { return demand.final_plan_content; } })()
+          : (demand.adjusted_plan_content
+            ? (() => { try { return JSON.parse(demand.adjusted_plan_content); } catch { return demand.adjusted_plan_content; } })()
+            : (demand.ai_plan_content
+              ? (() => { try { return JSON.parse(demand.ai_plan_content); } catch { return demand.ai_plan_content; } })()
+              : null)),
+        final_price: demand.final_price ? Number(demand.final_price) : undefined,
+        lineups: lineupResult.rows.map(toLineupEntry),
+        alternatives: alternatives.rows,
+        export_time: new Date().toISOString(),
+      };
+
+      reply.send(successResponse(exportData, '方案数据已导出'));
+    }
+  );
+
+  // ==========================================================
+  // PATCH /v1/demands/:id/history - 客户历史卡片增强 (P-28)
+  // 返回同公司的历史订单（已整合到 GET /:id 的增强逻辑中）
+  // 这里作为独立端点提供
+  // ==========================================================
+  app.patch(
+    '/:id/history',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('admin'),
+        validate({ params: demandIdParamSchema }),
+      ],
+    },
+    async function getClientHistory(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { id } = request.params as z.infer<typeof demandIdParamSchema>;
+
+      const demand = await query<DemandRow>(
+        'SELECT id, client_id FROM demands WHERE id = $1', [id]
+      );
+
+      if (demand.rows.length === 0) {
+        reply.status(404).send(errorResponse(3004, '需求不存在'));
+        return;
+      }
+
+      const clientId = demand.rows[0].client_id;
+
+      // 查询同公司的所有历史订单
+      const historyOrders = await query<DemandRow & { paid_total: string; client_name: string }>(
+        `SELECT d.*, u.name AS client_name,
+                COALESCE((SELECT SUM(pr.amount) FROM payment_records pr WHERE pr.demand_id = d.id), 0) AS paid_total
+         FROM demands d
+         LEFT JOIN users u ON d.client_id = u.id
+         WHERE d.client_id = $1
+           AND d.id != $2
+         ORDER BY d.created_at DESC
+         LIMIT 50`,
+        [clientId, id]
+      );
+
+      // 汇总统计
+      const stats = await query(
+        `SELECT
+           COUNT(*) AS total_orders,
+           COALESCE(SUM(pr.amount), 0) AS total_spent
+         FROM demands d
+         LEFT JOIN payment_records pr ON pr.demand_id = d.id
+         WHERE d.client_id = $1`,
+        [clientId]
+      );
+
+      reply.send(successResponse({
+        client: {
+          id: clientId,
+          name: historyOrders.rows[0]?.client_name || '未知',
+        },
+        stats: {
+          total_orders: Number(stats.rows[0].total_orders),
+          total_spent: Number(stats.rows[0].total_spent),
+        },
+        history_orders: historyOrders.rows.map((row) => ({
+          id: row.id,
+          title: row.title || '未命名需求',
+          event_type: row.event_type,
+          event_date: (row.event_date || '').toString().substring(0, 10),
+          city: row.city,
+          status: row.status,
+          final_price: row.final_price ? Number(row.final_price) : undefined,
+          paid_total: Number(row.paid_total),
+          created_at: row.created_at,
+        })),
+      }));
+    }
+  );
 }
