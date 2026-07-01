@@ -13,6 +13,7 @@ import demandRoutes from './api/demands.js';
 import orderRoutes from './api/orders.js';
 import contractRoutes from './api/contracts.js';
 import paymentRoutes from './api/payments.js';
+import performerRoutes from './api/performers.js';
 
 // ---- 扩展 @fastify/jwt 类型 ----
 declare module '@fastify/jwt' {
@@ -83,6 +84,7 @@ await app.register(demandRoutes, { prefix: '/v1/demands' });
 await app.register(orderRoutes, { prefix: '/v1/orders' });
 await app.register(contractRoutes, { prefix: '/v1/contracts' });
 await app.register(paymentRoutes, { prefix: '/v1/payments' });
+await app.register(performerRoutes, { prefix: '/v1/performers' });
 
 // ============================================================
 // 启动服务器

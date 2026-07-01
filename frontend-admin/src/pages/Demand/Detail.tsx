@@ -40,6 +40,7 @@ import {
   SourceLabel,
 } from '@/types/demand';
 import { getDemandDetail } from '@/services/demand';
+import DemandInfoCard from './DemandInfoCard';
 
 const { Text, Paragraph } = Typography;
 
@@ -209,55 +210,7 @@ const DemandDetailPage: React.FC = () => {
       }
     >
       {/* 客户信息 + 基本信息 (P-28) */}
-      <ProCard title="基本信息" style={{ marginBottom: 16 }}>
-        <Descriptions column={2} bordered size="small">
-          <Descriptions.Item label="活动公司">
-            {demand.client?.name || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="来源">
-            <Tag>{SourceLabel[demand.source]}</Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="活动类型">
-            {demand.event_type}
-          </Descriptions.Item>
-          <Descriptions.Item label="紧急程度">
-            <Tag color={UrgencyColor[demand.urgency]}>
-              {UrgencyLabel[demand.urgency]}
-            </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="活动日期">
-            {demand.event_date}
-          </Descriptions.Item>
-          <Descriptions.Item label="活动时间">
-            {demand.event_time || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="城市">{demand.city}</Descriptions.Item>
-          <Descriptions.Item label="地址">{demand.address}</Descriptions.Item>
-          <Descriptions.Item label="观众人数">
-            {demand.audience_count ?? '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="预算">
-            {demand.budget ? `¥${demand.budget.toLocaleString()}` : '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="演出时长">
-            {demand.duration_minutes
-              ? `${demand.duration_minutes}分钟`
-              : '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="喜剧风格">
-            {demand.comedy_style || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="特殊要求" span={2}>
-            {demand.special_requirements || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="创建时间">
-            {new Date(demand.created_at).toLocaleString('zh-CN')}
-          </Descriptions.Item>
-          <Descriptions.Item label="更新时间">
-            {new Date(demand.updated_at).toLocaleString('zh-CN')}
-          </Descriptions.Item>
-        </Descriptions>
-      </ProCard>
+      <DemandInfoCard demand={demand} />
 
       {/* AI 方案预览 */}
       <ProCard

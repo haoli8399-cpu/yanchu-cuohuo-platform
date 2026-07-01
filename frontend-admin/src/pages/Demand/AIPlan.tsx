@@ -22,17 +22,12 @@ import {
   Typography,
   Spin,
   Result,
-  Descriptions,
   message,
-  Input,
-  Divider,
   Alert,
   Steps,
   Popconfirm,
-  Select,
-  InputNumber,
+  Steps,
 } from 'antd';
-import {
   ArrowLeftOutlined,
   RobotOutlined,
   EditOutlined,
@@ -46,14 +41,14 @@ import {
   DemandStatusColor,
   UrgencyLabel,
   UrgencyColor,
-  SourceLabel,
   ContractModeLabel,
 } from '@/types/demand';
 import { getDemandDetail, triggerAIPlan, adjustPlan } from '@/services/demand';
 import AdjustmentTemplates from './AdjustmentTemplates';
+import DemandInfoCard from './DemandInfoCard';
+import PlanEditor from './PlanEditor';
 
 const { Text, Title, Paragraph } = Typography;
-const { TextArea } = Input;
 
 const DemandAIPlanPage: React.FC = () => {
   const params = useParams<{ id: string }>();
@@ -65,15 +60,9 @@ const DemandAIPlanPage: React.FC = () => {
 
   // 编辑模式
   const [editing, setEditing] = useState(false);
-  const [editContent, setEditContent] = useState('');
-  const [finalPrice, setFinalPrice] = useState<number | undefined>();
-  const [contractMode, setContractMode] = useState<
-    'skip' | 'upload' | 'system'
-  >('skip');
 
   // 操作中
   const [generatingAI, setGeneratingAI] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   /** 加载需求详情 */
   const fetchDetail = () => {
@@ -118,49 +107,7 @@ const DemandAIPlanPage: React.FC = () => {
 
   /** 进入编辑模式 */
   const handleStartEdit = () => {
-    const currentContent =
-      demand?.adjusted_plan_content ||
-      demand?.ai_plan_content ||
-      '';
-    setEditContent(currentContent);
-    setFinalPrice(demand?.final_price);
-    setContractMode(demand?.contract_mode || 'skip');
     setEditing(true);
-  };
-
-  /** 应用模板 */
-  const handleApplyTemplate = (template: AdjustmentTemplate) => {
-    if (!editing) {
-      handleStartEdit();
-    }
-    // 在现有内容后追加模板内容
-    setEditContent((prev) => {
-      const sep = prev ? '\n\n---\n\n' : '';
-      return prev + sep + template.content;
-    });
-  };
-
-  /** 提交调整方案 */
-  const handleSubmitAdjust = async () => {
-    if (!editContent.trim()) {
-      message.warning('请输入方案内容');
-      return;
-    }
-    setSubmitting(true);
-    try {
-      await adjustPlan(demandId, {
-        adjusted_plan_content: editContent.trim(),
-        final_price: finalPrice,
-        contract_mode: contractMode,
-      });
-      message.success('方案已调整，已推送给活动公司确认');
-      setEditing(false);
-      fetchDetail();
-    } catch (err) {
-      message.error(err instanceof Error ? err.message : '方案提交失败');
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   /** 返回列表 */
@@ -267,41 +214,7 @@ const DemandAIPlanPage: React.FC = () => {
       </ProCard>
 
       {/* 需求基本信息 */}
-      <ProCard title="需求基本信息" style={{ marginBottom: 16 }}>
-        <Descriptions column={2} bordered size="small">
-          <Descriptions.Item label="活动类型">
-            {demand.event_type}
-          </Descriptions.Item>
-          <Descriptions.Item label="来源">
-            <Tag>{SourceLabel[demand.source]}</Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="活动日期">
-            {demand.event_date}
-          </Descriptions.Item>
-          <Descriptions.Item label="活动时间">
-            {demand.event_time || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="城市">{demand.city}</Descriptions.Item>
-          <Descriptions.Item label="详细地址">
-            {demand.address}
-          </Descriptions.Item>
-          <Descriptions.Item label="观众人数">
-            {demand.audience_count ?? '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="预算">
-            {demand.budget ? `¥${demand.budget.toLocaleString()}` : '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="演出时长">
-            {demand.duration_minutes ? `${demand.duration_minutes}分钟` : '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="喜剧风格">
-            {demand.comedy_style || '-'}
-          </Descriptions.Item>
-          <Descriptions.Item label="特殊要求" span={2}>
-            {demand.special_requirements || '-'}
-          </Descriptions.Item>
-        </Descriptions>
-      </ProCard>
+      <DemandInfoCard demand={demand} />
 
       {/* AI 方案 / 当前方案 */}
       <ProCard
@@ -396,66 +309,21 @@ const DemandAIPlanPage: React.FC = () => {
       >
         {/* 编辑模式 */}
         {editing ? (
-          <div>
-            <div style={{ marginBottom: 12 }}>
-              <Text strong>调整方案内容：</Text>
-            </div>
-            <TextArea
-              rows={8}
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              placeholder="在此编辑调整后的方案内容..."
-              style={{ marginBottom: 12 }}
-            />
-            <Space style={{ marginBottom: 12 }} wrap>
-              <div>
-                <Text style={{ marginRight: 8 }}>最终报价（元）：</Text>
-                <InputNumber
-                  value={finalPrice}
-                  onChange={(v) => setFinalPrice(v ?? undefined)}
-                  placeholder="如：12000"
-                  min={0}
-                  style={{ width: 160 }}
-                />
-              </div>
-              <div>
-                <Text style={{ marginRight: 8 }}>签约模式：</Text>
-                <Select
-                  value={contractMode}
-                  onChange={(v) => setContractMode(v)}
-                  style={{ width: 140 }}
-                  options={Object.entries(ContractModeLabel).map(
-                    ([key, label]) => ({ value: key, label }),
-                  )}
-                />
-              </div>
-            </Space>
-
-            <Divider orientation="left">快捷模板</Divider>
-            <AdjustmentTemplates
-              compact
-              onSelect={handleApplyTemplate}
-            />
-
-            <Divider />
-            <Space style={{ marginTop: 12 }}>
-              <Button
-                type="primary"
-                icon={<SendOutlined />}
-                loading={submitting}
-                style={{ minHeight: 44 }}
-                onClick={handleSubmitAdjust}
-              >
-                提交并推送给活动公司
-              </Button>
-              <Button
-                style={{ minHeight: 44 }}
-                onClick={() => setEditing(false)}
-              >
-                取消
-              </Button>
-            </Space>
-          </div>
+          <PlanEditor
+            demandId={demandId}
+            initialContent={
+              demand.adjusted_plan_content ||
+              demand.ai_plan_content ||
+              ''
+            }
+            initialPrice={demand.final_price}
+            initialContractMode={demand.contract_mode || 'skip'}
+            onSubmitted={() => {
+              setEditing(false);
+              fetchDetail();
+            }}
+            onCancel={() => setEditing(false)}
+          />
         ) : demand.adjusted_plan_content ? (
           <Paragraph
             style={{
