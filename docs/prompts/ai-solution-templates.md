@@ -1,7 +1,8 @@
-# AI 方案 Prompt 模板（通用版 v1.0）
+# AI 方案 Prompt 模板（通用版 v1.1）
 
-> 版本：v1.0
+> 版本：v1.1
 > 创建时间：2026-07-01
+> 最后更新：2026-07-01（新增线E定制拼盘 + 演员分层引用）
 > 用途：DeepSeek API 生成演出方案的核心 prompt 模板
 > 状态：通用模板，跑通流程后替换为成熟模板
 
@@ -13,12 +14,12 @@
 AI方案生成流程
   │
   ├── [扩展点1] 场景分类器
-  │   ├── 一级：业务线识别（商演包场 / 外出演出 / 演出赞助 / 定制内容）
+  │   ├── 一级：业务线识别（商演包场 / 外出演出 / 演出赞助 / 定制内容 / 定制拼盘）
   │   ├── 二级：子场景细分
   │   └── 三级：特殊条件（节假日/定制需求/预算约束）
   │
   ├── [扩展点2] 演员匹配引擎
-  │   ├── 匹配权重配置（风格匹配/档期可用/信誉分/历史评价/性价比）
+  │   ├── 匹配权重配置（风格匹配/档期可用/信誉分/历史评价/性价比/咖位匹配）
   │   └── 权重可调参数（运营后台可修改各维度的权重值）
   │
   ├── [扩展点3] 方案结构化输出
@@ -33,7 +34,7 @@ AI方案生成流程
 
 ---
 
-## 二、四条业务线定义
+## 二、五条业务线定义
 
 | 业务线 | 场景代码 | 计价方式 | 典型时长 | 标配人数 |
 |--------|:--------:|----------|----------|:--------:|
@@ -41,6 +42,7 @@ AI方案生成流程
 | 外出演出 | `outdoor_show` | 时长×人数+远程费 | 20-90min | 1-5人 |
 | 演出场次赞助 | `show_sponsor` | 场次×档位 | 不适用 | 不适用 |
 | 定制内容合作 | `custom_content` | 按分钟 | 不固定 | 不适用 |
+| **定制拼盘演出** | **`custom_showcase`** | **分项报价（出演+创作+表演）** | **90min** | **1MC+3-5演员** |
 
 ---
 
@@ -124,6 +126,27 @@ system_prompt: |
     - 按分钟计费，用户指定时长
     - 视频素材授权是附带权益，不单独收费
 
+  ### 线E：定制拼盘演出
+  - 适用场景：异地/大型商业演出，需多演员拼盘+内容定制（参照后仰林芝方案模式）
+  - 演出形式：脱口秀拼盘，单场90min
+  - 标准阵容：1名主持人 + 3-5名脱口秀演员（含领衔+常规）
+  - 演员咖位参考（详见《演员分层管理体系》）：
+    - 领衔演员：T1（综艺级）或 T2（头部）
+    - 常规演员：T3（主力）或 T4（成熟）
+    - 主持人：T2-T3
+  - 费用构成（三项叠加）：
+    | 费用类型 | 说明 | 谁定价 |
+    |---------|------|:------:|
+    | 出演费 | 演员自带内容上台表演 | 按咖位×时长（查表） |
+    | 定制段子创作费 | 编剧为甲方定制原创段子，默认修改≤3次 | 按咖位×分钟 |
+    | 定制段子表演费 | 表演新段子的额外费用（背稿+练习） | 按咖位×分钟 |
+  - 关键判断逻辑：
+    - 先确定阵容结构（几人、什么咖位）
+    - 再分别计算出演费+创作费+表演费
+    - 如有属地定制需求（如林芝元素），额外计创作费+表演费
+    - 差旅/场地/设备由甲方另行承担，不在演艺服务费中
+    - 付款节奏：预付款60%+尾款40%
+
   ## 通用规则
   - 以上报价均不支持指定演员
   - 演员最终阵容由运营根据档期匹配
@@ -132,7 +155,7 @@ system_prompt: |
   ## 输出格式要求
   必须输出严格的 JSON 格式，结构如下：
   {
-    "business_line": "venue_booking|outdoor_show|show_sponsor|custom_content",
+    "business_line": "venue_booking|outdoor_show|show_sponsor|custom_content|custom_showcase",
     "solution_name": "方案名称（简短描述）",
     "scene_category": "一级场景分类",
     "scene_subcategory": "二级子场景（可选）",
@@ -146,11 +169,21 @@ system_prompt: |
       "min_count": 数字,
       "max_count": 数字,
       "style_requirements": ["风格要求"],
-      "level_requirement": "演员等级要求（如有）"
+      "tier_recommendation": "推荐咖位（T1-T6）",
+      "specific_roles": {
+        "lead": {"tier": "T2", "count": 1, "duration_min": 25},
+        "support": {"tier": "T3", "count": 2, "duration_min": 20},
+        "mc": {"tier": "T3", "count": 1, "duration_min": 25}
+      }
     },
     "duration_minutes": 数字,
     "venue_requirement": "场地要求（如有）",
     "equity_list": ["权益项列表（线C专用）"],
+    "custom_content": {
+      "script_minutes": 数字,
+      "includes_performance": true,
+      "revision_limit": 3
+    },
     "special_notes": ["注意事项"],
     "uncertain_items": ["需人工确认的项"]
   }
@@ -222,7 +255,11 @@ SolutionOutput:
     min_count: integer           # 最少人数
     max_count: integer           # 最多人数  
     style_tags: array            # 风格标签
-    level_minimum: string        # 最低等级要求
+    tier_recommendation: string  # 推荐咖位范围（如 T3及以上）
+    tier_breakdown: object       # 分角色咖位（线E专用）
+      lead: {tier, count, duration_min}
+      support: {tier, count, duration_min}
+      mc: {tier, count, duration_min}
     
   # --- 演出参数 ---
   duration_minutes: integer      # 时长
@@ -256,6 +293,16 @@ SolutionOutput:
   custom_content_fields:
     content_minutes: integer
     includes_video_rights: boolean
+
+  # --- 线E专属：定制拼盘 ---
+  custom_showcase_fields:
+    cast_structure: object        # 阵容结构
+    performance_fee_breakdown: array  # 分项出演费
+    script_creation_fee: decimal  # 定制段子创作费
+    script_performance_fee: decimal  # 定制段子表演费
+    total_artist_cost: decimal    # 演艺服务费合计
+    payment_schedule: object      # 付款计划（预付款/尾款比例）
+    excluded_costs: array         # 不含费用（差旅/场地/设备）
 ```
 
 ---
@@ -273,8 +320,10 @@ SceneClassifier:
         output: outdoor_show
       - condition: "用户提到'赞助/冠名/植入/广告/品牌露出'"
         output: show_sponsor
-      - condition: "用户提到'定制段子/视频/内容创作/短视频/录制'"
+      - condition: "用户提到'定制段子/视频/内容创作/短视频/录制'且未提到多演员拼盘"
         output: custom_content
+      - condition: "用户提到'拼盘/多位演员/异地演出/领衔演员/定制+演出'或多演员+定制组合"
+        output: custom_showcase
       - condition: "无法明确判断"
         output: unknown  # 转运营人工处理
         
@@ -316,13 +365,14 @@ SceneClassifier:
 ```yaml
 # 演员匹配权重 - 运营后台可调
 ActorMatchingWeights:
-  version: "1.0"
+  version: "1.1"
   default_weights:
-    style_match:       0.30    # 风格匹配度（脱口秀/即兴/漫才等）
-    schedule_available: 0.25   # 档期可用性（权重最高，空档优先）
+    style_match:       0.25    # 风格匹配度（脱口秀/即兴/漫才等）
+    schedule_available: 0.25   # 档期可用性（空档优先）
     credit_score:      0.20    # 信誉分（履约率+评价）
     historical_rating: 0.15    # 历史评价均值
-    price_efficiency:  0.10    # 性价比（演出费÷评分）
+    tier_match:        0.10    # 咖位匹配度（推荐咖位 vs 实际咖位）
+    price_efficiency:  0.05    # 性价比（演出费÷评分）
   
   # 不同业务线的权重调整（预留）
   per_business_line:
@@ -342,6 +392,11 @@ ActorMatchingWeights:
     custom_content:
       # 定制内容注重风格创作能力
       style_match: 0.35
+      historical_rating: 0.20
+    custom_showcase:
+      # 定制拼盘注重咖位匹配+风格多样性
+      tier_match: 0.25
+      style_match: 0.20
       historical_rating: 0.20
   
   # 权重可调说明
@@ -434,6 +489,62 @@ ActorMatchingWeights:
     "商场开业建议选择互动性强、适合全年龄段的演员"
   ],
   "uncertain_items": []
+}
+```
+
+### 输入示例3：定制拼盘演出（参照林芝方案）
+
+```
+活动类型：品牌文旅活动
+日期：2026-10-02（国庆假期）
+地点：西藏林芝市（甲方提供场地）
+需求：单日2场脱口秀拼盘，每场90min，需要融入林芝本地元素
+```
+
+### 期望输出：
+
+```json
+{
+  "business_line": "custom_showcase",
+  "solution_name": "林芝定制脱口秀拼盘演出·国庆专场",
+  "scene_category": "定制拼盘演出",
+  "scene_subcategory": "异地文旅定制",
+  "price_detail": {
+    "base_price": 0,
+    "extra_fees": [],
+    "total_price": 0,
+    "price_breakdown": "需运营根据实际阵容计算分项报价（出演费+创作费+表演费），AI不输出最终金额"
+  },
+  "actor_config": {
+    "min_count": 4,
+    "max_count": 6,
+    "style_requirements": ["脱口秀拼盘", "互动性强", "适合文旅场景"],
+    "tier_recommendation": "领衔T2及以上，常规T3-T4，主持人T2-T3",
+    "specific_roles": {
+      "lead": {"tier": "T2", "count": 1, "duration_min": 25},
+      "support": {"tier": "T3", "count": 2, "duration_min": 20},
+      "mc": {"tier": "T3", "count": 1, "duration_min": 25}
+    }
+  },
+  "duration_minutes": 90,
+  "venue_requirement": "林芝市（甲方提供场地，非后仰自有剧场）",
+  "custom_content": {
+    "script_minutes": 9,
+    "includes_performance": true,
+    "revision_limit": 3
+  },
+  "special_notes": [
+    "国庆假期属特殊档期，需提前锁定演员档期",
+    "林芝属地定制需额外创作费+表演费，每人约3min定制内容",
+    "差旅费用由甲方承担（往返机票+住宿）",
+    "建议合作流程：意向确认→合同签订→预付60%→创作→演出→尾款40%",
+    "AI仅输出推荐阵容和费用构成，具体金额由运营在后台计算"
+  ],
+  "uncertain_items": [
+    "具体演员阵容需运营根据档期确认",
+    "T1级别领衔演员费用需面议",
+    "场地技术设备需甲方确认"
+  ]
 }
 ```
 
