@@ -11,6 +11,8 @@ import type { JwtPayload } from './types/index.js';
 import skuRoutes from './api/skus.js';
 import demandRoutes from './api/demands.js';
 import orderRoutes from './api/orders.js';
+import contractRoutes from './api/contracts.js';
+import paymentRoutes from './api/payments.js';
 
 // ---- 扩展 @fastify/jwt 类型 ----
 declare module '@fastify/jwt' {
@@ -79,6 +81,8 @@ app.get('/v1/health', async (_request, reply) => {
 await app.register(skuRoutes, { prefix: '/v1/skus' });
 await app.register(demandRoutes, { prefix: '/v1/demands' });
 await app.register(orderRoutes, { prefix: '/v1/orders' });
+await app.register(contractRoutes, { prefix: '/v1/contracts' });
+await app.register(paymentRoutes, { prefix: '/v1/payments' });
 
 // ============================================================
 // 启动服务器

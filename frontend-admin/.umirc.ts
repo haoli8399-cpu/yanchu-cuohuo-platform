@@ -53,6 +53,30 @@ export default defineConfig({
       ],
     },
     {
+      name: '需求管理',
+      path: '/demand',
+      icon: 'ProjectOutlined',
+      routes: [
+        {
+          name: '需求列表',
+          path: '/demand/list',
+          component: './Demand/index',
+        },
+        {
+          name: '需求详情',
+          path: '/demand/detail/:id',
+          component: './Demand/Detail',
+          hideInMenu: true,
+        },
+        {
+          name: 'AI方案审核',
+          path: '/demand/ai-plan/:id',
+          component: './Demand/AIPlan',
+          hideInMenu: true,
+        },
+      ],
+    },
+    {
       name: '演员管理',
       path: '/actors',
       icon: 'TeamOutlined',
