@@ -17,7 +17,13 @@ export default defineConfig({
       redirect: '/dashboard',
     },
     {
-      name: '工作台',
+      name: '运营工作台',
+      path: '/workbench',
+      component: './OperationWorkbench/index',
+      icon: 'DesktopOutlined',
+    },
+    {
+      name: '运营总看板',
       path: '/dashboard',
       component: './Dashboard',
       icon: 'DashboardOutlined',

@@ -20,7 +20,7 @@ import { Button, Space, message, Spin, Result, Descriptions, Tag, Divider } from
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import type { SKU, BusinessLine } from '@/types/sku';
 import { BusinessLineLabel } from '@/types/sku';
-import { getSKUDetail } from '@/services/sku';
+import { getSKUDetail, createSKU, updateSKU } from '@/services/sku';
 
 /** 格式化价格（分 → 元） */
 function formatPrice(cents: number): string {
@@ -77,12 +77,40 @@ const SKUDetailPage: React.FC = () => {
   const handleSubmit = async (values: Record<string, unknown>) => {
     setSubmitting(true);
     try {
-      // TODO: 替换为真实 API 调用
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      message.success(isCreate ? 'SKU创建成功' : 'SKU更新成功');
+      // 价格：表单输入为元，转换为分
+      const clientPriceYuan = Number(values.clientPrice) || 0;
+      const clientPriceCents = Math.round(clientPriceYuan * 100);
+
+      const payload: Omit<SKU, 'id' | 'createdAt' | 'updatedAt'> = {
+        name: String(values.name || ''),
+        businessLine: values.businessLine as BusinessLine,
+        actorProfile: {
+          style: String(values.style || ''),
+          tierRange: String(values.tierRange || ''),
+          count: Number(values.count) || 1,
+        },
+        internalPrice: Math.round(clientPriceCents * 0.67),
+        companyPrice: Math.round(clientPriceCents * 0.7),
+        clientPrice: clientPriceCents,
+        duration: Number(values.duration) || 60,
+        scenarios: String(values.scenarios || '')
+          .split(/[、,;，；]/)
+          .map((s) => s.trim())
+          .filter(Boolean),
+        sampleVideos: [],
+        status: 'draft',
+      };
+
+      if (isCreate) {
+        await createSKU(payload);
+        message.success('SKU创建成功');
+      } else {
+        await updateSKU(params.id!, payload);
+        message.success('SKU更新成功');
+      }
       history.push('/sku/list');
-    } catch {
-      message.error('操作失败，请重试');
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '操作失败，请重试');
     } finally {
       setSubmitting(false);
     }

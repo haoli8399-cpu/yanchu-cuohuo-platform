@@ -8,14 +8,17 @@
  * - UX-3: 加载用骨架屏
  * - UX-4: 空状态显示引导文案
  * - UX-5: 错误显示友好提示 + 重试按钮
+ * - API-7: 所有 API 调用通过 apiClient
+ * - G-4: 不提交 console.log / debugger
  */
-import React, { useRef, useState, useCallback } from 'react';
-import { PageContainer, ProTable, ModalForm, ProFormText, ProFormSelect, ProFormDigit, ProFormTextArea, ProForm } from '@ant-design/pro-components';
+import React, { useRef, useState } from 'react';
+import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { Button, Tag, Space, Popconfirm, message, Empty, Result } from 'antd';
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import type { SKU, BusinessLine } from '@/types/sku';
+import type { SKU } from '@/types/sku';
 import { BusinessLineLabel } from '@/types/sku';
+import { getSKUList, deleteSKU, toggleSKUStatus } from '@/services/sku';
 
 // 状态标签颜色映射
 const statusColorMap: Record<SKU['status'], string> = {
@@ -30,45 +33,6 @@ const statusLabelMap: Record<SKU['status'], string> = {
   draft: '草稿',
 };
 
-/** 业务线选项 */
-const businessLineOptions = Object.entries(BusinessLineLabel).map(
-  ([value, label]) => ({ label, value }),
-);
-
-/** 模拟数据（待后端API就绪后替换为真实数据） */
-const mockData: SKU[] = [
-  {
-    id: '1',
-    name: '脱口秀专场 · 60min标准版',
-    businessLine: 'commercial_show',
-    actorProfile: { style: '脱口秀', tierRange: 'T2-T4', count: 2 },
-    internalPrice: 80000,
-    companyPrice: 84000,
-    clientPrice: 120000,
-    duration: 60,
-    scenarios: ['企业年会', '品牌发布会', '商场开业'],
-    sampleVideos: [],
-    status: 'online',
-    createdAt: '2026-07-01T10:00:00Z',
-    updatedAt: '2026-07-01T10:00:00Z',
-  },
-  {
-    id: '2',
-    name: '即兴喜剧互动 · 30min',
-    businessLine: 'outdoor_show',
-    actorProfile: { style: '即兴喜剧', tierRange: 'T3-T5', count: 3 },
-    internalPrice: 60000,
-    companyPrice: 63000,
-    clientPrice: 90000,
-    duration: 30,
-    scenarios: ['户外音乐节', '市集活动'],
-    sampleVideos: [],
-    status: 'online',
-    createdAt: '2026-06-28T08:00:00Z',
-    updatedAt: '2026-06-28T08:00:00Z',
-  },
-];
-
 /** 价格格式化（分 → 元） */
 function formatPrice(cents: number): string {
   return `¥${(cents / 100).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
@@ -76,9 +40,31 @@ function formatPrice(cents: number): string {
 
 const SKUListPage: React.FC = () => {
   const actionRef = useRef<ActionType>();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+
+  /** 删除 SKU */
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteSKU(id);
+      message.success('SKU已删除');
+      actionRef.current?.reload();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '删除失败');
+    }
+  };
+
+  /** 上架/下架切换 */
+  const handleToggleStatus = async (id: string, currentStatus: SKU['status']) => {
+    const targetStatus = currentStatus === 'online' ? 'offline' : 'online';
+    const actionLabel = targetStatus === 'online' ? '上架' : '下架';
+    try {
+      await toggleSKUStatus(id, targetStatus);
+      message.success(`SKU已${actionLabel}`);
+      actionRef.current?.reload();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : `${actionLabel}失败`);
+    }
+  };
 
   const columns: ProColumns<SKU>[] = [
     {
@@ -169,7 +155,6 @@ const SKUListPage: React.FC = () => {
             icon={<EyeOutlined />}
             style={{ minHeight: 44, minWidth: 44 }}
             onClick={() => {
-              // 跳转详情页
               window.location.hash = `#/sku/detail/${record.id}`;
             }}
           >
@@ -186,13 +171,18 @@ const SKUListPage: React.FC = () => {
           >
             编辑
           </Button>
+          <Button
+            type="link"
+            size="small"
+            style={{ minHeight: 44, minWidth: 44 }}
+            onClick={() => handleToggleStatus(record.id, record.status)}
+          >
+            {record.status === 'online' ? '下架' : '上架'}
+          </Button>
           <Popconfirm
             title="确定删除该SKU？"
             description="删除后不可恢复"
-            onConfirm={async () => {
-              message.success('SKU已删除');
-              actionRef.current?.reload();
-            }}
+            onConfirm={() => handleDelete(record.id)}
             okText="确定"
             cancelText="取消"
           >
@@ -261,38 +251,26 @@ const SKUListPage: React.FC = () => {
             新增SKU
           </Button>,
         ]}
-        request={async (params, sort, filter) => {
-          setLoading(true);
+        request={async (params, sort) => {
           setError(null);
           try {
-            // TODO: 替换为真实 API 调用 getSKUList()
-            // 模拟网络延迟
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            let data = [...mockData];
-
-            // 模拟筛选
-            if (params.businessLine) {
-              data = data.filter((item) => item.businessLine === params.businessLine);
-            }
-            if (params.status) {
-              data = data.filter((item) => item.status === params.status);
-            }
-            if (params.name) {
-              data = data.filter((item) =>
-                item.name.toLowerCase().includes(params.name.toLowerCase()),
-              );
-            }
-
+            const page = params.current || 1;
+            const pageSize = params.pageSize || 10;
+            const res = await getSKUList({
+              page,
+              pageSize,
+              keyword: params.name,
+              businessLine: params.businessLine as SKU['businessLine'] | undefined,
+              status: params.status as SKU['status'] | undefined,
+            });
             return {
-              data,
+              data: res.data.items,
               success: true,
-              total: data.length,
+              total: res.data.total,
             };
           } catch (err) {
             setError(err instanceof Error ? err : new Error('加载失败'));
             return { data: [], success: false, total: 0 };
-          } finally {
-            setLoading(false);
           }
         }}
         columns={columns}
