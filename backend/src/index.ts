@@ -14,6 +14,13 @@ const PORT = Number(process.env.PORT) || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 
+// 扩展 Fastify 类型声明（必须在 decorateRequest 之前）
+declare module 'fastify' {
+  interface FastifyRequest {
+    user: JwtPayload | null;
+  }
+}
+
 // ---- Fastify 实例 ----
 const app = Fastify({
   logger: {
@@ -39,20 +46,12 @@ await app.register(cors, {
 await app.register(fjwt, {
   secret: JWT_SECRET,
   verify: {
-    // Supabase Auth 使用 HS256 签名
     algorithms: ['HS256'],
   },
 });
 
 // JWT 解码后的 payload 注入到 request.user
-app.decorateRequest('user', undefined);
-
-// 扩展 Fastify 类型声明
-declare module 'fastify' {
-  interface FastifyRequest {
-    user?: JwtPayload;
-  }
-}
+app.decorateRequest('user', null);
 
 // ============================================================
 // 错误处理

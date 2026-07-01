@@ -34,8 +34,9 @@ export async function authMiddleware(
     }
 
     request.user = decoded;
-  } catch (err) {
-    if ((err as { code?: string }).code === 'FAST_JWT_EXPIRED') {
+  } catch (err: unknown) {
+    const fastifyErr = err as { code?: string };
+    if (fastifyErr.code === 'FAST_JWT_EXPIRED') {
       reply.status(401).send(errorResponse(1003, 'Token 已过期'));
       return;
     }
@@ -73,7 +74,7 @@ export function requireRole(
     request: FastifyRequest,
     reply: FastifyReply
   ): Promise<void> {
-    const user = request.user as JwtPayload;
+    const user = request.user;
 
     if (!user || !roles.includes(user.role)) {
       reply.status(403).send(errorResponse(1005, '权限不足'));
@@ -84,7 +85,7 @@ export function requireRole(
 
 /**
  * 可选认证中间件
- * 有 Token 则验证注入 user，无 Token 则继续（user 为 undefined）
+ * 有 Token 则验证注入 user，无 Token 则继续（user 为 null）
  */
 export async function optionalAuth(
   request: FastifyRequest,
@@ -102,6 +103,6 @@ export async function optionalAuth(
       request.user = decoded;
     }
   } catch {
-    // 可选认证失败不拦截，user 保持 undefined
+    // 可选认证失败不拦截，user 保持 null
   }
 }

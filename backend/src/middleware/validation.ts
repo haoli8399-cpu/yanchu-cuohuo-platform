@@ -65,10 +65,9 @@ export function validate(
  * 创建 Zod 校验的 JSON Schema（兼容 Fastify 内置校验）
  * 用于声明式路由注册
  */
-export function zodToJsonSchema(schema: ZodType): object {
+export function zodToJsonSchema(_schema: ZodType): object {
   // 将 Zod schema 转为 JSON Schema 供 Fastify schema 选项使用
-  // 简化实现：直接使用 zod-to-json-schema 转换
-  // 生产环境建议使用 @fastify/type-provider-zod
+  // 简化实现：生产环境建议使用 @fastify/type-provider-zod 或 zod-to-json-schema
   return {
     type: 'object',
     properties: {},

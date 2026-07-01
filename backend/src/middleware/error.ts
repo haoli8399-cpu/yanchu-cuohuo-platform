@@ -3,7 +3,7 @@
 // 捕获所有未处理异常，按统一响应格式返回
 // ============================================================
 
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyError } from 'fastify';
 import type { ApiResponse } from '../types/index.js';
 
 /**
@@ -13,7 +13,7 @@ import type { ApiResponse } from '../types/index.js';
 export class AppError extends Error {
   public readonly code: number;
   public readonly statusCode: number;
-  public readonly cause?: unknown;
+  public override readonly cause: unknown;
 
   constructor(
     code: number,
@@ -62,7 +62,7 @@ export const Errors = {
  * 注册全局错误处理器到 Fastify 实例
  */
 export function registerErrorHandler(app: FastifyInstance): void {
-  app.setErrorHandler((error, request, reply) => {
+  app.setErrorHandler((error: FastifyError, request, reply) => {
     // 已发送响应则快速退出
     if (reply.sent) {
       return;

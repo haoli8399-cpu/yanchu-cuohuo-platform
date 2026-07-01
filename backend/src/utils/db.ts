@@ -29,7 +29,7 @@ const poolConfig: pg.PoolConfig = {
 const pool = new Pool(poolConfig);
 
 // 连接池错误监听
-pool.on('error', (err) => {
+pool.on('error', (err: Error) => {
   console.error('[DB] 连接池异常:', err.message);
 });
 
@@ -37,10 +37,10 @@ pool.on('error', (err) => {
  * 执行 SQL 查询（参数化）
  *
  * 示例：
- *   const result = await query('SELECT * FROM users WHERE id = $1', [userId]);
+ *   const result = await query<{ id: string }>('SELECT id FROM users WHERE id = $1', [userId]);
  *   const rows = result.rows;
  */
-export async function query<T = Record<string, unknown>>(
+export async function query<T extends pg.QueryResultRow = Record<string, unknown>>(
   text: string,
   params?: unknown[]
 ): Promise<pg.QueryResult<T>> {
