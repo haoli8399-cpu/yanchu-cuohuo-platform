@@ -116,13 +116,13 @@ const PerformerDetailPage: React.FC = () => {
     // 同时加载咖位建议和历史
     getTierSuggestion(performerId)
       .then((res) => setTierSuggestion(res.data))
-      .catch(() => {});
+      .catch((e) => console.error('加载咖位建议失败:', e));
     getTierHistory(performerId)
       .then((res) => setTierHistory(res.data))
-      .catch(() => {});
+      .catch((e) => console.error('加载咖位历史失败:', e));
     getCreditDetail(performerId)
       .then((res) => setCreditDetail(res.data))
-      .catch(() => {});
+      .catch((e) => console.error('加载信誉分明细失败:', e));
   }, [performerId]);
 
   /** 手动调整咖位 */
@@ -138,7 +138,7 @@ const PerformerDetailPage: React.FC = () => {
       // 重新加载咖位历史
       getTierHistory(performerId)
         .then((res) => setTierHistory(res.data))
-        .catch(() => {});
+        .catch((e) => console.error('加载咖位历史失败:', e));
     } catch (err) {
       message.error(err instanceof Error ? err.message : '调整失败');
     } finally {
