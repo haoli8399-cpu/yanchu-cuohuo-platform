@@ -9,17 +9,18 @@ import fjwt from '@fastify/jwt';
 import { registerErrorHandler } from './middleware/error.js';
 import type { JwtPayload } from './types/index.js';
 
+// ---- 扩展 @fastify/jwt 类型 ----
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    payload: JwtPayload;
+    user: JwtPayload;
+  }
+}
+
 // ---- 环境变量 ----
 const PORT = Number(process.env.PORT) || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-
-// 扩展 Fastify 类型声明（必须在 decorateRequest 之前）
-declare module 'fastify' {
-  interface FastifyRequest {
-    user: JwtPayload | null;
-  }
-}
 
 // ---- Fastify 实例 ----
 const app = Fastify({
@@ -36,22 +37,17 @@ const app = Fastify({
 // 插件注册
 // ============================================================
 
-/** CORS */
 await app.register(cors, {
   origin: process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:3000'],
   credentials: true,
 });
 
-/** JWT（验证 Supabase Auth 签发的 Token） */
 await app.register(fjwt, {
   secret: JWT_SECRET,
   verify: {
     algorithms: ['HS256'],
   },
 });
-
-// JWT 解码后的 payload 注入到 request.user
-app.decorateRequest('user', null);
 
 // ============================================================
 // 错误处理
@@ -79,10 +75,10 @@ app.get('/v1/health', async (_request, reply) => {
 async function start(): Promise<void> {
   try {
     await app.listen({ port: PORT, host: HOST });
-    app.log.info(`🚀 服务已启动: http://${HOST}:${PORT}`);
-    app.log.info(`📋 健康检查: http://${HOST}:${PORT}/v1/health`);
+    app.log.info('Service started on http://' + HOST + ':' + PORT);
+    app.log.info('Health check: http://' + HOST + ':' + PORT + '/v1/health');
   } catch (err) {
-    app.log.error(err, '服务启动失败');
+    app.log.error(err, 'Service start failed');
     process.exit(1);
   }
 }
@@ -91,7 +87,7 @@ async function start(): Promise<void> {
 // 优雅关闭
 // ============================================================
 async function shutdown(signal: string): Promise<void> {
-  app.log.info(`收到 ${signal} 信号，开始优雅关闭...`);
+  app.log.info('Received ' + signal + ', shutting down...');
   await app.close();
   process.exit(0);
 }
@@ -99,5 +95,4 @@ async function shutdown(signal: string): Promise<void> {
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
-// 启动
 start();
