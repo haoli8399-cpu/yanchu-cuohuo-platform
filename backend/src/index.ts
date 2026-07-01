@@ -17,6 +17,11 @@ import performerRoutes from './api/performers.js';
 import priceConfigRoutes from './api/price-configs.js';
 import settlementRoutes from './api/settlements.js';
 import assignmentRoutes from './api/assignments.js';
+import reviewRoutes from './api/reviews.js';
+import companyRoutes from './api/companies.js';
+import adminRoutes from './api/admin.js';
+import notificationRoutes from './api/notifications.js';
+import authRoutes from './api/auth.js';
 
 // ---- 扩展 @fastify/jwt 类型 ----
 declare module '@fastify/jwt' {
@@ -91,6 +96,11 @@ await app.register(performerRoutes, { prefix: '/v1/performers' });
 await app.register(priceConfigRoutes, { prefix: '/v1/price-configs' });
 await app.register(settlementRoutes, { prefix: '/v1/settlements' });
 await app.register(assignmentRoutes, { prefix: '/v1/assignments' });
+await app.register(authRoutes, { prefix: '/v1/auth' });
+await app.register(reviewRoutes, { prefix: '/v1/reviews' });
+await app.register(companyRoutes, { prefix: '/v1/companies' });
+await app.register(adminRoutes, { prefix: '/v1/admin' });
+await app.register(notificationRoutes, { prefix: '/v1/notifications' });
 
 // ============================================================
 // 启动服务器
