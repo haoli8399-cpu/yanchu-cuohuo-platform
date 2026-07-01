@@ -1,0 +1,38 @@
+# Node.js
+node_modules/
+dist/
+.next/
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+env/
+.env
+*.egg-info/
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 环境变量
+.env.local
+.env.production
+
+# 日志
+*.log
+logs/
+
+# 临时文件
+tmp/
+temp/
