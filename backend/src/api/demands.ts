@@ -15,6 +15,8 @@ import {
   normalizePagination,
   createdResponse,
 } from '../utils/response.js';
+import { generateAiPlan } from '../services/ai.js';
+import type { DemandPromptInput } from '../services/ai.js';
 import type {
   DemandStatus,
   DemandSource,
@@ -647,7 +649,7 @@ export default async function demandRoutes(app: FastifyInstance): Promise<void> 
 
   // ==========================================================
   // POST /v1/demands/:id/ai-plan - 触发 AI 生成方案（admin）
-  // 【占位实现】后续接入真实 AI 调用
+  // 调用 DeepSeek API，失败时自动切换通义千问备选
   // ==========================================================
   app.post(
     '/:id/ai-plan',
@@ -683,22 +685,33 @@ export default async function demandRoutes(app: FastifyInstance): Promise<void> 
         return;
       }
 
-      // 【占位】生成模拟 AI 方案内容
-      const placeholderAiPlan = JSON.stringify({
-        version: '1.0',
-        generated_by: 'ai_placeholder',
-        generated_at: new Date().toISOString(),
-        summary: 'AI方案生成功能开发中，此为占位方案。',
-        recommendations: [
-          {
-            sku_match: demand.sku_id ? '基于选购的SKU进行匹配' : '基于需求描述进行匹配',
-            suggested_performers: [],
-            suggested_duration: demand.duration_minutes || 20,
-            suggested_budget: demand.budget ? Number(demand.budget) : 0,
-            notes: '正式AI方案生成功能将在后续版本实现',
-          },
-        ],
-      });
+      // 构建 AI prompt 输入
+      const promptInput: DemandPromptInput = {
+        event_type: demand.event_type,
+        event_date: demand.event_date ? demand.event_date.split('T')[0] : '',
+        event_time: demand.event_time,
+        city: demand.city,
+        address: demand.address,
+        audience_count: demand.audience_count,
+        duration_minutes: demand.duration_minutes,
+        comedy_style: demand.comedy_style,
+        special_requirements: demand.special_requirements,
+        budget: demand.budget ? Number(demand.budget) : null,
+        venue_name: demand.venue_name,
+        venue_type: demand.venue_type,
+      };
+
+      // 调用 AI 生成方案
+      let aiPlanContent: string;
+      try {
+        const aiPlan = await generateAiPlan(promptInput);
+        aiPlanContent = JSON.stringify(aiPlan);
+      } catch (aiError: unknown) {
+        const errMsg = aiError instanceof Error ? aiError.message : String(aiError);
+        console.error('[AI] 方案生成失败:', errMsg);
+        reply.status(500).send(errorResponse(3006, `AI方案生成失败: ${errMsg}`));
+        return;
+      }
 
       // 追加状态变更到 status_history
       const newEntry: StatusHistoryEntry = {
@@ -717,7 +730,7 @@ export default async function demandRoutes(app: FastifyInstance): Promise<void> 
              status_history = $3::jsonb,
              updated_at = NOW()
          WHERE id = $1`,
-        [id, placeholderAiPlan, JSON.stringify(updatedHistory)]
+        [id, aiPlanContent, JSON.stringify(updatedHistory)]
       );
 
       reply
@@ -727,7 +740,7 @@ export default async function demandRoutes(app: FastifyInstance): Promise<void> 
             {
               id,
               status: 'ai_generated',
-              ai_plan_content: placeholderAiPlan,
+              ai_plan_content: aiPlanContent,
             },
             'AI方案已生成'
           )
