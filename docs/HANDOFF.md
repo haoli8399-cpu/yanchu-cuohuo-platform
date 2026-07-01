@@ -45,7 +45,7 @@
 |------|------|
 | **技术方案文档.md** | 技术架构、开源清单、自建模块、部署方案 |
 | prompts/ai-solution-templates.md | AI方案Prompt模板（5条业务线+3个扩展点） |
-| API_CONTRACT.md | 接口契约（待创建，开发阶段生成） |
+| API_CONTRACT.md | 接口契约（✅ 已创建：16组/51端点） |
 | working_deployment.md | 当前部署状态（待创建，每次部署后更新） |
 
 用户文稿目录：`~/Documents/演出撮合平台建设方案.md`
