@@ -1,8 +1,8 @@
 # 多 Agent 协作开发方案
 
-> 版本：v2.0
+> 版本：v2.1
 > 创建时间：2026-07-01
-> 最后更新：2026-07-01（豪哥确认优化方案：Contract-First + 分层审查 + Peer Review + 集成测试）
+> 最后更新：2026-07-02（v2.1：新增构建验证 + 内容审查 + 风险登记册）
 > 状态：✅ 已确认，正式执行
 
 ---
@@ -27,10 +27,10 @@
 
 | Agent | 职责范围 | 技术栈 | 产物 |
 |-------|---------|--------|------|
-| **Orchestrator**（本窗口） | 契约编写 → 任务拆解 → 派发 → 分层审查 → 集成测试 → 部署验证 → 文档同步 | — | API_CONTRACT.md / 部署 / 文档 |
+| **Orchestrator**（本窗口） | 契约编写 → 任务拆解 → 派发 → 审查 → 构建验证 → 部署验证 → 文档同步 | — | API_CONTRACT.md / 部署 / 文档 |
 | **Agent-Backend** | Schema 迁移、API 实现、数据库、DeepSeek 集成 | Node.js + PostgreSQL | 后端代码 |
-| **Agent-Web** | 运营后台 34 项 + 活动公司工作台 17 项 | Ant Design Pro + React | Web 前端 |
-| **Agent-MiniProgram** | 甲方/活动公司小程序 13 项 + 演员小程序 14 项 | uni-app + NutUI | 小程序前端 |
+| **Agent-Web** | 运营后台 + 活动公司端 | Ant Design Pro / React | Web 前端 |
+| **Agent-MiniProgram** | 甲方/活动公司小程序 + 演员小程序 | uni-app + NutUI | 小程序前端 |
 
 ---
 
@@ -38,11 +38,13 @@
 
 | # | 原则 | 说明 |
 |:-:|------|------|
-| 1 | **Contract-First（契约先行）** | API_CONTRACT.md 必须在一行代码之前完成。前后端 Agent 各自对着同一份契约开发，互不依赖 |
-| 2 | **分层审查** | OC 审规范 + Agent 互相审逻辑 + OC 终审，避免 OC 成为瓶颈 |
-| 3 | **标准化 Context** | 子 Agent 的 context 使用固定模板，逐项填写，不凭记忆 |
-| 4 | **集成测试必经** | 前后端各自自测通过→集成测试→端到端验证，不可跳过 |
-| 5 | **Blocker 优先** | 子 Agent 遇到阻塞立即标记，OC 优先处理 |
+| 1 | **Contract-First** | API_CONTRACT.md 必须在一行代码之前完成 |
+| 2 | **分层审查 + 内容验证** | 规范审查 + 逻辑审查 + 终审，**审查必须包含文件内容抽查** |
+| 3 | **标准化 Context** | 子 Agent 的 context 使用固定模板，逐项填写 |
+| 4 | **构建验证必经** | **所有前端产出必须构建成功并检查输出** |
+| 5 | **部署冒烟测试** | 部署后 curl 验证关键页面内容（标题/数据） |
+| 6 | **Blocker 优先** | 子 Agent 遇到阻塞立即标记，OC 优先处理 |
+| 7 | **单次 ≤3 任务** | 每次派发给 Agent 的任务不超过 3 个，防止上下文过载 |
 
 ---
 
@@ -53,7 +55,7 @@ Phase 1：契约先行（OC 独立完成）
 ─────────────────────────────────────
   OC 编写 API_CONTRACT.md
     ├── 所有端点：路径 / 方法 / 入参 / 出参 / 错误码
-    ├── 所有类型定义：User / SKU / Demand / Order / Performer ...
+    ├── 所有类型定义
     └── 豪哥确认 → FREEZE → commit
 
 Phase 2-N：迭代开发（OC + 1-2 子 Agent）
@@ -62,7 +64,7 @@ Phase 2-N：迭代开发（OC + 1-2 子 Agent）
   OC 拆解本轮任务
     │
     ├── 读 FREEZE.md → 确认约束
-    ├── 读 开发任务清单.md → 选待执行任务
+    ├── 读 开发任务清单.md → 选待执行任务（每次 ≤3 个）
     ├── 构建标准化 context（按模板逐项填写）
     └── delegate_task 派发（1-2 个并行）
     │
@@ -72,98 +74,81 @@ Phase 2-N：迭代开发（OC + 1-2 子 Agent）
     ├── 读 FREEZE.md → API_CONTRACT.md → CODE_STANDARDS.md
     ├── 写代码 + 自测
     ├── 遇到阻塞 → 标记 blocker（含阻塞原因 + 需要谁决策）
-    └── 返回标准结果（代码路径 + 变更摘要 + 自测 + docs_to_update）
+    └── 返回标准结果（代码路径 + 变更摘要 + 自测 + 附构建日志）
     │
     ▼
   ┌─────────────────────────────────────────────┐
   │  分层审查（三层）                              │
   │                                               │
   │  第一层：OC 审规范 (5 min)                      │
-  │    自动检查项：SQL注入/参数化查询/类型/格式       │
+  │    grep 扫描：SQL注入/参数化/any类型/console   │
+  │    ls 检查：文件是否存在                        │
   │                                               │
   │  第二层：Agent 交叉审逻辑 (10 min)              │
   │    BE 审 Web 的 API 调用方式                   │
   │    Web 审 MP 的接口调用逻辑                     │
-  │    (如果只有一个 Agent 产出，跳过此层)          │
   │                                               │
-  │  第三层：OC 终审 (5 min)                       │
-  │    整体架构 / 边界条件 / 与 FREEZE 一致性        │
+  │  第三层：OC 终审 (5 min) ★ 新增内容审查         │
+  │    架构合理性 / FREEZE一致性 / 边界条件         │
+  │    ★ 打开 1-2 个关键文件，审查实际业务内容       │
+  │    ★ 前端：检查页面标题/核心文案是否匹配需求     │
   └─────────────────────────────────────────────┘
     │
     ├── 任何一层不通过 → 打回子 Agent（附审查意见）
-    └── 全通过 → 进入集成测试
+    └── 全通过 → 进入构建验证
     │
     ▼
-  OC 集成测试
+  OC 构建验证 ★ 新增环节
     │
-    ├── 后端 API + 前端页面 联调验证
-    ├── 检查 API 契约一致性（请求/响应是否与 CONTRACT 一致）
-    └── 通过 → 进入部署验证
+    ├── 后端：npm run typecheck（如有）/ API自测
+    ├── 前端：npm run build → 检查 dist/index.html 标题
+    ├── 小程序：微信开发者工具编译检查
+    ├── 构建失败 → 打回子 Agent
+    └── 通过 → 进入部署冒烟测试
     │
     ▼
-  OC 部署验证
+  OC 部署冒烟测试 ★ 增强环节
     │
-    ├── 后端：部署到腾讯云 → 跑 API 测试 → 查日志
-    ├── 前端：构建 → 本地预览
+    ├── 后端：部署 → curl 关键 API → 检查返回数据
+    ├── 前端：部署 → curl 页面 → grep <title> 验证
+    ├── 验证失败 → 回滚 + 修复
     └── 通过 → 进入完成
     │
     ▼
   OC 完成流程
     │
     ├── 更新 开发任务清单.md（状态变更）
-    ├── 更新 API_CONTRACT.md（如有新增接口）
-    ├── 更新 working_deployment.md（部署状态）
+    ├── 更新 API_CONTRACT.md（如有变更）
+    ├── 更新 working_deployment.md
     ├── commit + push
-    └── 向豪哥汇报（附完整任务清单 + 进度标注）
+    └── 汇报（附完整任务清单 + 进度）
 ```
 
 ---
 
 ## 四、标准化 Context 模板
 
-> OC 派发任务时必须逐项填写，不可遗漏。
-
 ```yaml
 task:
-  id: "任务编号（对应开发任务清单.md）"
+  id: "任务编号"
   goal: "一句话任务目标"
   priority: "P0/P1/P2"
 
 context:
-  # 必须提供的文档清单
   required_docs:
     - "docs/FREEZE.md"
     - "docs/API_CONTRACT.md"
     - "docs/CODE_STANDARDS.md"
-  
-  # 业务相关文档
-  business_docs:
-    - "docs/产品功能清单.md  # 当前任务对应功能：P-22"
-  
-  # 技术约束
-  tech_constraints:
-    - "数据库：PostgreSQL 参数化查询"
-    - "API 响应格式：{ code, data, message }"
-  
-  # FREEZE 提醒（关键约束摘要）
-  freeze_reminders:
-    - "活动公司价 = 甲方标准价 × 0.7"
-    - "不做在线支付，全部线下登记"
-  
-  # 已有代码（如有）
-  existing_code:
-    - "backend/src/api/skus.ts  # 参考已有 SKU API 写法"
-  
-  # 接口定义（本次任务涉及的 API）
-  api_contract:
-    endpoint: "POST /v1/skus"
-    request: '{ name: string, ... }'
-    response: '{ code: 0, data: { id: uuid } }'
+  business_docs: ["相关业务文档路径"]
+  tech_constraints: ["技术约束"]
+  freeze_reminders: ["关键 FREEZE 决策摘要"]
+  existing_code: ["已有代码参考"]
+  api_contract: { endpoint, request, response }
 
 result_format:
   code_paths: ["变更文件列表"]
   change_summary: "一句话描述"
-  self_test: { passed: true, notes: "..." }
+  self_test: { passed: true, notes: "...", build_log: "附构建输出" }
   docs_to_update: ["需同步更新的文档"]
   known_issues: ["已知问题"]
   blocker: { exists: false, reason: "", needs_decision_from: "" }
@@ -171,35 +156,31 @@ result_format:
 
 ---
 
-## 五、子 Agent 标准返回格式（含 Blocker）
+## 五、子 Agent 标准返回格式
 
 ```yaml
 result:
-  code_paths:
-    - "backend/src/api/skus.ts"
-    - "backend/src/schema/skus.sql"
-  change_summary: "实现 SKU CRUD API：新增/编辑/列表/上下架 4 个端点"
+  code_paths: ["变更文件列表"]
+  change_summary: "一句话描述"
   self_test:
     passed: true
-    notes: "4 个端点均返回正确数据，边界条件已覆盖"
-  docs_to_update:
-    - "API_CONTRACT.md  # /v1/skus 端点已实现，契约无变化"
-    - "working_deployment.md  # skus 表迁移完成"
-  known_issues:
-    - "上下架权限校验待 P-32 RBAC 完成后补充"
+    notes: "自测说明"
+    build_output: "附构建命令输出的最后5行"  # ★ 新增：前端必填
+  docs_to_update: ["需同步更新的文档"]
+  known_issues: ["已知问题"]
   blocker:
     exists: false
     reason: ""
     needs_decision_from: ""
 ```
 
-> **Blocker 规则**：子 Agent 遇到阻塞（如 API_CONTRACT 与实际行为矛盾、技术方案不可行），立即在返回结果中设置 `blocker.exists: true`。OC 在审查前先检查 blocker，有阻塞优先处理。
+> **Blocker 规则**：子 Agent 遇到阻塞，立即设置 `blocker.exists: true`。OC 审查前先检查 blocker。
 
 ---
 
-## 六、分层审查标准
+## 六、审查标准（v2.1 增强版）
 
-### 第一层：OC 审规范（CODE_STANDARDS 机械检查）
+### 第一层：OC 审规范（机械检查，5min）
 
 | # | 检查项 | 方式 |
 |:-:|--------|:--:|
@@ -207,42 +188,43 @@ result:
 | 2 | TypeScript `any` 使用 | grep 扫描 |
 | 3 | API 响应格式是否统一 | 对照 CONTRACT |
 | 4 | `console.log` / `debugger` | grep 扫描 |
-| 5 | `.env` 文件是否误提交 | git diff --staged |
+| 5 | `.env` 文件是否误提交 | git diff |
+| 6 | 文件是否存在 | ls 检查 |
+| 7 | ★ 前端产出：检查 index.html 标题 | `grep '<title>'` |
 
-> 第一层审查由 OC 在 5 分钟内完成。不通过的项直接打回，附 grep 扫描结果。
-
-### 第二层：Agent 交叉审逻辑
+### 第二层：Agent 交叉审逻辑（10min）
 
 | 审查者 | 被审查者 | 审查重点 |
 |:------:|:--------:|------|
 | Agent-BE | Agent-Web | API 调用路径/参数/响应处理 是否与 CONTRACT 对齐 |
 | Agent-Web | Agent-MP | 接口调用逻辑/状态处理/边界条件 |
 
-> 通过 delegate_task 派发审查任务。审查 Agent 返回通过/不通过+具体问题。
+### 第三层：OC 终审（5min）★ 强化
 
-### 第三层：OC 终审
-
-| # | 检查项 |
-|:-:|------|
-| 1 | 整体架构是否合理 |
-| 2 | 是否违反 FREEZE 决策 |
-| 3 | 边界条件是否覆盖 |
-| 4 | 与其他 Agent 的代码是否有冲突 |
+| # | 检查项 | 方式 |
+|:-:|------|:--:|
+| 1 | 整体架构是否合理 | 审查 |
+| 2 | 是否违反 FREEZE 决策 | 对照 FREEZE.md |
+| 3 | 边界条件是否覆盖 | 审查 |
+| 4 | ★ 打开 1-2 个关键页面文件 | `read_file` 抽查内容 |
+| 5 | ★ 前端：页面标题/文案/布局是否符合需求 | 业务对照 |
 
 ---
 
-## 七、完成定义（DoD）
+## 七、完成定义（DoD v2.1）
 
-> 以下 6 项全部通过才算任务完成：
+> 以下 8 项全部通过才算完成：
 
-| # | 条件 | 验证人 |
-|:-:|------|:------:|
-| 1 | 代码审查三层全部通过 | OC |
-| 2 | 集成测试通过 | OC |
-| 3 | 部署验证通过 | OC |
-| 4 | 开发任务清单.md 已更新 | OC |
-| 5 | API_CONTRACT.md 已同步（如有变更） | OC |
-| 6 | commit + push | OC |
+| # | 条件 | v2.1 |
+|:-:|------|:----:|
+| 1 | 代码审查三层全部通过 | — |
+| 2 | ★ 构建验证通过 | 新增 |
+| 3 | ★ 部署冒烟测试通过（curl + 内容验证） | 增强 |
+| 4 | 开发任务清单.md 已更新 | — |
+| 5 | API_CONTRACT.md 已同步 | — |
+| 6 | commit + push | — |
+| 7 | ★ 前端：dist/index.html 标题抽查通过 | 新增 |
+| 8 | ★ Agent 返回了 build_output 证据 | 新增 |
 
 ---
 
@@ -252,9 +234,10 @@ result:
 |------|------|
 | **Contract-First 铁律** | API_CONTRACT.md 完成前，不派发任何代码任务 |
 | **最多 2 并发** | 一次最多派发 2 个子 Agent |
+| **★ 单 Agent ≤3 任务** | 每次派发不超过 3 个任务，防止过载跑偏 |
 | **无依赖可并行** | 不共享文件的 Agent 可同时开工 |
 | **有依赖串行** | Schema → API → 前端（按依赖链） |
-| **Blocker 优先** | 子 Agent 标记阻塞 → OC 立即中断当前审查，优先处理 |
+| **Blocker 优先** | 子 Agent 标记阻塞 → OC 立即中断当前审查 |
 
 ---
 
@@ -264,14 +247,40 @@ result:
 |:-:|------|
 | 1 | **Contract-First：API_CONTRACT 不在代码之前完成 = 不允许写代码** |
 | 2 | 不跳过任何一层审查 |
-| 3 | 不跳过集成测试 |
-| 4 | 不在审查通过前 commit |
-| 5 | 不让同一个 bug 出现两次（出 bug 后更新审查清单） |
-| 6 | 每完成一个模块 → commit + push |
-| 7 | 文档与代码同步更新 |
-| 8 | OC 写文档，子 Agent 只读不写 |
+| 3 | **★ 不跳过构建验证（前端必 build 并检查输出）** |
+| 4 | **★ 不跳过部署冒烟测试（curl + grep 验证页面内容）** |
+| 5 | 不跳过集成测试 |
+| 6 | 不让同一个 bug 出现两次（出 bug 后更新风险登记册） |
+| 7 | 每完成一个模块 → commit + push |
+| 8 | 文档与代码同步更新 |
+| 9 | **★ 审查必须包含内容抽查，不止文件存在性** |
 
 ---
 
-> 版本：v2.0
+## 十、风险登记册 ★ 新增
+
+### 已知风险（已发生）
+
+| # | 风险 | 影响 | 发生次数 | 缓解措施 |
+|:-:|------|:--:|:----:|------|
+| R1 | **Agent 产出"表面正确、内容错误"** | 页面内容完全偏离需求 | 1次 | 构建验证 + 内容抽查 + curl 冒烟测试 |
+| R2 | **Agent 产出"描述未产出"** | 报告说完成了但文件没写入 | 3次 | 第一层审查的 ls 检查（已有，但需严格执行） |
+| R3 | **服务器内存不足（2C2G）** | API 崩溃、SSH 超时 | 多次 | 精简部署（裸机替代Docker）、计划升 2C4G |
+| R4 | **Git push 超时** | 网络波动导致推送失败 | 多次 | `http.version=HTTP/1.1`、重试、后台推送 |
+| R5 | **macOS SIGTRAP（tsc 崩溃）** | 本地 TypeScript 检查不可靠 | 持续 | 不依赖本地 tsc 输出作为"无错误"证据 |
+| R6 | **子 Agent UUID 格式错误** | 种子数据无法导入数据库 | 1次 | 第一层审查增加 UUID 正则校验 |
+
+### 潜在风险（未发生，需关注）
+
+| # | 风险 | 影响 | 预防措施 |
+|:-:|------|:--:|------|
+| P1 | **Agent 修改他人已读文件** | 代码冲突、覆盖 | OC 在派发前标识文件归属 |
+| P2 | **多 Agent 并行修改同一文件** | merge 冲突 | 严格控制并行 Agent 的文件交集 |
+| P3 | **后端 API 认证中间件被绕过** | 安全漏洞 | 第三层审查检查所有端点 preHandler |
+| P4 | **Agent 上下文污染** | 前次任务残留影响本次 | 每次派发重新构建 context，不依赖"历史记忆" |
+
+---
+
+> 版本：v2.1
 > 触发方式：豪哥说「请执行多Agent协作方案」→ OC 自动按本文档全流程执行
+> 变更记录：v2.1 (2026-07-02) — 新增构建验证、部署冒烟测试、内容抽查、单次≤3任务、风险登记册
