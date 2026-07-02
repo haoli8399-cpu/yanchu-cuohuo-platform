@@ -1,47 +1,33 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider, App as AntApp } from 'antd';
+import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
-import { AuthProvider } from './contexts/AuthContext';
-import MainLayout from './layouts/MainLayout';
-import LoginPage from './pages/Login';
-import SkuListPage from './pages/SkuList';
-import SkuDetailPage from './pages/SkuDetail';
-import SubmitRequestPage from './pages/SubmitRequest';
-import RequestHistoryPage from './pages/RequestHistory';
-import DemandDetailPage from './pages/DemandDetail';
-import FloatingPhoneButton from './components/FloatingPhoneButton';
+import Login from './pages/Login';
+import SkuList from './pages/SkuList';
+import SkuDetail from './pages/SkuDetail';
+import SubmitRequest from './pages/SubmitRequest';
+import RequestHistory from './pages/RequestHistory';
+import { AuthProvider, useAuth } from './services/auth';
 
-export default function App(): React.ReactElement {
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { token } = useAuth();
+  if (!token) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+export default function App() {
   return (
-    <ConfigProvider
-      locale={zhCN}
-      theme={{
-        token: {
-          colorPrimary: '#1677ff',
-          borderRadius: 6,
-        },
-      }}
-    >
-      <AntApp>
-        <AuthProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route element={<MainLayout />}>
-                {/* 默认重定向到 SKU 浏览 */}
-                <Route index element={<Navigate to="/skus" replace />} />
-                <Route path="skus" element={<SkuListPage />} />
-                <Route path="skus/:id" element={<SkuDetailPage />} />
-                <Route path="demands/new" element={<SubmitRequestPage />} />
-                <Route path="demands/:id" element={<DemandDetailPage />} />
-                <Route path="demands" element={<RequestHistoryPage />} />
-                <Route path="login" element={<LoginPage />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-          {/* W-13: 全局悬浮电话按钮 */}
-          <FloatingPhoneButton />
-        </AuthProvider>
-      </AntApp>
+    <ConfigProvider locale={zhCN} theme={{ token: { colorPrimary: '#7c3aed' } }}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<SkuList />} />
+            <Route path="/skus/:id" element={<SkuDetail />} />
+            <Route path="/demands/new" element={<ProtectedRoute><SubmitRequest /></ProtectedRoute>} />
+            <Route path="/demands" element={<ProtectedRoute><RequestHistory /></ProtectedRoute>} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </ConfigProvider>
   );
 }

@@ -1,150 +1,55 @@
-import type { ApiResponse } from '../types';
+// API 客户端
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
-
-/** 业务错误 */
 export class ApiError extends Error {
-  code: number;
-  constructor(code: number, message: string) {
+  constructor(public code: number, message: string) {
     super(message);
-    this.code = code;
-    this.name = 'ApiError';
   }
 }
 
-let token: string | null = null;
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = localStorage.getItem('token');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
 
-/** 设置 token（登录后调用） */
-export function setToken(t: string): void {
-  token = t;
-  localStorage.setItem('auth_token', t);
-}
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const data = await res.json();
 
-/** 清除 token（登出时调用） */
-export function clearToken(): void {
-  token = null;
-  localStorage.removeItem('auth_token');
-}
-
-/** 从 localStorage 恢复 token */
-export function loadToken(): string | null {
-  if (!token) {
-    token = localStorage.getItem('auth_token');
-  }
-  return token;
-}
-
-/**
- * 通用请求封装
- * - 自动注入 Bearer Token
- * - 统一错误处理
- * - 返回 data 部分（已解包）
- */
-async function request<T>(
-  endpoint: string,
-  options: RequestInit = {},
-): Promise<T> {
-  const url = `${API_BASE}${endpoint}`;
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string> ?? {}),
-  };
-
-  const currentToken = loadToken();
-  if (currentToken) {
-    headers['Authorization'] = `Bearer ${currentToken}`;
-  }
-
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
-
-  const body: ApiResponse<T> = await response.json();
-
-  if (body.code !== 0) {
-    throw new ApiError(body.code, body.message || '请求失败');
-  }
-
-  return body.data;
-}
-
-// ============ 公开 API（无需 token） ============
-
-/** 发送短信验证码 */
-export async function sendPhoneCode(phone: string): Promise<{ expire_seconds: number }> {
-  return request<{ expire_seconds: number }>('/auth/phone-code', {
-    method: 'POST',
-    body: JSON.stringify({ phone }),
-  });
-}
-
-/** 获取 SKU 列表 */
-export async function getSkuList(params: Record<string, string | number | undefined>): Promise<unknown> {
-  const query = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== '') {
-      query.set(key, String(value));
+  if (data.code !== 0) {
+    if (data.code === 1001 || data.code === 1003) {
+      localStorage.clear();
+      window.location.href = '/login';
     }
+    throw new ApiError(data.code, data.message);
   }
-  return request('/skus?' + query.toString());
+  return data.data;
 }
 
-/** 获取 SKU 详情 */
-export async function getSkuDetail(id: string): Promise<unknown> {
-  return request(`/skus/${id}`);
-}
+// 公开API
+export const getSkuList = (params: Record<string, string | number>) => {
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => { if (v) qs.append(k, String(v)); });
+  return request(`/v1/skus?${qs}`);
+};
+export const getSkuDetail = (id: string) => request(`/v1/skus/${id}`);
 
-// ============ 需认证 API ============
+// 认证
+export const sendPhoneCode = (phone: string) =>
+  request('/v1/auth/phone-code', { method: 'POST', body: JSON.stringify({ phone }) });
 
-/** 手机号登录/注册 */
-export async function loginByPhone(phone: string, code: string): Promise<unknown> {
-  return request('/auth/phone', {
-    method: 'POST',
-    body: JSON.stringify({ phone, code, role: 'agent' }),
+export const phoneLogin = (phone: string, code: string, role: string) =>
+  request<{ token: string; user: { name: string } }>('/v1/auth/phone', {
+    method: 'POST', body: JSON.stringify({ phone, code, role }),
   });
-}
 
-/** 提交需求 */
-export async function submitDemand(data: unknown): Promise<unknown> {
-  return request('/demands', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
+// 需求
+export const submitDemand = (body: Record<string, unknown>) =>
+  request('/v1/demands', { method: 'POST', body: JSON.stringify(body) });
 
-/** 获取需求列表 */
-export async function getDemandList(params: Record<string, string | number | undefined>): Promise<unknown> {
-  const query = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== '') {
-      query.set(key, String(value));
-    }
-  }
-  return request('/demands?' + query.toString());
-}
+export const getDemandList = (params: Record<string, string | number>) => {
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => { if (v) qs.append(k, String(v)); });
+  return request(`/v1/demands?${qs}`);
+};
 
-/** 获取需求详情 */
-export async function getDemandDetail(id: string): Promise<unknown> {
-  return request(`/demands/${id}`);
-}
-
-/** 确认方案 */
-export async function confirmPlan(demandId: string, planId: string): Promise<unknown> {
-  return request(`/demands/${demandId}/confirm`, {
-    method: 'POST',
-    body: JSON.stringify({ plan_id: planId }),
-  });
-}
-
-/** 获取消费统计 */
-export async function getConsumptionStats(): Promise<unknown> {
-  return request('/demands/stats');
-}
-
-/** 生成邀请链接 */
-export async function generateInviteLink(): Promise<unknown> {
-  return request('/invite/generate', {
-    method: 'POST',
-  });
-}
+export const getDemandDetail = (id: string) => request(`/v1/demands/${id}`);

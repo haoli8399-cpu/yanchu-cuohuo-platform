@@ -1,342 +1,69 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { Table, Tag, Button, Typography, Space, Result } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import {
-  Card,
-  Table,
-  Tag,
-  Typography,
-  Space,
-  Select,
-  Button,
-  Spin,
-  Empty,
-  Result,
-  Row,
-  Col,
-  Statistic,
-} from 'antd';
-import {
-  ReloadOutlined,
-  DollarOutlined,
-  FileTextOutlined,
-  ClockCircleOutlined,
-  CheckCircleOutlined,
-  PlusOutlined,
-} from '@ant-design/icons';
-import dayjs from 'dayjs';
-import * as api from '../services/apiClient';
-import { useAuth } from '../contexts/AuthContext';
-import {
-  DEMAND_STATUS_LABELS,
-  DEMAND_STATUS_COLORS,
-} from '../types';
-import type { DemandListItem, DemandStatus, PaginatedResponse, ConsumptionStats } from '../types';
-import type { ApiError } from '../services/apiClient';
-import type { ColumnsType } from 'antd/es/table';
+import { getDemandList } from '../services/apiClient';
 
-type LoadState = 'loading' | 'error' | 'empty' | 'ok';
+const { Title, Text } = Typography;
 
-export default function RequestHistoryPage(): React.ReactElement {
-  const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
+const STATUS_MAP: Record<string, { color: string; label: string }> = {
+  pending_ai: { color: 'blue', label: 'AI生成中' },
+  ai_generated: { color: 'cyan', label: '方案已生成' },
+  pending_operator: { color: 'orange', label: '待运营处理' },
+  operator_adjusted: { color: 'gold', label: '方案待确认' },
+  pending_client_confirm: { color: 'purple', label: '待您确认' },
+  confirmed: { color: 'green', label: '已确认' },
+  pending_deposit: { color: 'orange', label: '待付定金' },
+  deposit_received: { color: 'blue', label: '定金已收' },
+  pending_performer: { color: 'cyan', label: '匹配演员中' },
+  performer_confirmed: { color: 'green', label: '演员已确认' },
+  performing: { color: 'magenta', label: '演出中' },
+  finished: { color: 'green', label: '已完成' },
+  cancelled: { color: 'red', label: '已取消' },
+};
 
-  const [loadState, setLoadState] = useState<LoadState>('loading');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [demands, setDemands] = useState<DemandListItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(20);
-  const [statusFilter, setStatusFilter] = useState<DemandStatus | ''>('');
+export default function RequestHistory() {
+  const [demands, setDemands] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const nav = useNavigate();
 
-  // W-10: 消费统计
-  const [stats, setStats] = useState<ConsumptionStats | null>(null);
-  const [statsLoading, setStatsLoading] = useState(false);
-
-  const fetchDemands = useCallback(async () => {
-    setLoadState('loading');
+  const load = async () => {
+    setLoading(true); setError('');
     try {
-      const data = (await api.getDemandList({
-        page,
-        pageSize,
-        role: 'my',
-        status: statusFilter || undefined,
-      })) as PaginatedResponse<DemandListItem>;
+      const data = await getDemandList({ pageSize: 50 });
+      setDemands(data.items || []);
+    } catch { setError('加载失败'); }
+    setLoading(false);
+  };
 
-      if (data.items.length === 0) {
-        setLoadState('empty');
-        setDemands([]);
-        setTotal(0);
-      } else {
-        setLoadState('ok');
-        setDemands(data.items);
-        setTotal(data.total);
+  useEffect(() => { load(); }, []);
+
+  if (error) return <Result status="error" title="加载失败" extra={<Button onClick={load}>重试</Button>} />;
+
+  const columns = [
+    { title: '需求标题', dataIndex: 'title', key: 'title', render: (t: string) => <strong>{t}</strong> },
+    { title: '活动类型', dataIndex: 'event_type', key: 'type' },
+    { title: '日期', dataIndex: 'event_date', key: 'date' },
+    { title: '城市', dataIndex: 'city', key: 'city' },
+    { title: '预算', dataIndex: 'budget', key: 'budget', render: (v: number) => v ? `¥${v.toLocaleString()}` : '-' },
+    {
+      title: '状态', dataIndex: 'status', key: 'status',
+      render: (s: string) => {
+        const m = STATUS_MAP[s];
+        return m ? <Tag color={m.color}>{m.label}</Tag> : <Tag>{s}</Tag>;
       }
-    } catch (err) {
-      const e = err as ApiError;
-      setLoadState('error');
-      setErrorMsg(e.message ?? '加载失败');
-    }
-  }, [page, pageSize, statusFilter]);
-
-  // W-10: 加载消费统计
-  const fetchStats = useCallback(async () => {
-    setStatsLoading(true);
-    try {
-      const data = (await api.getConsumptionStats()) as ConsumptionStats;
-      setStats(data);
-    } catch {
-      // 统计加载失败不影响主列表
-      setStats(null);
-    } finally {
-      setStatsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      void fetchDemands();
-      void fetchStats();
-    } else {
-      setLoadState('empty');
-    }
-  }, [fetchDemands, fetchStats, isLoggedIn]);
-
-  // 未登录
-  if (!isLoggedIn) {
-    return (
-      <Result
-        status="warning"
-        title="请先登录"
-        subTitle="登录后查看需求历史记录"
-        extra={
-          <Button type="primary" onClick={() => navigate('/login')} style={{ height: 44 }}>
-            去登录
-          </Button>
-        }
-      />
-    );
-  }
-
-  const columns: ColumnsType<DemandListItem> = [
-    {
-      title: '需求标题',
-      dataIndex: 'title',
-      key: 'title',
-      width: 200,
-      render: (text: string, record: DemandListItem) => (
-        <Typography.Link
-          ellipsis
-          style={{ maxWidth: 180 }}
-          onClick={() => navigate(`/demands/${record.id}`)}
-        >
-          {text}
-        </Typography.Link>
-      ),
     },
-    {
-      title: '活动类型',
-      dataIndex: 'event_type',
-      key: 'event_type',
-      width: 100,
-    },
-    {
-      title: '活动日期',
-      dataIndex: 'event_date',
-      key: 'event_date',
-      width: 110,
-      render: (text: string) => dayjs(text).format('YYYY-MM-DD'),
-    },
-    {
-      title: '城市',
-      dataIndex: 'city',
-      key: 'city',
-      width: 80,
-    },
-    {
-      title: '预算',
-      dataIndex: 'budget',
-      key: 'budget',
-      width: 120,
-      render: (val: number) =>
-        val ? `¥${val.toLocaleString()}` : '-',
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      width: 130,
-      render: (status: DemandStatus) => (
-        <Tag color={DEMAND_STATUS_COLORS[status]}>
-          {DEMAND_STATUS_LABELS[status]}
-        </Tag>
-      ),
-    },
-    {
-      title: '提交时间',
-      dataIndex: 'created_at',
-      key: 'created_at',
-      width: 170,
-      render: (text: string) => dayjs(text).format('YYYY-MM-DD HH:mm'),
-    },
+    { title: '提交时间', dataIndex: 'created_at', key: 'created', render: (t: string) => t ? new Date(t).toLocaleString('zh-CN') : '-' },
   ];
 
   return (
-    <div>
-      {/* W-10: 消费统计卡片 */}
-      {stats && (
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          <Col xs={12} sm={6}>
-            <Card loading={statsLoading} size="small">
-              <Statistic
-                title="总订单数"
-                value={stats.total_orders}
-                prefix={<FileTextOutlined />}
-                valueStyle={{ color: '#1677ff' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={12} sm={6}>
-            <Card loading={statsLoading} size="small">
-              <Statistic
-                title="总消费金额"
-                value={stats.total_spent}
-                precision={0}
-                prefix={<DollarOutlined />}
-                suffix="元"
-                valueStyle={{ color: '#ff4d4f' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={12} sm={6}>
-            <Card loading={statsLoading} size="small">
-              <Statistic
-                title="已完成"
-                value={stats.completed_orders}
-                prefix={<CheckCircleOutlined />}
-                valueStyle={{ color: '#52c41a' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={12} sm={6}>
-            <Card loading={statsLoading} size="small">
-              <Statistic
-                title="进行中"
-                value={stats.pending_orders}
-                prefix={<ClockCircleOutlined />}
-                valueStyle={{ color: '#faad14' }}
-              />
-            </Card>
-          </Col>
-        </Row>
-      )}
-
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 16,
-          flexWrap: 'wrap',
-          gap: 8,
-        }}
-      >
-        <Typography.Title level={3} style={{ margin: 0 }}>
-          需求历史记录
-        </Typography.Title>
-        <Space>
-          <Select
-            placeholder="按状态筛选"
-            allowClear
-            style={{ width: 160, minWidth: 44, height: 44 }}
-            value={statusFilter || undefined}
-            onChange={(val) => {
-              setStatusFilter((val as DemandStatus) || '');
-              setPage(1);
-            }}
-            options={Object.entries(DEMAND_STATUS_LABELS).map(([key, label]) => ({
-              value: key,
-              label,
-            }))}
-          />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => navigate('/demands/new')}
-            style={{ height: 44 }}
-          >
-            提交新需求
-          </Button>
-        </Space>
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Title level={3} style={{ margin: 0 }}>历史记录</Title>
+        <Button type="primary" onClick={() => nav('/')} style={{ minHeight: 44 }}>浏览方案</Button>
       </div>
-
-      {loadState === 'loading' && (
-        <div style={{ textAlign: 'center', padding: 80 }}>
-          <Spin size="large" tip="加载中..." />
-        </div>
-      )}
-
-      {loadState === 'error' && (
-        <Result
-          status="error"
-          title="加载失败"
-          subTitle={errorMsg}
-          extra={
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={() => {
-                void fetchDemands();
-              }}
-              style={{ height: 44 }}
-            >
-              重试
-            </Button>
-          }
-        />
-      )}
-
-      {loadState === 'empty' && (
-        <Empty
-          description="暂无需求记录"
-          style={{ padding: 80 }}
-        >
-          <Button
-            type="primary"
-            onClick={() => navigate('/demands/new')}
-            style={{ height: 44 }}
-          >
-            提交第一个需求
-          </Button>
-        </Empty>
-      )}
-
-      {loadState === 'ok' && (
-        <Card>
-          <Table
-            columns={columns}
-            dataSource={demands}
-            rowKey="id"
-            onRow={(record) => ({
-              style: { cursor: 'pointer' },
-              onClick: () => {
-                navigate(`/demands/${record.id}`);
-              },
-            })}
-            pagination={
-              total > pageSize
-                ? {
-                    current: page,
-                    pageSize,
-                    total,
-                    onChange: (p) => setPage(p),
-                    showSizeChanger: false,
-                  }
-                : false
-            }
-            scroll={{ x: 900 }}
-            size="middle"
-          />
-        </Card>
-      )}
+      <Table columns={columns} dataSource={demands} rowKey="id" loading={loading} locale={{ emptyText: '暂无需求记录' }}
+        pagination={{ pageSize: 20 }} size="middle" />
     </div>
   );
 }

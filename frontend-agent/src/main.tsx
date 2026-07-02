@@ -1,15 +1,11 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
+// 演出撮合平台 · 活动公司端入口
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-  throw new Error('找不到 root 元素');
-}
-
-createRoot(rootElement).render(
-  <StrictMode>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
     <App />
-  </StrictMode>,
+  </React.StrictMode>
 );
