@@ -6,7 +6,9 @@ import SkuList from './pages/SkuList';
 import SkuDetail from './pages/SkuDetail';
 import SubmitRequest from './pages/SubmitRequest';
 import RequestHistory from './pages/RequestHistory';
+import DemandDetail from './pages/DemandDetail';
 import { AuthProvider, useAuth } from './services/auth';
+import FloatingPhoneButton from './components/FloatingPhoneButton';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth();
@@ -23,9 +25,11 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<SkuList />} />
             <Route path="/skus/:id" element={<SkuDetail />} />
+            <Route path="/demands/:id" element={<ProtectedRoute><DemandDetail /></ProtectedRoute>} />
             <Route path="/demands/new" element={<ProtectedRoute><SubmitRequest /></ProtectedRoute>} />
             <Route path="/demands" element={<ProtectedRoute><RequestHistory /></ProtectedRoute>} />
           </Routes>
+          <FloatingPhoneButton />
         </BrowserRouter>
       </AuthProvider>
     </ConfigProvider>
