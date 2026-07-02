@@ -1,193 +1,33 @@
-import { defineConfig } from '@umijs/max';
+import { defineConfig } from 'umi';
 
 export default defineConfig({
-  title: '演出供应链保障平台 · 运营后台',
-  antd: {},
-  access: {},
-  model: {},
-  initialState: {},
-  request: {},
-  layout: {
-    title: '演出运营后台',
-    locale: false,
-  },
-  routes: [
-    {
-      path: '/',
-      redirect: '/dashboard',
-    },
-    {
-      name: '运营工作台',
-      path: '/workbench',
-      component: './OperationWorkbench/index',
-      icon: 'DesktopOutlined',
-    },
-    {
-      name: '运营总看板',
-      path: '/dashboard',
-      component: './Dashboard',
-      icon: 'DashboardOutlined',
-    },
-    {
-      name: 'SKU管理',
-      path: '/sku',
-      icon: 'GoldOutlined',
-      routes: [
-        {
-          name: 'SKU列表',
-          path: '/sku/list',
-          component: './SKU/index',
-        },
-        {
-          name: 'SKU详情',
-          path: '/sku/detail/:id',
-          component: './SKU/Detail',
-          hideInMenu: true,
-        },
-        {
-          name: '新增SKU',
-          path: '/sku/create',
-          component: './SKU/Detail',
-          hideInMenu: true,
-        },
-      ],
-    },
-    {
-      name: '需求管理',
-      path: '/demand',
-      icon: 'ProjectOutlined',
-      routes: [
-        {
-          name: '需求列表',
-          path: '/demand/list',
-          component: './Demand/index',
-        },
-        {
-          name: '需求详情',
-          path: '/demand/detail/:id',
-          component: './Demand/Detail',
-          hideInMenu: true,
-        },
-        {
-          name: 'AI方案审核',
-          path: '/demand/ai-plan/:id',
-          component: './Demand/AIPlan',
-          hideInMenu: true,
-        },
-      ],
-    },
-    {
-      name: '演员管理',
-      path: '/performer',
-      icon: 'TeamOutlined',
-      routes: [
-        {
-          name: '演员列表',
-          path: '/performer/list',
-          component: './Performer/index',
-        },
-        {
-          name: '演员详情',
-          path: '/performer/:id',
-          component: './Performer/Detail',
-          hideInMenu: true,
-        },
-        {
-          name: '新增演员',
-          path: '/performer/create',
-          component: './Performer/Detail',
-          hideInMenu: true,
-        },
-        {
-          name: '编辑演员',
-          path: '/performer/edit/:id',
-          component: './Performer/Detail',
-          hideInMenu: true,
-        },
-        {
-          name: '演员档期看板',
-          path: '/performer/calendar',
-          component: './ScheduleCalendar/index',
-        },
-      ],
-    },
-    {
-      name: '订单管理',
-      path: '/orders',
-      icon: 'OrderedListOutlined',
-      routes: [
-        {
-          name: '订单列表',
-          path: '/orders/list',
-          component: './OrderManagement/index',
-        },
-        {
-          name: '排期分配',
-          path: '/orders/assign/:id',
-          component: './Placeholder',
-          hideInMenu: true,
-        },
-      ],
-    },
-    {
-      name: '内容管理',
-      path: '/content',
-      icon: 'FileTextOutlined',
-      routes: [
-        {
-          name: '案例管理',
-          path: '/content/cases',
-          component: './CaseManagement/index',
-        },
-        {
-          name: 'AI模板管理',
-          path: '/content/templates',
-          component: './TemplateManagement/index',
-        },
-      ],
-    },
-    {
-      name: '结算管理',
-      path: '/settlement',
-      icon: 'AccountBookOutlined',
-      component: './Settlement/index',
-    },
-    {
-      name: '活动公司管理',
-      path: '/company',
-      icon: 'ShopOutlined',
-      component: './Company/index',
-    },
-    {
-      name: '价格配置',
-      path: '/price-config',
-      icon: 'DollarCircleOutlined',
-      component: './PriceConfig/index',
-    },
-    {
-      name: '系统管理',
-      path: '/system',
-      icon: 'SettingOutlined',
-      routes: [
-        {
-          name: '操作日志',
-          path: '/system/logs',
-          component: './System/OperationLogs',
-        },
-        {
-          name: '角色权限',
-          path: '/system/roles',
-          component: './Placeholder',
-        },
-      ],
-    },
-  ],
+  title: '演出撮合平台 · 运营后台',
   npmClient: 'npm',
+  routes: [
+    { path: '/', redirect: '/dashboard' },
+    { name: '运营总看板', path: '/dashboard', component: '@/pages/Dashboard' },
+    { name: '运营工作台', path: '/workbench', component: '@/pages/OperationWorkbench/index' },
+    { name: '需求管理', path: '/demands', component: '@/pages/Demand/index' },
+    { name: 'AI方案审核', path: '/demands/ai-plan/:id', component: '@/pages/Demand/AIPlan' },
+    { name: 'SKU管理', path: '/skus', component: '@/pages/SKU/index' },
+    { name: 'SKU详情', path: '/skus/detail/:id', component: '@/pages/SKU/Detail' },
+    { name: '演员管理', path: '/performers', component: '@/pages/Performer/index' },
+    { name: '演员详情', path: '/performers/:id', component: '@/pages/Performer/Detail' },
+    { name: '档期看板', path: '/performers/calendar', component: '@/pages/ScheduleCalendar/index' },
+    { name: '订单管理', path: '/orders', component: '@/pages/OrderManagement/index' },
+    { name: '结算管理', path: '/settlements', component: '@/pages/Settlement/index' },
+    { name: '公司管理', path: '/companies', component: '@/pages/Company/index' },
+    { name: '价格配置', path: '/price-configs', component: '@/pages/PriceConfig/index' },
+    { name: '案例管理', path: '/cases', component: '@/pages/CaseManagement/index' },
+    { name: '模板管理', path: '/templates', component: '@/pages/TemplateManagement/index' },
+    { name: '操作日志', path: '/system/logs', component: '@/pages/System/OperationLogs' },
+    { name: '调整模板', path: '/demands/templates', component: '@/pages/Demand/AdjustmentTemplates' },
+  ],
   proxy: {
     '/api': {
-      target: 'http://119.28.134.67:3002/v1',
+      target: 'http://127.0.0.1:3002',
       changeOrigin: true,
-      pathRewrite: { '^/api': '' },
+      pathRewrite: { '^/api': '/v1' },
     },
   },
 });
