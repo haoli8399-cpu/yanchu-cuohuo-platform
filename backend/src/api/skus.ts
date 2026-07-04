@@ -16,6 +16,7 @@ import {
   createdResponse,
 } from '../utils/response.js';
 import type { SkuListItem, SkuDetail, BusinessLine } from '../types/index.js';
+import { calcPrices } from '../services/skuPricing.js';
 
 // ============================================================
 // Zod 校验 Schema
@@ -83,6 +84,37 @@ const statusBodySchema = z.object({
   status: skuStatusSchema,
 });
 
+/** PATCH /v1/skus/:id/basic-info 请求体 */
+const basicInfoBodySchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  business_line: businessLineSchema.optional(),
+  description: z.string().min(1).optional(),
+});
+
+/** PATCH /v1/skus/:id/performer 请求体 */
+const performerBodySchema = z.object({
+  performer_profile: z.string().min(1).optional(),
+  style_tags: z.array(z.string().min(1)).min(1).optional(),
+  performers_count: z.number().int().positive().optional(),
+});
+
+/** PATCH /v1/skus/:id/pricing 请求体（只更新 base_price，其余价后端算） */
+const pricingBodySchema = z.object({
+  base_price: z.number().positive(),
+});
+
+/** PATCH /v1/skus/:id/media 请求体 */
+const mediaBodySchema = z.object({
+  cover_url: z.string().url().optional(),
+  media_urls: z.array(z.string().url()).optional(),
+});
+
+/** PATCH /v1/skus/:id/config 请求体 */
+const configBodySchema = z.object({
+  applicable_scenes: z.array(z.string().min(1)).min(1).optional(),
+  duration_minutes: z.number().int().positive().optional(),
+});
+
 // ============================================================
 // 数据库行类型（映射 skus 表）
 // ============================================================
@@ -111,9 +143,10 @@ interface SkuRow {
 
 /**
  * 将数据库行映射为 SkuListItem
- * agent_price 按 base_price × 0.7 计算（对齐 FREEZE.md 决策 2.2）
+ * company_price / internal_price 由 calcPrices() 统一计算（对齐 FREEZE.md 2.2-2.3）
  */
 function toSkuListItem(row: SkuRow): SkuListItem {
+  const { company_price, internal_price } = calcPrices(Number(row.base_price));
   return {
     id: row.id,
     name: row.name,
@@ -123,7 +156,8 @@ function toSkuListItem(row: SkuRow): SkuListItem {
     style_tags: row.style_tags,
     applicable_scenes: row.applicable_scenes,
     base_price: Number(row.base_price),
-    agent_price: Math.round(Number(row.base_price) * 0.7),
+    company_price,
+    internal_price,
     duration_minutes: row.duration_minutes,
     performers_count: row.performers_count,
     cover_url: row.cover_url,
@@ -218,7 +252,7 @@ export default async function skuRoutes(app: FastifyInstance): Promise<void> {
 
       const [dataResult, countResult] = await Promise.all([
         query<SkuRow>(
-          `SELECT s.*, ROUND(s.base_price * 0.7) AS agent_price
+          `SELECT s.*
            FROM skus s
            ${whereClause}
            ORDER BY s.created_at DESC
@@ -457,6 +491,317 @@ export default async function skuRoutes(app: FastifyInstance): Promise<void> {
             '状态已更新'
           )
         );
+    }
+  );
+
+  // ==========================================================
+  // PATCH /v1/skus/:id/basic-info - 基础信息（admin）
+  // ==========================================================
+  app.patch(
+    '/:id/basic-info',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('admin'),
+        validate({ params: idParamSchema, body: basicInfoBodySchema }),
+      ],
+    },
+    async function updateSkuBasicInfo(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { id } = request.params as z.infer<typeof idParamSchema>;
+      const body = request.body as z.infer<typeof basicInfoBodySchema>;
+
+      // 检查 SKU 是否存在
+      const existing = await query<SkuRow>(
+        'SELECT id FROM skus WHERE id = $1',
+        [id]
+      );
+      if (existing.rows.length === 0) {
+        reply.status(404).send(errorResponse(2002, 'SKU不存在'));
+        return;
+      }
+
+      // 动态构建 SET 子句
+      const fieldMap: Record<string, string> = {
+        name: 'name',
+        business_line: 'business_line',
+        description: 'description',
+      };
+
+      const setClauses: string[] = [];
+      const params: unknown[] = [];
+      let idx = 0;
+
+      for (const [key, col] of Object.entries(fieldMap)) {
+        if (key in body && body[key as keyof typeof body] !== undefined) {
+          idx++;
+          setClauses.push(`${col} = $${idx}`);
+          params.push(body[key as keyof typeof body]);
+        }
+      }
+
+      if (setClauses.length === 0) {
+        reply.status(200).send(successResponse({ id }, '无变化'));
+        return;
+      }
+
+      idx++;
+      setClauses.push(`updated_at = NOW()`);
+      idx++;
+      params.push(id);
+
+      await query(
+        `UPDATE skus SET ${setClauses.join(', ')} WHERE id = $${idx}`,
+        params
+      );
+
+      reply.status(200).send(successResponse({ id }, '基础信息已更新'));
+    }
+  );
+
+  // ==========================================================
+  // PATCH /v1/skus/:id/performer - 演员画像（admin）
+  // ==========================================================
+  app.patch(
+    '/:id/performer',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('admin'),
+        validate({ params: idParamSchema, body: performerBodySchema }),
+      ],
+    },
+    async function updateSkuPerformer(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { id } = request.params as z.infer<typeof idParamSchema>;
+      const body = request.body as z.infer<typeof performerBodySchema>;
+
+      // 检查 SKU 是否存在
+      const existing = await query<SkuRow>(
+        'SELECT id FROM skus WHERE id = $1',
+        [id]
+      );
+      if (existing.rows.length === 0) {
+        reply.status(404).send(errorResponse(2002, 'SKU不存在'));
+        return;
+      }
+
+      const fieldMap: Record<string, string> = {
+        performer_profile: 'performer_profile',
+        style_tags: 'style_tags',
+        performers_count: 'performers_count',
+      };
+
+      const setClauses: string[] = [];
+      const params: unknown[] = [];
+      let idx = 0;
+
+      for (const [key, col] of Object.entries(fieldMap)) {
+        if (key in body && body[key as keyof typeof body] !== undefined) {
+          idx++;
+          setClauses.push(`${col} = $${idx}`);
+          params.push(body[key as keyof typeof body]);
+        }
+      }
+
+      if (setClauses.length === 0) {
+        reply.status(200).send(successResponse({ id }, '无变化'));
+        return;
+      }
+
+      idx++;
+      setClauses.push(`updated_at = NOW()`);
+      idx++;
+      params.push(id);
+
+      await query(
+        `UPDATE skus SET ${setClauses.join(', ')} WHERE id = $${idx}`,
+        params
+      );
+
+      reply.status(200).send(successResponse({ id }, '演员画像已更新'));
+    }
+  );
+
+  // ==========================================================
+  // PATCH /v1/skus/:id/pricing - 价格配置（admin）
+  // 只更新 base_price 到库，company_price / internal_price 由 calcPrices() 实时计算返回
+  // ==========================================================
+  app.patch(
+    '/:id/pricing',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('admin'),
+        validate({ params: idParamSchema, body: pricingBodySchema }),
+      ],
+    },
+    async function updateSkuPricing(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { id } = request.params as z.infer<typeof idParamSchema>;
+      const { base_price } = request.body as z.infer<typeof pricingBodySchema>;
+
+      // 检查 SKU 是否存在
+      const existing = await query<SkuRow>(
+        'SELECT id FROM skus WHERE id = $1',
+        [id]
+      );
+      if (existing.rows.length === 0) {
+        reply.status(404).send(errorResponse(2002, 'SKU不存在'));
+        return;
+      }
+
+      // 只更新 base_price 到数据库
+      await query(
+        `UPDATE skus SET base_price = $1, updated_at = NOW() WHERE id = $2`,
+        [base_price, id]
+      );
+
+      // 计算联动价格返回给前端
+      const { company_price, internal_price } = calcPrices(base_price);
+
+      reply.status(200).send(
+        successResponse(
+          { id, base_price, company_price, internal_price },
+          '价格已更新'
+        )
+      );
+    }
+  );
+
+  // ==========================================================
+  // PATCH /v1/skus/:id/media - 内容素材（admin）
+  // ==========================================================
+  app.patch(
+    '/:id/media',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('admin'),
+        validate({ params: idParamSchema, body: mediaBodySchema }),
+      ],
+    },
+    async function updateSkuMedia(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { id } = request.params as z.infer<typeof idParamSchema>;
+      const body = request.body as z.infer<typeof mediaBodySchema>;
+
+      // 检查 SKU 是否存在
+      const existing = await query<SkuRow>(
+        'SELECT id FROM skus WHERE id = $1',
+        [id]
+      );
+      if (existing.rows.length === 0) {
+        reply.status(404).send(errorResponse(2002, 'SKU不存在'));
+        return;
+      }
+
+      const fieldMap: Record<string, string> = {
+        cover_url: 'cover_url',
+        media_urls: 'media_urls',
+      };
+
+      const setClauses: string[] = [];
+      const params: unknown[] = [];
+      let idx = 0;
+
+      for (const [key, col] of Object.entries(fieldMap)) {
+        if (key in body && body[key as keyof typeof body] !== undefined) {
+          idx++;
+          setClauses.push(`${col} = $${idx}`);
+          params.push(body[key as keyof typeof body]);
+        }
+      }
+
+      if (setClauses.length === 0) {
+        reply.status(200).send(successResponse({ id }, '无变化'));
+        return;
+      }
+
+      idx++;
+      setClauses.push(`updated_at = NOW()`);
+      idx++;
+      params.push(id);
+
+      await query(
+        `UPDATE skus SET ${setClauses.join(', ')} WHERE id = $${idx}`,
+        params
+      );
+
+      reply.status(200).send(successResponse({ id }, '内容素材已更新'));
+    }
+  );
+
+  // ==========================================================
+  // PATCH /v1/skus/:id/config - 适用配置（admin）
+  // ==========================================================
+  app.patch(
+    '/:id/config',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('admin'),
+        validate({ params: idParamSchema, body: configBodySchema }),
+      ],
+    },
+    async function updateSkuConfig(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { id } = request.params as z.infer<typeof idParamSchema>;
+      const body = request.body as z.infer<typeof configBodySchema>;
+
+      // 检查 SKU 是否存在
+      const existing = await query<SkuRow>(
+        'SELECT id FROM skus WHERE id = $1',
+        [id]
+      );
+      if (existing.rows.length === 0) {
+        reply.status(404).send(errorResponse(2002, 'SKU不存在'));
+        return;
+      }
+
+      const fieldMap: Record<string, string> = {
+        applicable_scenes: 'applicable_scenes',
+        duration_minutes: 'duration_minutes',
+      };
+
+      const setClauses: string[] = [];
+      const params: unknown[] = [];
+      let idx = 0;
+
+      for (const [key, col] of Object.entries(fieldMap)) {
+        if (key in body && body[key as keyof typeof body] !== undefined) {
+          idx++;
+          setClauses.push(`${col} = $${idx}`);
+          params.push(body[key as keyof typeof body]);
+        }
+      }
+
+      if (setClauses.length === 0) {
+        reply.status(200).send(successResponse({ id }, '无变化'));
+        return;
+      }
+
+      idx++;
+      setClauses.push(`updated_at = NOW()`);
+      idx++;
+      params.push(id);
+
+      await query(
+        `UPDATE skus SET ${setClauses.join(', ')} WHERE id = $${idx}`,
+        params
+      );
+
+      reply.status(200).send(successResponse({ id }, '适用配置已更新'));
     }
   );
 }

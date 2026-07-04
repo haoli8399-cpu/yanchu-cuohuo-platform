@@ -52,7 +52,64 @@ export async function deleteSKU(
 /** 上架/下架 SKU */
 export async function toggleSKUStatus(
   id: string,
-  status: 'online' | 'offline',
-): Promise<ApiResponse<SKU>> {
-  return apiClient.patch<SKU>(`/skus/${id}/status`, { status });
+  status: 'active' | 'inactive',
+): Promise<ApiResponse<{ id: string; status: string }>> {
+  return apiClient.patch<{ id: string; status: string }>(`/skus/${id}/status`, { status });
+}
+
+/** 更新基础信息 */
+export async function updateBasicInfo(
+  id: string,
+  data: { name?: string; businessLine?: string; description?: string },
+): Promise<ApiResponse<{ id: string }>> {
+  return apiClient.patch<{ id: string }>(`/skus/${id}/basic-info`, {
+    name: data.name,
+    business_line: data.businessLine,
+    description: data.description,
+  });
+}
+
+/** 更新演员画像 */
+export async function updatePerformer(
+  id: string,
+  data: { performerProfile?: string; styleTags?: string[]; performersCount?: number },
+): Promise<ApiResponse<{ id: string }>> {
+  return apiClient.patch<{ id: string }>(`/skus/${id}/performer`, {
+    performer_profile: data.performerProfile,
+    style_tags: data.styleTags,
+    performers_count: data.performersCount,
+  });
+}
+
+/** 更新价格（后端自动算 companyPrice + internalPrice） */
+export async function updatePricing(
+  id: string,
+  data: { basePrice: number },
+): Promise<ApiResponse<{ id: string; base_price: number; company_price: number; internal_price: number }>> {
+  return apiClient.patch<{ id: string; base_price: number; company_price: number; internal_price: number }>(
+    `/skus/${id}/pricing`,
+    { base_price: data.basePrice },
+  );
+}
+
+/** 更新素材 */
+export async function updateMedia(
+  id: string,
+  data: { coverUrl?: string; mediaUrls?: string[] },
+): Promise<ApiResponse<{ id: string }>> {
+  return apiClient.patch<{ id: string }>(`/skus/${id}/media`, {
+    cover_url: data.coverUrl,
+    media_urls: data.mediaUrls,
+  });
+}
+
+/** 更新配置 */
+export async function updateConfig(
+  id: string,
+  data: { applicableScenes?: string[]; durationMinutes?: number },
+): Promise<ApiResponse<{ id: string }>> {
+  return apiClient.patch<{ id: string }>(`/skus/${id}/config`, {
+    applicable_scenes: data.applicableScenes,
+    duration_minutes: data.durationMinutes,
+  });
 }

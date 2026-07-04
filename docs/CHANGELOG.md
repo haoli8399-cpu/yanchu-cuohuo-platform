@@ -29,6 +29,21 @@
 
 ---
 
-> 版本：v1.1
+## 2026-07-05（02）
+
+### 修改（SKU 模块化改造）
+- `backend/src/services/skuPricing.ts` — 新增定价计算服务（calcPrices 函数）
+- `backend/src/api/skus.ts` — 新增 5 个 PATCH 端点（basic-info/performer/pricing/media/config）
+- `backend/src/types/index.ts` — SkuListItem/SkuDetail 增加 company_price、internal_price
+- `frontend-admin/src/types/sku.ts` — 业务线/状态枚举对齐后端，接口字段重构
+- `frontend-admin/src/services/sku.ts` — 新增 5 个 PATCH API 方法
+- `frontend-admin/src/pages/SKU/Detail.tsx` — 大重构：长表单→6个折叠面板，独立保存
+- `frontend-admin/src/pages/SKU/index.tsx` — 对齐新类型字段
+- `docs/API_CONTRACT.md` — 2.2节价格字段名修复 + 5个新端点文档 + 路由汇总更新
+- 执行模式：启用多Agent团队并行（types-services-agent + detail-agent + 主Agent）
+
+---
+
+> 版本：v1.2
 > 创建时间：2026-07-05
 > 维护人：Orchestrator
