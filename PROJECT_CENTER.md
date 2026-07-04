@@ -1,7 +1,8 @@
 # 喜剧工厂 · 项目中心
 
-> 版本：v1.0
+> 版本：v1.1
 > 创建时间：2026-07-05
+> 更新说明：新增 rev/ 归档、并行派发流程、测试轮次、简化阅读链
 > 作用：所有 Agent 启动后第一读，3 秒知道项目全局
 > 维护人：Orchestrator（主控窗口独占写入，子 Agent 只读不改）
 
@@ -13,8 +14,8 @@
 |:----|------|
 | **项目代号** | 喜剧工厂 — B2B 撮合平台（活动公司 ↔ 演员匹配+出方案+保履约） |
 | **阶段** | 迭代维护 |
-| **当前任务** | 待定（上一轮：SKU 模块化改造方案已确认） |
-| **当前任务状态** | 🔄 方案就绪，待执行 |
+| **当前任务** | r01 — 多 Agent 框架优化落地 |
+| **当前任务状态** | 🔄 执行中 |
 | **下一任务** | 待定 |
 | **远端仓库** | `haoli8399-cpu/yanchu-cuohuo-platform` |
 | **服务器** | 腾讯云香港 2C2G（API: 3002） |
@@ -32,13 +33,14 @@
 
 ---
 
-## 三、活跃决策（近期确认、项目中心记录过的）
+## 三、活跃决策（近期确认）
 
 | 编号 | 决策 | 确认时间 | 状态 |
 |:----:|------|:--------:|:----:|
 | D-20260704-001 | SKU 模块化改造方案确认 | 2026-07-04 | ✅ 已确认，待执行 |
 | D-20260704-002 | "演事"废弃，新方向 = 喜剧工厂 B2B 撮合 | 2026-07-04 | ✅ 已确认 |
 | D-20260705-001 | 多 Agent + Loop 工程化方案确认 | 2026-07-05 | ✅ 已确认 |
+| D-20260705-002 | 多 Agent 协作工厂 Skill 框架优化落地 | 2026-07-05 | 🆕 本轮确认 |
 
 ---
 
@@ -57,7 +59,7 @@
 | 7 | 改代码先审批 | 任何方案先给方向 → 豪哥确认 → 再动手 |
 | 8 | 每批 ≤3 个文件 + ≤1 个依赖 | 控制变更范围 |
 | 9 | 子 Agent 启动必读 | PROJECT_CENTER.md → TASK.md → FREEZE.md → 相关文档 |
-| 10 | 子 Agent 不碰 docs/ 目录 | 不写/不删/不改任何中心文档 |
+| 10 | 子 Agent 不碰中心文档 | 不写/不删/不改 docs/、rev/ 和根目录中心文件 |
 
 ---
 
@@ -65,48 +67,92 @@
 
 | 子模块 | 谁负责 | 状态 |
 |-------|:------:|:----:|
-| 待定 | — | 🔄 |
+| rev/ 归档目录 | OC | ✅ 已完成 |
+| AGENT_RULES.md 5角色 | OC | 🔄 执行中 |
+| PROJECT_CENTER.md v1.1 | OC | 🔄 执行中 |
+| ACTIVE_TASK.md 自包含 | OC | 🔄 执行中 |
+| 多Agent方案 v3.1 | OC | ⏳ 待执行 |
 
 ---
 
-## 六、协作规则速查
+## 六、协作规则速查（v1.1 更新）
+
+### 标准流程（单 Developer）
 
 ```
-豪哥说需求
-  │
-  ▼
-Orchestrator（本窗口）
-  ├── 写 PROJECT_CENTER.md（更新当前任务）
-  ├── 写 TASK.md（目标 + 文件范围 + 验收标准）
-  └── 通知豪哥
-        │
-        ▼
-豪哥到工作窗口说"读根目录 TASK.md"
-        │
-        ▼
-Developer（工作窗口）
-  ├── 读 PROJECT_CENTER.md → 全局状态
-  ├── 读 TASK.md → 本轮干啥
-  ├── 读 FREEZE.md + 相关文档 → 对齐
-  ├── 写代码 → 自测 → 回报
-  └── 阻塞立即回报
-        │
-        ▼
-Orchestrator（本窗口）
-  ├── 格式校验（缺字段打回）
-  ├── 规范审查（grep 参数化/console/any）
-  ├── 逻辑审查（读关键文件）
-  ├── 构建验证（npm run build / curl）
-  ├── 通过 → 同步 5 个文件 → git commit + push
-  └── 不通过 → 更新 TASK.md 重新派发
+豪哥说需求 → OC 写 TASK.md（含上下文）→ 更新 PROJECT_CENTER.md
+  → 豪哥到工作窗口说"读根目录 TASK.md"
+  → Developer 读 PROJECT_CENTER → TASK → FREEZE → 相关文档
+  → 写代码 → 自测 → 回报给 OC
+  → [可选] OC spawn Tester 做功能验证 → 写入 rev/rNN/test.md
+  → OC 三层审查（格式/规范/逻辑）
+  → 通过 → 归档 rev/rNN/ → 同步 5 文件 → git commit + push
+  → 不通过 → 打回 Developer（最多 3 次，超限 Blocked）
 ```
 
-最多 5 次循环 / 60 分钟，超限标记 Blocked 问豪哥。
+### 并行流程（≥2 个独立子任务，v1.1 新增）
+
+```
+豪哥说需求 → OC 拆成 2 个独立子任务
+  → 写 TASK-A.md + TASK-B.md（各自包含上下文）
+  → 豪哥到 窗口A 说"读根目录 TASK-A.md"
+  → 豪哥到 窗口B 说"读根目录 TASK-B.md"
+  → Developer A 和 Developer B 各自执行
+  → 各自自测 → 各自回报
+  → OC 做集成测试（联调验证）
+  → 合并归档到 rev/rNN/
+  → 同步 5 文件 → git commit + push
+```
+
+### 阅读简化（v1.1 优化）
+
+> TASK.md 现在自带上下文（constraints/context section），
+> Developer 读完 TASK.md 后大部分情况不需要再跳读 FREEZE.md，
+> 省掉 1-2 次文件跳转。
+
+```
+Developer 阅读链（简化为 3 步）：
+  1. PROJECT_CENTER.md（3秒看全局）
+  2. TASK.md（含上下文约束 → 直接开干）
+  3. 相关业务/技术文档（按需）
+```
 
 ---
 
-## 七、更新记录
+## 七、项目结构
 
-| 日期 | 变更内容 | 更新人 |
-|:----:|---------|:------:|
-| 2026-07-05 | 创建 PROJECT_CENTER.md，多 Agent + Loop 方案落地 | OC |
+```
+喜剧工厂/
+├── PROJECT_CENTER.md     ← 入口（v1.1）
+├── ACTIVE_TASK.md         ← 当前任务（自包含上下文）
+├── ACCEPTANCE.md          ← 验收表
+├── LOOP_LOG.jsonl         ← 循环日志
+├── rev/                   ← 迭代产出归档（v1.1 新增）
+│   ├── README.md
+│   └── rNN/
+│       ├── TASK.md
+│       ├── output.md
+│       └── test.md
+├── docs/
+│   ├── HANDOFF.md
+│   ├── AGENT_RULES.md     ← 5角色（v1.1）
+│   ├── FREEZE.md
+│   ├── 多Agent协作开发方案.md  ← v3.1
+│   ├── DECISION_LOG.md
+│   ├── CHANGELOG.md
+│   ├── codebase_progress.md
+│   ├── state.json
+│   └── (业务/技术文档)
+├── backend/
+├── web-admin/
+└── mini-program/
+```
+
+---
+
+## 八、更新记录
+
+| 日期 | 版本 | 变更内容 | 更新人 |
+|:----:|:----:|---------|:------:|
+| 2026-07-05 | v1.0 | 创建 PROJECT_CENTER.md | OC |
+| 2026-07-05 | v1.1 | 新增 rev/ 归档、并行流程、测试轮次、简化阅读链 | OC |

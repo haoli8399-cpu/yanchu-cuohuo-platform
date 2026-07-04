@@ -5,6 +5,18 @@
 
 ---
 
+## D-20260705-002：多 Agent 协作工厂 Skill 框架落地
+
+| 字段 | 内容 |
+|:----|------|
+| **日期** | 2026-07-05 |
+| **决策** | 基于「多Agent项目协作工厂」Skill 优化喜剧工厂协作框架 |
+| **方案要点** | ① 新增 `rev/` 迭代产出归档目录（TASK.md / output.md / test.md）<br>② AGENT_RULES.md 扩展为5角色：Orchestrator / Developer / Tester（全职）/ Analyst（按需）/ Researcher（按需）<br>③ 工作流升级：支持并行派发（≥2独立子任务可同时跑）+ 测试轮次（复杂任务 spawn Tester）<br>④ 阅读链简化：TASK.md 自带上下文 section，省掉 FREEZE.md 跳转 |
+| **关联方案** | 多Agent协作开发方案.md v3.1 / PROJECT_CENTER.md v1.1 / AGENT_RULES.md v1.1 |
+| **确认人** | 豪哥 |
+
+---
+
 ## D-20260705-001：多 Agent + Loop 工程化方案确认
 
 | 字段 | 内容 |
