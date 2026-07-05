@@ -49,13 +49,7 @@ function getToken(): string | null {
  * 生产环境走环境变量 API_BASE_URL
  */
 function buildURL(path: string): string {
-  // 开发环境通过 umi proxy 转发
-  if (process.env.NODE_ENV === 'development') {
-    return `/api${path}`;
-  }
-  // 生产环境从环境变量读取
-  const baseURL = process.env.API_BASE_URL || '';
-  return `${baseURL}${path}`;
+  return `/v1${path}`;
 }
 
 /**

@@ -61,9 +61,7 @@
           <!-- 标题 + 状态 -->
           <view class="card-header">
             <text class="card-title">{{ item.title || item.sku_title }}</text>
-            <view class="card-status-row">
-              <text class="card-status" :class="'status-' + item.status">{{ statusLabel(item.status) }}</text>
-            </view>
+            <CfStatusTag :type="item.status" />
           </view>
           <!-- 信息行 -->
           <view class="card-info-row">演出类型：{{ item.category_label || item.sku_title }}</view>
@@ -92,6 +90,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { getDemandList } from '@/services/api';
 import { formatPrice } from '@/utils/format';
+import CfStatusTag from '@/components/CfStatusTag.vue';
 
 const demandList = ref<any[]>([]);
 const loading = ref(true);
@@ -112,14 +111,6 @@ const stats = reactive({
   active: 0,
   signed: 0,
 });
-
-function statusLabel(status: string): string {
-  const map: Record<string, string> = {
-    pending: '待报价', quoted: '已报价',
-    confirmed: '已确认', signed: '已签约', cancelled: '已取消',
-  };
-  return map[status] || status;
-}
 
 function onStatusChange(val: string) {
   selectedStatus.value = val;
@@ -205,28 +196,28 @@ onMounted(() => { fetchDemands(true); });
 // 统计概览
 .stats-row {
   display: flex;
-  gap: 16rpx;
-  margin: 24rpx 32rpx;
+  gap: $space-sm;
+  margin: $space-md $space-base;
 
   .stat-card {
     flex: 1;
-    background: var(--color-bg-card);
-    border-radius: var(--radius-md);
-    padding: 24rpx 16rpx;
+    background: $color-bg-card;
+    border-radius: $radius-md;
+    padding: $space-lg $space-sm;
     text-align: center;
-    box-shadow: var(--shadow-sm);
+    box-shadow: $shadow-sm;
 
     .stat-value {
-      font-size: 40rpx;
+      font-size: $text-3xl;
       font-weight: 700;
       display: block;
-      &.primary { color: var(--color-primary); }
-      &.warning { color: var(--state-warning); }
-      &.success { color: var(--state-success); }
+      &.primary { color: $color-primary; }
+      &.warning { color: $state-warning; }
+      &.success { color: $state-success; }
     }
     .stat-label {
-      font-size: 22rpx;
-      color: var(--color-text-tertiary);
+      font-size: $text-xs;
+      color: $color-text-tertiary;
       margin-top: 4rpx;
       display: block;
     }
@@ -236,34 +227,34 @@ onMounted(() => { fetchDemands(true); });
 // 状态筛选
 .filter-tabs {
   white-space: nowrap;
-  margin: 0 32rpx 16rpx;
+  margin: 0 $space-base $space-sm;
   .filter-tab {
     display: inline-block;
-    padding: 12rpx 32rpx;
-    border-radius: 9999px;
-    font-size: 26rpx;
+    padding: 12rpx $space-lg;
+    border-radius: $radius-full;
+    font-size: $text-base;
     font-weight: 500;
-    background: #f0f0f2;
-    color: var(--color-text-secondary);
-    margin-right: 16rpx;
+    background: $color-divider;
+    color: $color-text-secondary;
+    margin-right: $space-sm;
     &.active {
-      background: var(--color-primary);
-      color: #fff;
+      background: $color-primary;
+      color: $color-text-inverse;
     }
   }
 }
 
 .demand-list {
   flex: 1;
-  padding: 0 32rpx;
+  padding: 0 $space-base;
 }
 
 .demand-card {
-  background: var(--color-bg-card);
-  border-radius: var(--radius-md);
-  padding: 32rpx;
-  margin-bottom: 24rpx;
-  box-shadow: var(--shadow-md);
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $space-lg;
+  margin-bottom: $space-md;
+  box-shadow: $shadow-sm;
   transition: opacity 0.15s;
 
   &.cancelled { opacity: 0.55; }
@@ -273,41 +264,23 @@ onMounted(() => { fetchDemands(true); });
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24rpx;
+  margin-bottom: $space-sm;
 
   .card-title {
-    font-size: 30rpx;
+    font-size: $text-md;
     font-weight: 500;
-    color: var(--color-text-primary);
+    color: $color-text-primary;
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    margin-right: $space-sm;
   }
-
-  .card-status-row {
-    display: flex;
-    align-items: center;
-    gap: 12rpx;
-    flex-shrink: 0;
-  }
-
-  .card-status {
-    font-size: 22rpx;
-    padding: 6rpx 20rpx;
-    border-radius: 9999px;
-    font-weight: 500;
-  }
-  .status-pending { background: var(--state-pending-bg); color: var(--state-pending); }
-  .status-quoted { background: var(--state-quoted-bg); color: var(--state-quoted); }
-  .status-confirmed { background: var(--state-confirmed-bg); color: var(--state-confirmed); }
-  .status-signed { background: var(--state-signed-bg); color: var(--state-signed); }
-  .status-cancelled { background: var(--state-cancelled-bg); color: var(--state-cancelled); }
 }
 
 .card-info-row {
-  font-size: 28rpx;
-  color: var(--color-text-secondary);
+  font-size: $text-base;
+  color: $color-text-secondary;
   line-height: 1.8;
 }
 
@@ -315,12 +288,12 @@ onMounted(() => { fetchDemands(true); });
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 24rpx;
-  padding-top: 24rpx;
-  border-top: 1rpx solid var(--color-divider);
+  margin-top: $space-md;
+  padding-top: $space-md;
+  border-top: 1rpx solid $color-divider;
 
-  .card-time { font-size: 24rpx; color: var(--color-text-tertiary); }
-  .card-view-quote { font-size: 26rpx; color: var(--color-primary); font-weight: 500; }
+  .card-time { font-size: $text-sm; color: $color-text-tertiary; }
+  .card-view-quote { font-size: $text-base; color: $color-primary; font-weight: 500; }
 }
 
 .loading-state {
@@ -328,7 +301,7 @@ onMounted(() => { fetchDemands(true); });
   flex-direction: column;
   align-items: center;
   padding: 40rpx 0;
-  gap: 16rpx;
-  .loading-text { font-size: 28rpx; color: var(--color-text-tertiary); }
+  gap: $space-sm;
+  .loading-text { font-size: $text-base; color: $color-text-tertiary; }
 }
 </style>

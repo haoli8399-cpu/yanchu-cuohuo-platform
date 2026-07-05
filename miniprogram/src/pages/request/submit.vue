@@ -468,7 +468,7 @@ onMounted(() => {});
 <style lang="scss" scoped>
 .demand-submit-page {
   min-height: 100vh;
-  background: var(--color-bg-page);
+  background: $color-bg-page;
   display: flex;
   flex-direction: column;
 }
@@ -477,38 +477,38 @@ onMounted(() => {});
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 88rpx;
-  background: var(--color-bg-card);
+  height: $nav-bar-height;
+  background: $color-bg-card;
   position: relative;
-  border-bottom: 1rpx solid var(--color-divider);
+  border-bottom: 1rpx solid $color-divider;
   .nav-left {
     position: absolute;
-    left: 24rpx;
+    left: $space-md;
     display: flex;
     align-items: center;
     gap: 4rpx;
-    font-size: 28rpx;
-    color: var(--color-text-primary);
+    font-size: $text-base;
+    color: $color-text-primary;
   }
-  .nav-title { font-size: 34rpx; font-weight: 600; color: var(--color-text-primary); }
+  .nav-title { font-size: $text-lg; font-weight: 600; color: $color-text-primary; }
   .nav-right {
     position: absolute;
-    right: 24rpx;
-    .nav-draft { font-size: 28rpx; color: var(--color-primary); }
+    right: $space-md;
+    .nav-draft { font-size: $text-base; color: $color-primary; }
   }
 }
 
 // 待处理提示
 .pending-alert {
-  margin: 24rpx 32rpx 0;
-  background: var(--color-primary-bg);
-  border-radius: var(--radius-md);
-  padding: 24rpx;
+  margin: $space-md $space-base 0;
+  background: $color-primary-bg;
+  border-radius: $radius-md;
+  padding: $space-md;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  .pending-text { font-size: 26rpx; color: var(--color-primary); }
-  .pending-action { font-size: 26rpx; color: var(--color-primary); font-weight: 500; }
+  .pending-text { font-size: $text-base; color: $color-primary; }
+  .pending-action { font-size: $text-base; color: $color-primary; font-weight: 500; }
 }
 
 .form-scroll {
@@ -516,30 +516,31 @@ onMounted(() => {});
 }
 
 .form-card {
-  margin: 24rpx 32rpx 0;
-  background: var(--color-bg-card);
-  border-radius: var(--radius-md);
-  padding: 32rpx;
+  margin: $space-md $space-base 0;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $space-lg;
+  box-shadow: $shadow-md;
 
   .card-title {
-    font-size: 30rpx;
+    font-size: $text-md;
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: $color-text-primary;
     display: block;
     margin-bottom: 8rpx;
   }
 }
 
 .form-field {
-  padding: 24rpx 0;
-  border-bottom: 1rpx solid var(--color-divider);
+  padding: $space-md 0;
+  border-bottom: 1rpx solid $color-divider;
   &:last-child { border-bottom: none; padding-bottom: 0; }
   &:first-child { padding-top: 0; }
 }
 
 .form-label {
-  font-size: 26rpx;
-  color: var(--color-text-secondary);
+  font-size: $text-base;
+  color: $color-text-secondary;
   margin-bottom: 12rpx;
   display: block;
 }
@@ -550,17 +551,17 @@ onMounted(() => {});
   justify-content: space-between;
   height: 96rpx;
   .select-value {
-    font-size: 30rpx;
-    color: #c4c4cc;
-    &.selected { color: var(--color-text-primary); }
+    font-size: $text-md;
+    color: $color-text-placeholder;
+    &.selected { color: $color-text-primary; }
   }
 }
 
 .form-input {
   height: 96rpx;
   width: 100%;
-  font-size: 30rpx;
-  color: var(--color-text-primary);
+  font-size: $text-md;
+  color: $color-text-primary;
   border: none;
   outline: none;
   background: transparent;
@@ -568,8 +569,8 @@ onMounted(() => {});
 
 .form-textarea {
   width: 100%;
-  font-size: 30rpx;
-  color: var(--color-text-primary);
+  font-size: $text-md;
+  color: $color-text-primary;
   border: none;
   outline: none;
   background: transparent;
@@ -583,22 +584,22 @@ onMounted(() => {});
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--color-bg-card);
+  background: $color-bg-card;
   display: flex;
-  gap: 24rpx;
-  padding: 24rpx 32rpx;
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  gap: $space-md;
+  padding: $space-md $space-base;
+  padding-bottom: calc(#{$space-md} + env(safe-area-inset-bottom));
   box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.06);
 
   .btn-draft {
     flex-shrink: 0;
     padding: 0 40rpx;
     height: 80rpx;
-    border-radius: 9999px;
-    border: 2rpx solid var(--color-border);
+    border-radius: $radius-full;
+    border: 2rpx solid $color-border;
     background: transparent;
-    color: var(--color-text-secondary);
-    font-size: 28rpx;
+    color: $color-text-secondary;
+    font-size: $text-base;
     line-height: 80rpx;
     text-align: center;
   }
@@ -606,11 +607,11 @@ onMounted(() => {});
   .btn-submit {
     flex: 1;
     height: 80rpx;
-    border-radius: 9999px;
+    border-radius: $radius-full;
     border: none;
-    background: var(--color-primary);
-    color: #fff;
-    font-size: 30rpx;
+    background: $color-primary;
+    color: $color-text-inverse;
+    font-size: $text-md;
     font-weight: 500;
     line-height: 80rpx;
     text-align: center;
@@ -623,54 +624,55 @@ onMounted(() => {});
 
 // Picker 弹窗
 .picker-wrap {
-  padding: 24rpx 32rpx 48rpx;
+  padding: $space-md $space-base 48rpx;
   .picker-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24rpx;
-    .picker-cancel, .picker-confirm { font-size: 28rpx; color: var(--color-primary); }
-    .picker-cancel { color: var(--color-text-tertiary); }
-    .picker-title { font-size: 32rpx; font-weight: 600; color: var(--color-text-primary); }
+    margin-bottom: $space-md;
+    .picker-cancel, .picker-confirm { font-size: $text-base; color: $color-primary; }
+    .picker-cancel { color: $color-text-tertiary; }
+    .picker-title { font-size: $text-xl; font-weight: 600; color: $color-text-primary; }
   }
-  .picker-options { display: flex; flex-direction: column; gap: 16rpx; }
+  .picker-options { display: flex; flex-direction: column; gap: $space-sm; }
   .picker-option {
-    padding: 24rpx;
-    border-radius: var(--radius-md);
-    font-size: 28rpx;
-    color: var(--color-text-primary);
-    background: var(--color-bg-page);
-    border: 2rpx solid var(--color-border);
+    padding: $space-md;
+    border-radius: $radius-md;
+    font-size: $text-base;
+    color: $color-text-primary;
+    background: $color-bg-page;
+    border: 2rpx solid $color-border;
     text-align: center;
-    &.active { border-color: var(--color-primary); background: rgba(167,139,250,.08); color: var(--color-primary); font-weight: 600; }
+    &.active { border-color: $color-primary; background: $color-primary-bg; color: $color-primary; font-weight: 600; }
   }
 }
 
 // ── SKU 自定义配置区 ──
 .sku-config-section {
-  margin: 24rpx 32rpx 0;
-  background: var(--color-bg-card);
-  border-radius: var(--radius-md);
-  padding: 32rpx;
-  border-left: 6rpx solid var(--color-primary);
+  margin: $space-md $space-base 0;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $space-lg;
+  border-left: 6rpx solid $color-primary;
+  box-shadow: $shadow-md;
 }
 
 .config-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16rpx;
+  margin-bottom: $space-sm;
   .config-sku-name {
-    font-size: 32rpx;
+    font-size: $text-xl;
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: $color-text-primary;
   }
   .config-default-hint {
-    font-size: 24rpx;
-    color: var(--color-primary);
+    font-size: $text-sm;
+    color: $color-primary;
     padding: 4rpx 16rpx;
-    border: 1rpx solid var(--color-primary);
-    border-radius: 9999px;
+    border: 1rpx solid $color-primary;
+    border-radius: $radius-full;
   }
 }
 
@@ -678,23 +680,23 @@ onMounted(() => {});
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24rpx;
+  margin-bottom: $space-md;
   .status-text {
-    font-size: 24rpx;
-    color: var(--color-text-tertiary);
+    font-size: $text-sm;
+    color: $color-text-tertiary;
   }
   .status-text-custom {
-    font-size: 24rpx;
-    color: var(--color-primary);
+    font-size: $text-sm;
+    color: $color-primary;
     font-weight: 500;
   }
   .toggle-btn {
-    font-size: 24rpx;
-    color: var(--color-primary);
-    background: var(--color-primary-bg);
+    font-size: $text-sm;
+    color: $color-primary;
+    background: $color-primary-bg;
     border: none;
-    padding: 8rpx 20rpx;
-    border-radius: 9999px;
+    padding: 8rpx $space-md;
+    border-radius: $radius-full;
     line-height: 1.4;
   }
 }
@@ -705,24 +707,24 @@ onMounted(() => {});
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16rpx 0;
-    border-bottom: 1rpx dashed var(--color-divider);
+    padding: $space-sm 0;
+    border-bottom: 1rpx dashed $color-divider;
     &:last-child { border-bottom: none; }
-    .cl { font-size: 26rpx; color: var(--color-text-secondary); }
-    .cv { font-size: 26rpx; color: var(--color-text-primary); font-weight: 500; }
+    .cl { font-size: $text-base; color: $color-text-secondary; }
+    .cv { font-size: $text-base; color: $color-text-primary; font-weight: 500; }
   }
 }
 
 // 自定义配置区
 .custom-config {
   .config-group {
-    margin-bottom: 24rpx;
+    margin-bottom: $space-md;
     &:last-child { margin-bottom: 0; }
   }
   .group-title {
-    font-size: 26rpx;
+    font-size: $text-base;
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: $color-text-primary;
     margin-bottom: 12rpx;
     display: block;
   }
@@ -739,39 +741,40 @@ onMounted(() => {});
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 24rpx;
-  border-radius: var(--radius-md);
-  background: var(--color-bg-page);
-  border: 2rpx solid var(--color-border);
+  padding: $space-md;
+  border-radius: $radius-md;
+  background: $color-bg-page;
+  border: 2rpx solid $color-border;
   transition: all 0.2s;
+  min-height: 44px;
   &.active {
-    border-color: var(--color-primary);
-    background: rgba(167,139,250,.08);
-    .tier-name, .tier-price { color: var(--color-primary); font-weight: 600; }
+    border-color: $color-primary;
+    background: $color-primary-bg;
+    .tier-name, .tier-price { color: $color-primary; font-weight: 600; }
   }
   .tier-name {
-    font-size: 26rpx;
-    color: var(--color-text-primary);
+    font-size: $text-base;
+    color: $color-text-primary;
   }
   .tier-price {
-    font-size: 24rpx;
-    color: var(--color-text-secondary);
+    font-size: $text-sm;
+    color: $color-text-secondary;
   }
 }
 
 .tier-detail {
   margin-top: 12rpx;
-  padding: 16rpx 20rpx;
-  background: var(--color-primary-bg);
-  border-radius: var(--radius-sm);
+  padding: $space-sm $space-md;
+  background: $color-primary-bg;
+  border-radius: $radius-sm;
   .td-text {
-    font-size: 24rpx;
-    color: var(--color-primary);
+    font-size: $text-sm;
+    color: $color-primary;
     display: block;
   }
   .td-scene {
-    font-size: 22rpx;
-    color: var(--color-text-tertiary);
+    font-size: $text-xs;
+    color: $color-text-tertiary;
     margin-top: 4rpx;
     display: block;
   }
@@ -781,39 +784,39 @@ onMounted(() => {});
 .duration-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 16rpx;
+  gap: $space-sm;
 }
 
 .duration-item {
-  padding: 16rpx 32rpx;
-  border-radius: 9999px;
-  background: var(--color-bg-page);
-  border: 2rpx solid var(--color-border);
-  font-size: 26rpx;
-  color: var(--color-text-primary);
+  padding: $space-sm $space-lg;
+  border-radius: $radius-full;
+  background: $color-bg-page;
+  border: 2rpx solid $color-border;
+  font-size: $text-base;
+  color: $color-text-primary;
   text-align: center;
   transition: all 0.2s;
   min-height: 44px; // 触控 ≥44px
   display: flex;
   align-items: center;
   &.active {
-    border-color: var(--color-primary);
-    background: var(--color-primary);
-    color: #fff;
+    border-color: $color-primary;
+    background: $color-primary;
+    color: $color-text-inverse;
     font-weight: 600;
   }
 }
 
 // 价格预览
 .price-preview {
-  margin-top: 24rpx;
-  padding: 24rpx;
+  margin-top: $space-md;
+  padding: $space-md;
   background: linear-gradient(135deg, #fef9f0, #fdf5e6);
-  border-radius: var(--radius-md);
+  border-radius: $radius-md;
   text-align: center;
   .pp-label {
-    font-size: 24rpx;
-    color: var(--color-text-tertiary);
+    font-size: $text-sm;
+    color: $color-text-tertiary;
     display: block;
     margin-bottom: 4rpx;
   }
@@ -824,8 +827,8 @@ onMounted(() => {});
     display: block;
   }
   .pp-note {
-    font-size: 22rpx;
-    color: var(--color-text-secondary);
+    font-size: $text-xs;
+    color: $color-text-secondary;
     margin-top: 8rpx;
     display: block;
   }

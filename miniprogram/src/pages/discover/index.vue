@@ -7,36 +7,28 @@
     </view>
 
     <!-- ====== Banner 轮播 ====== -->
-    <swiper
-      class="banner-swiper"
-      circular
-      autoplay
-      interval="4000"
-      :indicator-dots="false"
-      @change="onBannerChange"
-    >
-      <swiper-item v-for="(banner, idx) in banners" :key="idx">
-        <view class="banner-item" :style="{ background: banner.bg }">
-          <!-- 图片层 -->
-          <image v-if="banner.image" class="banner-img" :src="banner.image" mode="aspectFill" />
-          <!-- 渐变遮罩 -->
-          <view class="banner-overlay">
-            <text class="banner-text">{{ banner.text }}</text>
+    <view class="banner-wrap">
+      <swiper
+        class="banner-swiper"
+        circular
+        autoplay
+        interval="4000"
+        indicator-dots
+        indicator-color="rgba(255,255,255,0.4)"
+        indicator-active-color="#ffffff"
+      >
+        <swiper-item v-for="banner in banners" :key="banner.id">
+          <view class="banner-item">
+            <image class="banner-img" :src="banner.image" mode="aspectFill" />
+            <view class="banner-overlay">
+              <text class="banner-title">{{ banner.title }}</text>
+            </view>
           </view>
-        </view>
-      </swiper-item>
-    </swiper>
-    <!-- 分页点 -->
-    <view class="banner-dots">
-      <view
-        v-for="(banner, idx) in banners"
-        :key="idx"
-        class="dot"
-        :class="{ active: currentBanner === idx }"
-      ></view>
+        </swiper-item>
+      </swiper>
     </view>
 
-    <!-- ====== 快捷入口 2x2 ====== -->
+    <!-- ====== 快捷入口 4个 ====== -->
     <view class="entries-grid">
       <view class="entry-card" @click="goPage('/pages/sku/list')">
         <view class="entry-icon icon-search">
@@ -71,22 +63,29 @@
         <text class="section-more" @click="goPage('/pages/sku/list')">查看全部 ›</text>
       </view>
 
-      <view v-for="sku in hotSkus" :key="sku.id" class="rec-card" @click="goSkuDetail(sku.id)">
-        <!-- 封面图占位 -->
-        <view class="rec-cover">
-          <text class="rec-cover-text">{{ (sku.name || '演出').slice(0, 2) }}</text>
-        </view>
+      <view
+        v-for="sku in hotSkus"
+        :key="sku.id"
+        class="rec-card"
+        @click="goSkuDetail(sku.id)"
+      >
+        <image
+          class="rec-cover"
+          :src="sku.cover_url || '/static/images/show-card-1.jpg'"
+          mode="aspectFill"
+        />
         <view class="rec-info">
-          <text class="rec-title">{{ sku.name }}</text>
-          <text class="rec-desc">{{ sku.category || '演出' }} | {{ sku.desc || '适合年会/团建' }}</text>
+          <text class="rec-title">{{ sku.title }}</text>
+          <text class="rec-desc">{{ sku.category_label || sku.category || '演出' }} | {{ sku.desc || '适合年会/团建' }}</text>
           <view class="rec-footer">
-            <text class="rec-price">¥{{ sku.price || '—' }}/场</text>
+            <text class="rec-price">
+              ¥{{ sku.price || '—' }}<text class="rec-price-unit">/场</text>
+            </text>
             <view class="rec-meta">
-              <view class="rec-stars">
-                <text class="star">★</text>
-                <text class="star-num">{{ sku.rating || '4.9' }}分</text>
+              <text class="rec-rating">{{ sku.rating || '4.9' }}分</text>
+              <view class="rec-tag">
+                <text>{{ sku.category_label || sku.category || '演出' }}</text>
               </view>
-              <text v-if="sku.category" class="rec-tag">{{ sku.category }}</text>
             </view>
           </view>
         </view>
@@ -102,14 +101,12 @@ import { ref, onMounted } from "vue";
 import { getSKUList } from "@/services/api";
 import type { SKUProduct } from "@/types";
 
-const currentBanner = ref(0);
 const banners = [
-  { text: "限时特惠 | 企业年会脱口秀专场", bg: "linear-gradient(135deg, #7c3aed, #5b21b6)", image: "" },
-  { text: "企业定制专场 | 一站式方案", bg: "linear-gradient(135deg, #2563eb, #1d4ed8)", image: "" },
-  { text: "演员入驻招募 | 开启演出之旅", bg: "linear-gradient(135deg, #059669, #047857)", image: "" },
+  { id: '1', image: '/static/images/banner-show.jpg', title: '限时特惠 | 企业年会脱口秀专场' },
+  { id: '2', image: '/static/images/banner-show.jpg', title: '新喜剧之夜 | 周末演出推荐' },
 ];
 
-const hotSkus = ref<(SKUProduct & { rating?: string; desc?: string })[]>([]);
+const hotSkus = ref<(SKUProduct & { rating?: string; desc?: string; price?: number })[]>([]);
 
 onMounted(async () => {
   try {
@@ -119,16 +116,13 @@ onMounted(async () => {
         ...s,
         rating: s.rating || '4.9',
         desc: s.desc || s.category || '演出',
+        price: s.min_price,
       }));
     }
   } catch {}
 });
 
 const tabBarPages = ['/pages/discover/index', '/pages/sku/list', '/pages/request/list', '/pages/user/index'];
-
-function onBannerChange(e: any) {
-  currentBanner.value = e.detail.current;
-}
 
 function goPage(path: string) {
   if (tabBarPages.includes(path)) {
@@ -176,11 +170,15 @@ function callPhone() {
 }
 
 /* ===== Banner ===== */
-.banner-swiper {
+.banner-wrap {
   margin: 20rpx 32rpx 0;
+}
+
+.banner-swiper {
+  width: 100%;
+  height: 320rpx;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  aspect-ratio: 16 / 9;
 }
 
 .banner-item {
@@ -199,48 +197,24 @@ function callPhone() {
 
 .banner-overlay {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(26, 26, 46, 0.7) 0%, rgba(26, 26, 46, 0.2) 50%, transparent 100%);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 24rpx;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 40rpx 24rpx 20rpx;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
 }
 
-.banner-text {
-  color: #ffffff;
-  font-size: 26rpx;
+.banner-title {
+  color: #fff;
+  font-size: 28rpx;
   font-weight: 500;
   line-height: 1.3;
 }
 
-/* Banner dots */
-.banner-dots {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8rpx;
-  margin-top: 16rpx;
-}
-
-.dot {
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: 9999px;
-  background-color: #d1d5db;
-  transition: all 0.3s ease;
-
-  &.active {
-    width: 40rpx;
-    background-color: #7c3aed;
-    border-radius: 9999px;
-  }
-}
-
-/* ===== 快捷入口 2x2 ===== */
+/* ===== 快捷入口 4列 ===== */
 .entries-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: 16rpx;
   margin: 24rpx 32rpx;
 }
@@ -248,12 +222,14 @@ function callPhone() {
 .entry-card {
   background: #ffffff;
   border-radius: var(--radius-md);
-  padding: 24rpx;
+  padding: 24rpx 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+
+  &:active { opacity: 0.85; }
 }
 
 .entry-icon {
@@ -265,9 +241,9 @@ function callPhone() {
   justify-content: center;
 
   &.icon-search { background-color: #f5f3ff; }
-  &.icon-edit { background-color: #eff6ff; }
-  &.icon-list { background-color: #f0fdf4; }
-  &.icon-phone { background-color: #fffbeb; }
+  &.icon-edit   { background-color: #eff6ff; }
+  &.icon-list   { background-color: #f0fdf4; }
+  &.icon-phone  { background-color: #fff7ed; }
 }
 
 .entry-label {
@@ -308,24 +284,16 @@ function callPhone() {
   gap: 20rpx;
   margin-bottom: 16rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+
+  &:active { opacity: 0.85; }
 }
 
 .rec-cover {
   width: 160rpx;
   height: 160rpx;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
-}
-
-.rec-cover-text {
-  font-size: 40rpx;
-  font-weight: 700;
-  color: var(--color-primary);
-  opacity: 0.6;
+  background-color: #f3f4f6;
 }
 
 .rec-info {
@@ -364,26 +332,21 @@ function callPhone() {
   color: var(--color-primary);
 }
 
+.rec-price-unit {
+  font-size: 22rpx;
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+}
+
 .rec-meta {
   display: flex;
   align-items: center;
   gap: 8rpx;
 }
 
-.rec-stars {
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-
-  .star {
-    font-size: 22rpx;
-    color: #f59e0b;
-  }
-
-  .star-num {
-    font-size: 22rpx;
-    color: #f59e0b;
-  }
+.rec-rating {
+  font-size: 22rpx;
+  color: #f59e0b;
 }
 
 .rec-tag {

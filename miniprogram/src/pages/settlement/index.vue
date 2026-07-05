@@ -1,87 +1,84 @@
 <template>
   <view class="settlement-page">
-    <!-- 月度筛选 -->
-    <view class="month-picker">
-      <view class="month-nav" @click="prevMonth">‹</view>
-      <text class="month-display">{{ displayMonth }}</text>
-      <view class="month-nav" @click="nextMonth">›</view>
-    </view>
-
-    <!-- 月度汇总 -->
-    <view class="summary-card" v-if="summary.totalAmount > 0">
-      <view class="summary-item">
-        <text class="summary-value">¥{{ formatAmount(summary.totalAmount) }}</text>
-        <text class="summary-label">月度收入</text>
+    <!-- Monthly Summary -->
+    <view class="settlement-page__summary" v-if="summary.totalAmount > 0">
+      <view class="settlement-page__summary-item">
+        <text class="settlement-page__summary-num settlement-page__summary-num--total">¥{{ formatAmount(summary.totalAmount) }}</text>
+        <text class="settlement-page__summary-label">月度收入</text>
       </view>
-      <view class="summary-divider" />
-      <view class="summary-item">
-        <text class="summary-value">{{ summary.totalShows }}</text>
-        <text class="summary-label">演出场次</text>
+      <view class="settlement-page__summary-divider" />
+      <view class="settlement-page__summary-item">
+        <text class="settlement-page__summary-num settlement-page__summary-num--shows">{{ summary.totalShows }}</text>
+        <text class="settlement-page__summary-label">演出场次</text>
       </view>
     </view>
 
-    <!-- 结算列表 -->
+    <!-- Month Selector -->
+    <view class="settlement-page__month-selector">
+      <text class="settlement-page__month-arrow" @click="prevMonth">&#x2039;</text>
+      <text class="settlement-page__month-text">{{ displayMonth }}</text>
+      <text class="settlement-page__month-arrow" @click="nextMonth">&#x203a;</text>
+    </view>
+
+    <!-- Settlement List -->
     <scroll-view
       scroll-y
-      class="settlement-list"
+      class="settlement-page__list"
       refresher-enabled
       :refresher-triggered="refreshing"
       @refresherrefresh="onRefresh"
     >
-      <view v-if="loading" class="loading-state">
-        <view style="display:flex;justify-content:center;padding:80rpx 0">
-          <van-loading size="48rpx" color="#7c3aed" />
-        </view>
+      <view v-if="loading" class="settlement-page__loading">
+        <text class="settlement-page__loading-text">加载中...</text>
       </view>
 
       <template v-else-if="list.length > 0">
         <view
           v-for="item in list"
           :key="item.id"
-          class="settlement-card"
+          class="settlement-page__card"
         >
-          <view class="card-header">
-            <view>
-              <text class="card-title">{{ item.sku_title }}</text>
-              <text class="card-date">{{ item.show_date }}</text>
+          <view class="settlement-page__card-header">
+            <view class="settlement-page__card-header-left">
+              <text class="settlement-page__card-title">{{ item.sku_title }}</text>
+              <text class="settlement-page__card-date">{{ item.show_date }}</text>
             </view>
-            <view
-              class="card-status"
-              :style="{ background: statusStyle(item.status).bg, color: statusStyle(item.status).color }"
-            >
-              {{ item.status_label || item.status }}
+            <view class="settlement-page__card-header-right">
+              <text class="settlement-page__card-amount">¥{{ item.final_amount }}</text>
+              <CfStatusTag :type="item.status" />
             </view>
           </view>
 
-          <!-- 费用明细 -->
-          <view class="fee-detail">
-            <view class="fee-row">
-              <text class="fee-label">演出费</text>
-              <text class="fee-value">+¥{{ item.fee }}</text>
+          <!-- Fee Detail -->
+          <view class="settlement-page__card-fee">
+            <view class="settlement-page__card-fee-row">
+              <text class="settlement-page__card-fee-label">演出费</text>
+              <text class="settlement-page__card-fee-value">+¥{{ item.fee }}</text>
             </view>
-            <view class="fee-row" v-if="item.adjustment !== 0">
-              <text class="fee-label">调整</text>
-              <text class="fee-value" :class="item.adjustment > 0 ? 'positive' : 'negative'">
+            <view v-if="item.adjustment !== 0" class="settlement-page__card-fee-row">
+              <text class="settlement-page__card-fee-label">调整</text>
+              <text class="settlement-page__card-fee-value" :class="item.adjustment > 0 ? 'settlement-page__card-fee-value--positive' : 'settlement-page__card-fee-value--negative'">
                 {{ item.adjustment > 0 ? '+' : '' }}¥{{ item.adjustment }}
               </text>
             </view>
-            <view class="fee-row total">
-              <text class="fee-label">实收金额</text>
-              <text class="fee-value total-amount">¥{{ item.final_amount }}</text>
+            <view class="settlement-page__card-fee-row settlement-page__card-fee-row--total">
+              <text class="settlement-page__card-fee-label">实收金额</text>
+              <text class="settlement-page__card-fee-value settlement-page__card-fee-value--total">¥{{ item.final_amount }}</text>
             </view>
           </view>
 
-          <view class="card-footer">
-            <text class="footer-month">{{ item.settlement_month }} 结算</text>
-            <text v-if="item.settled_at" class="footer-settled">
+          <view class="settlement-page__card-footer">
+            <text class="settlement-page__card-footer-month">{{ item.settlement_month }} 结算</text>
+            <text v-if="item.settled_at" class="settlement-page__card-footer-date">
               发放于 {{ formatDate(item.settled_at) }}
             </text>
           </view>
         </view>
       </template>
 
-      <EmptyState v-else icon="bill-o" title="暂无结算记录" description="演出完成后自动生成结算" />
+      <CfEmptyState v-else icon="bill-o" text="暂无结算记录" />
     </scroll-view>
+
     <TabBar current="/pages/settlement/index" />
   </view>
 </template>
@@ -90,6 +87,8 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { getSettlementList } from '@/services/api';
 import type { SettlementRecord } from '@/types';
+import CfStatusTag from '@/components/CfStatusTag.vue';
+import CfEmptyState from '@/components/CfEmptyState.vue';
 
 const loading = ref(true);
 const refreshing = ref(false);
@@ -114,23 +113,13 @@ function formatDate(iso: string): string {
   return iso.slice(0, 10);
 }
 
-function statusStyle(status: string) {
-  const map: Record<string, { bg: string; color: string }> = {
-    '待结算': { bg: 'rgba(245,158,11,.15)', color: '#f59e0b' },
-    '已结算': { bg: 'rgba(59,130,246,.15)', color: '#3b82f6' },
-    '已发放': { bg: 'rgba(34,197,94,.15)', color: '#22c55e' }
-  };
-  return map[status] || { bg: 'rgba(113,113,122,.15)', color: '#71717a' };
-}
-
 async function fetchSettlements() {
   loading.value = true;
   try {
     const res = await getSettlementList({ month: currentMonth.value || undefined });
     if (res.ok && res.data) {
       list.value = res.data;
-      // 计算汇总
-      summary.totalAmount = res.data.reduce((s, i) => s + i.final_amount, 0);
+      summary.totalAmount = res.data.reduce((s: number, i: SettlementRecord) => s + i.final_amount, 0);
       summary.totalShows = res.data.length;
     }
   } catch (e) {
@@ -167,69 +156,168 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.settlement-page { min-height: 100vh; background: var(--color-bg-page); padding-bottom: 120rpx; }
-
-.month-picker {
-  display: flex; align-items: center; justify-content: center; padding: 24rpx;
-  background: var(--color-bg-card); border-bottom: 1rpx solid var(--color-border);
-
-  .month-nav { font-size: 40rpx; color: var(--color-primary); padding: 0 32rpx; }
-  .month-display { font-size: 32rpx; font-weight: 700; color: var(--color-text-primary); min-width: 180rpx; text-align: center; }
+.settlement-page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: 120rpx;
 }
 
-.summary-card {
-  display: flex; align-items: center; margin: 20rpx 24rpx;
-  background: linear-gradient(135deg, #4c1d95, #7c3aed);
-  border-radius: var(--radius-md); padding: 32rpx 0;
-
-  .summary-item { flex: 1; text-align: center; }
-  .summary-value { font-size: 40rpx; font-weight: 700; color: #fff; display: block; }
-  .summary-label { font-size: 24rpx; color: rgba(255,255,255,.7); margin-top: 4rpx; display: block; }
-  .summary-divider { width: 1rpx; height: 48rpx; background: rgba(255,255,255,.2); }
+/* Summary */
+.settlement-page__summary {
+  display: flex;
+  align-items: center;
+  margin: $space-md $space-base;
+  background: linear-gradient(135deg, $color-primary-dark, $color-primary);
+  border-radius: $radius-md;
+  padding: $space-2xl 0;
+  box-shadow: $shadow-md;
+}
+.settlement-page__summary-item {
+  flex: 1;
+  text-align: center;
+}
+.settlement-page__summary-num {
+  font-size: $text-3xl;
+  font-weight: 700;
+  color: #fff;
+  display: block;
+}
+.settlement-page__summary-num--total {
+  font-size: 48rpx;
+}
+.settlement-page__summary-num--shows {
+  color: rgba(255,255,255,.9);
+}
+.settlement-page__summary-label {
+  font-size: $text-sm;
+  color: rgba(255,255,255,.7);
+  margin-top: 4rpx;
+  display: block;
+}
+.settlement-page__summary-divider {
+  width: 1rpx;
+  height: 48rpx;
+  background-color: rgba(255,255,255,.2);
 }
 
-.settlement-list { padding: 0 24rpx 20rpx; }
-
-.settlement-card {
-  background: var(--color-bg-card); border-radius: var(--radius-md); padding: 28rpx; margin-bottom: 20rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0,0,0,.04);
+/* Month Selector */
+.settlement-page__month-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-md $space-base;
+  gap: $space-2xl;
+}
+.settlement-page__month-text {
+  font-size: $text-md;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+.settlement-page__month-arrow {
+  font-size: $text-2xl;
+  color: $color-text-secondary;
+  padding: $space-xs;
+  min-width: 88rpx;
+  text-align: center;
 }
 
-.card-header {
-  display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20rpx;
+/* List */
+.settlement-page__list {
+  padding: 0 $space-base;
+}
 
-  .card-title { font-size: 28rpx; font-weight: 600; color: var(--color-text-primary); display: block; }
-  .card-date { font-size: 24rpx; color: var(--color-text-tertiary); display: block; margin-top: 4rpx; }
+.settlement-page__loading {
+  padding: 80rpx 0;
+  text-align: center;
+}
+.settlement-page__loading-text {
+  font-size: $text-md;
+  color: $color-text-tertiary;
+}
 
-  .card-status {
-    padding: 6rpx 16rpx; border-radius: var(--radius-xs); font-size: 22rpx; flex-shrink: 0;
+/* Card */
+.settlement-page__card {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $space-lg;
+  margin-bottom: $space-md;
+  box-shadow: $shadow-sm;
+}
+
+.settlement-page__card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $space-md;
+}
+.settlement-page__card-header-left {
+  flex: 1;
+}
+.settlement-page__card-title {
+  font-size: $text-md;
+  font-weight: 600;
+  color: $color-text-primary;
+  display: block;
+}
+.settlement-page__card-date {
+  font-size: $text-sm;
+  color: $color-text-tertiary;
+  display: block;
+  margin-top: 4rpx;
+}
+.settlement-page__card-header-right {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  flex-shrink: 0;
+}
+.settlement-page__card-amount {
+  font-size: $text-lg;
+  font-weight: 600;
+  color: $color-primary;
+}
+
+/* Fee Detail */
+.settlement-page__card-fee {
+  margin-bottom: $space-md;
+  padding: $space-md;
+  background-color: $color-bg-page;
+  border-radius: $radius-xs;
+}
+.settlement-page__card-fee-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6rpx 0;
+  &--total {
+    border-top: 1rpx solid $color-border;
+    padding-top: $space-sm;
+    margin-top: 8rpx;
   }
 }
-
-.fee-detail {
-  margin-bottom: 16rpx; padding: 16rpx; background: var(--color-bg-page); border-radius: var(--radius-xs);
-
-  .fee-row { display: flex; justify-content: space-between; padding: 6rpx 0;
-    &.total { border-top: 1rpx solid var(--color-border); padding-top: 12rpx; margin-top: 8rpx; }
-  }
-  .fee-label { font-size: 24rpx; color: var(--color-text-tertiary); }
-  .fee-value { font-size: 26rpx; color: var(--color-text-primary); font-weight: 500;
-    &.positive { color: var(--state-success); }
-    &.negative { color: var(--state-error); }
-  }
-  .total-amount { font-size: 32rpx; font-weight: 700; color: var(--state-error); }
+.settlement-page__card-fee-label {
+  font-size: $text-sm;
+  color: $color-text-tertiary;
+}
+.settlement-page__card-fee-value {
+  font-size: $text-base;
+  color: $color-text-primary;
+  font-weight: 500;
+  &--positive { color: $state-success; }
+  &--negative { color: $state-error; }
+  &--total { font-size: $text-xl; font-weight: 700; color: $state-error; }
 }
 
-.card-footer { display: flex; justify-content: space-between;
-  .footer-month { font-size: 22rpx; color: var(--color-text-tertiary); }
-  .footer-settled { font-size: 22rpx; color: var(--state-success); }
+/* Card Footer */
+.settlement-page__card-footer {
+  display: flex;
+  justify-content: space-between;
 }
-
-.loading-state { padding: 20rpx 0; }
-
-.empty-state { display: flex; flex-direction: column; align-items: center; padding: 120rpx 0;
-  .empty-icon { display: flex; justify-content: center; margin-bottom: 16rpx; }
-  .empty-title { font-size: 32rpx; font-weight: 600; color: var(--color-primary); margin-bottom: 8rpx; }
-  .empty-desc { font-size: 26rpx; color: var(--color-text-tertiary); }
+.settlement-page__card-footer-month {
+  font-size: $text-xs;
+  color: $color-text-tertiary;
+}
+.settlement-page__card-footer-date {
+  font-size: $text-xs;
+  color: $state-confirmed;
 }
 </style>

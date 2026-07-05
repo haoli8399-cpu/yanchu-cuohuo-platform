@@ -98,6 +98,24 @@ export interface UnifiedPlan {
   price: number;
 }
 
+// ── 通用状态标签 ──
+export type RequestStatus = 'pending' | 'quoted' | 'confirmed' | 'signed' | 'cancelled'
+
+export type AssignmentStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled' | 'completed'
+
+export const StatusLabels: Record<string, string> = {
+  pending: '待确认',
+  pending_quote: '待报价',
+  quoted: '已报价',
+  confirmed: '已确认',
+  signed: '已签约',
+  cancelled: '已取消',
+  rejected: '已拒绝',
+  completed: '已完成',
+  transferred: '已打款',
+  settled: '已结算',
+}
+
 // ── 需求 ──
 export interface DemandRequest {
   id: string;

@@ -1,110 +1,110 @@
 <template>
-  <view class="assign-detail-page">
+  <view class="assignment-detail-page">
     <template v-if="detail">
-      <!-- 状态横幅 -->
-      <view class="status-banner" :style="{ background: statusStyle(detail.status).bg }">
-        <text class="status-text" :style="{ color: statusStyle(detail.status).color }">
-          {{ detail.status_label || detail.status }}
-        </text>
-        <text v-if="detail.confirm_deadline && detail.status === '待确认'" class="deadline-text">
+      <!-- Status Banner -->
+      <view class="assignment-detail-page__banner">
+        <text class="assignment-detail-page__banner-title">{{ detail.sku_title }}</text>
+        <view class="assignment-detail-page__banner-meta">
+          <CfStatusTag :type="detail.status" />
+          <text class="assignment-detail-page__banner-sub">{{ detail.role_name }}</text>
+        </view>
+        <text v-if="detail.confirm_deadline && detail.status === '待确认'" class="assignment-detail-page__banner-deadline">
           请在 {{ detail.confirm_deadline }} 前确认
         </text>
       </view>
 
-      <!-- 演出基本信息 -->
-      <view class="info-card">
-        <view class="card-title">演出信息</view>
-        <view class="info-grid">
-          <view class="info-item">
-            <text class="item-label">演出名称</text>
-            <text class="item-value">{{ detail.sku_title }}</text>
+      <!-- Show Info -->
+      <view class="assignment-detail-page__card">
+        <text class="assignment-detail-page__card-title">演出信息</text>
+        <view class="assignment-detail-page__info-grid">
+          <view class="assignment-detail-page__info-row">
+            <text class="assignment-detail-page__info-label">演出日期</text>
+            <text class="assignment-detail-page__info-value">{{ detail.show_date }}</text>
           </view>
-          <view class="info-item">
-            <text class="item-label">日期时间</text>
-            <text class="item-value">{{ detail.show_date }} {{ detail.start_time }}-{{ detail.end_time }}</text>
+          <view class="assignment-detail-page__info-row">
+            <text class="assignment-detail-page__info-label">演出时间</text>
+            <text class="assignment-detail-page__info-value">{{ detail.start_time }}-{{ detail.end_time }}</text>
           </view>
-          <view class="info-item">
-            <text class="item-label">演出场地</text>
-            <text class="item-value">{{ detail.venue_name || detail.venue }}</text>
+          <view class="assignment-detail-page__info-row">
+            <text class="assignment-detail-page__info-label">演出场地</text>
+            <text class="assignment-detail-page__info-value">{{ detail.venue_name || detail.venue }}</text>
           </view>
-          <view class="info-item">
-            <text class="item-label">活动公司</text>
-            <text class="item-value">{{ detail.company_name }}</text>
+          <view class="assignment-detail-page__info-row">
+            <text class="assignment-detail-page__info-label">活动公司</text>
+            <text class="assignment-detail-page__info-value">{{ detail.company_name }}</text>
           </view>
-          <view class="info-item">
-            <text class="item-label">演出角色</text>
-            <text class="item-value highlight">{{ detail.role_name }}</text>
+          <view class="assignment-detail-page__info-row">
+            <text class="assignment-detail-page__info-label">演出角色</text>
+            <text class="assignment-detail-page__info-value assignment-detail-page__info-value--highlight">{{ detail.role_name }}</text>
           </view>
-          <view class="info-item">
-            <text class="item-label">阵容</text>
-            <text class="item-value">{{ detail.cast_info || '-' }}</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 阵容信息 -->
-      <view class="info-card" v-if="detail.cast_list && detail.cast_list.length">
-        <view class="card-title">阵容信息</view>
-        <view class="cast-list">
-          <view v-for="actor in detail.cast_list" :key="actor.id" class="cast-item">
-            <text class="cast-name">{{ actor.name }}</text>
-            <text class="cast-role">{{ actor.role_name }}</text>
+          <view v-if="detail.cast_info" class="assignment-detail-page__info-row">
+            <text class="assignment-detail-page__info-label">阵容</text>
+            <text class="assignment-detail-page__info-value">{{ detail.cast_info }}</text>
           </view>
         </view>
       </view>
 
-      <!-- 费用信息 -->
-      <view class="info-card">
-        <view class="card-title">费用信息</view>
-        <view class="fee-highlight">
-          <text class="fee-amount">¥{{ detail.fee }}</text>
-          <text class="fee-desc">本场演出费</text>
+      <!-- Cast List -->
+      <view v-if="detail.cast_list && detail.cast_list.length" class="assignment-detail-page__card">
+        <text class="assignment-detail-page__card-title">阵容信息</text>
+        <view class="assignment-detail-page__cast-list">
+          <view v-for="actor in detail.cast_list" :key="actor.id" class="assignment-detail-page__cast-item">
+            <text class="assignment-detail-page__cast-name">{{ actor.name }}</text>
+            <text class="assignment-detail-page__cast-role">{{ actor.role_name }}</text>
+          </view>
         </view>
       </view>
 
-      <!-- 演出反馈 -->
-      <view class="info-card" v-if="detail.feedback">
-        <view class="card-title">演出反馈</view>
-        <view class="feedback-content">
-          <text class="feedback-text">{{ detail.feedback.content }}</text>
-          <text v-if="detail.feedback.created_at" class="feedback-date">{{ detail.feedback.created_at.slice(0,10) }}</text>
+      <!-- Fee -->
+      <view class="assignment-detail-page__card">
+        <text class="assignment-detail-page__card-title">费用信息</text>
+        <view class="assignment-detail-page__fee-highlight">
+          <text class="assignment-detail-page__fee-amount">¥{{ detail.fee }}</text>
+          <text class="assignment-detail-page__fee-desc">本场演出费</text>
         </view>
       </view>
 
-      <!-- 拒绝原因（如已拒绝） -->
-      <view v-if="detail.status === '已拒绝' && detail.reject_reason" class="info-card">
-        <view class="card-title">拒绝原因</view>
-        <view class="reject-reason">
-          <text class="reason-icon">💬</text>
-          <text class="reason-text">{{ detail.reject_reason }}</text>
+      <!-- Feedback -->
+      <view v-if="detail.feedback" class="assignment-detail-page__card">
+        <text class="assignment-detail-page__card-title">演出反馈</text>
+        <view class="assignment-detail-page__feedback">
+          <text class="assignment-detail-page__feedback-text">{{ detail.feedback.content }}</text>
+          <text v-if="detail.feedback.created_at" class="assignment-detail-page__feedback-date">{{ detail.feedback.created_at.slice(0,10) }}</text>
         </view>
       </view>
 
-      <!-- 操作按钮 -->
-      <view class="action-section" v-if="detail.status === '待确认'">
-        <view class="action-hint">
-          <text class="hint-icon">⚠️</text>
-          <text class="hint-text">请在截止时间前确认，逾期将自动取消</text>
-        </view>
-        <view class="action-btns">
-          <van-button plain hairline type="danger" size="large" round @click="handleReject" style="flex:1">拒绝</van-button>
-          <van-button type="primary" size="large" round :loading="actionLoading" @click="handleConfirm" style="flex:1">确认接单</van-button>
+      <!-- Reject Reason -->
+      <view v-if="detail.status === '已拒绝' && detail.reject_reason" class="assignment-detail-page__card">
+        <text class="assignment-detail-page__card-title">拒绝原因</text>
+        <view class="assignment-detail-page__reject-reason">
+          <text class="assignment-detail-page__reject-icon">💬</text>
+          <text class="assignment-detail-page__reject-text">{{ detail.reject_reason }}</text>
         </view>
       </view>
 
-      <!-- 已确认的操作提示 -->
-      <view v-if="detail.status === '已确认'" class="action-section confirmed">
-        <view class="confirmed-hint">
-          <text class="confirmed-icon">✅</text>
-          <text class="confirmed-text">已确认，请按时到场并完成签到打卡</text>
+      <!-- Action: Pending -->
+      <view v-if="detail.status === '待确认'" class="assignment-detail-page__action assignment-detail-page__action--pending">
+        <view class="assignment-detail-page__action-hint">
+          <text>⚠️ 请在截止时间前确认，逾期将自动取消</text>
         </view>
-        <van-button type="success" size="large" round block @click="goCheckin">去签到</van-button>
+        <view class="assignment-detail-page__action-btns">
+          <button class="assignment-detail-page__btn assignment-detail-page__btn--reject" @click="handleReject">拒绝</button>
+          <button class="assignment-detail-page__btn assignment-detail-page__btn--accept" :class="{ 'assignment-detail-page__btn--loading': actionLoading }" @click="handleConfirm">确认接单</button>
+        </view>
+      </view>
+
+      <!-- Action: Confirmed -->
+      <view v-if="detail.status === '已确认'" class="assignment-detail-page__action assignment-detail-page__action--confirmed">
+        <view class="assignment-detail-page__action-hint assignment-detail-page__action-hint--confirmed">
+          <text>✅ 已确认，请按时到场并完成签到打卡</text>
+        </view>
+        <button class="assignment-detail-page__btn assignment-detail-page__btn--checkin" @click="goCheckin">去签到</button>
       </view>
     </template>
 
-    <!-- 加载/错误 -->
-    <view v-else class="loading-state">
-      <van-loading size="48rpx" color="#7c3aed" />
+    <!-- Loading -->
+    <view v-else class="assignment-detail-page__loading">
+      <text>加载中...</text>
     </view>
   </view>
 </template>
@@ -114,6 +114,7 @@ import { ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { getAssignmentDetail, confirmAssignment } from '@/services/api';
 import type { Assignment } from '@/types';
+import CfStatusTag from '@/components/CfStatusTag.vue';
 
 const detail = ref<Assignment | null>(null);
 const actionLoading = ref(false);
@@ -122,16 +123,6 @@ onLoad((options: any) => {
   const id = options?.id || '';
   if (id) fetchDetail(id);
 });
-
-function statusStyle(status: string) {
-  const map: Record<string, { bg: string; color: string }> = {
-    '待确认': { bg: 'rgba(245,158,11,.1)', color: '#f59e0b' },
-    '已确认': { bg: 'rgba(34,197,94,.1)', color: '#22c55e' },
-    '已拒绝': { bg: 'rgba(239,68,68,.1)', color: '#ef4444' },
-    '已取消': { bg: 'rgba(113,113,122,.1)', color: '#71717a' }
-  };
-  return map[status] || map['已取消'];
-}
 
 async function fetchDetail(id: string) {
   try {
@@ -190,80 +181,216 @@ function goCheckin() {
 </script>
 
 <style lang="scss" scoped>
-.assign-detail-page { min-height: 100vh; background: var(--color-bg-page); padding: 20rpx 24rpx; padding-bottom: 120rpx; }
-
-.status-banner {
-  padding: 24rpx; border-radius: var(--radius-md); margin-bottom: 24rpx; text-align: center;
-
-  .status-text { font-size: 32rpx; font-weight: 700; display: block; }
-  .deadline-text { font-size: 24rpx; color: var(--color-text-tertiary); margin-top: 8rpx; display: block; }
+.assignment-detail-page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding: $space-md $space-base;
+  padding-bottom: 120rpx;
 }
 
-.info-card {
-  background: var(--color-bg-card); border-radius: var(--radius-md); padding: 28rpx; margin-bottom: 24rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0,0,0,.04);
-
-  .card-title { font-size: 28rpx; font-weight: 600; color: var(--color-text-primary); margin-bottom: 20rpx; padding-bottom: 16rpx; border-bottom: 1rpx solid var(--color-border); }
+/* Banner */
+.assignment-detail-page__banner {
+  background-color: $color-bg-card;
+  border-left: 8rpx solid $color-primary;
+  border-radius: $radius-md;
+  padding: $space-lg;
+  margin-bottom: $space-md;
+  box-shadow: $shadow-sm;
+}
+.assignment-detail-page__banner-title {
+  font-size: $text-xl;
+  font-weight: 600;
+  color: $color-text-primary;
+  display: block;
+}
+.assignment-detail-page__banner-meta {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  margin-top: $space-sm;
+}
+.assignment-detail-page__banner-sub {
+  font-size: $text-base;
+  color: $color-text-secondary;
+}
+.assignment-detail-page__banner-deadline {
+  font-size: $text-sm;
+  color: $state-warning;
+  display: block;
+  margin-top: $space-sm;
 }
 
-.info-grid {
-  .info-item { display: flex; justify-content: space-between; padding: 12rpx 0; border-bottom: 1rpx solid var(--color-border);
-    &:last-child { border-bottom: none; }
+/* Cards */
+.assignment-detail-page__card {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $space-lg;
+  margin-bottom: $space-md;
+  box-shadow: $shadow-sm;
+}
+.assignment-detail-page__card-title {
+  font-size: $text-md;
+  font-weight: 600;
+  color: $color-text-primary;
+  margin-bottom: $space-lg;
+  padding-bottom: $space-sm;
+  border-bottom: 1rpx solid $color-border;
+  display: block;
+}
+
+/* Info Grid */
+.assignment-detail-page__info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: $space-sm 0;
+  border-bottom: 1rpx solid $color-divider;
+  &:last-child { border-bottom: none; }
+}
+.assignment-detail-page__info-label {
+  font-size: $text-base;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+.assignment-detail-page__info-value {
+  font-size: $text-base;
+  color: $color-text-primary;
+  text-align: right;
+  max-width: 60%;
+  &--highlight { color: $color-primary; font-weight: 600; }
+}
+
+/* Cast */
+.assignment-detail-page__cast-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+.assignment-detail-page__cast-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $space-sm $space-md;
+  background-color: $color-bg-page;
+  border-radius: $radius-xs;
+}
+.assignment-detail-page__cast-name {
+  font-size: $text-md;
+  color: $color-text-primary;
+  font-weight: 500;
+}
+.assignment-detail-page__cast-role {
+  font-size: $text-sm;
+  color: $color-primary;
+}
+
+/* Fee */
+.assignment-detail-page__fee-highlight {
+  text-align: center;
+  padding: $space-xl 0;
+}
+.assignment-detail-page__fee-amount {
+  font-size: 64rpx;
+  font-weight: 800;
+  color: $state-error;
+  display: block;
+}
+.assignment-detail-page__fee-desc {
+  font-size: $text-sm;
+  color: $color-text-tertiary;
+  margin-top: 8rpx;
+  display: block;
+}
+
+/* Feedback */
+.assignment-detail-page__feedback {
+  padding: $space-md;
+  background-color: $color-bg-page;
+  border-radius: $radius-xs;
+}
+.assignment-detail-page__feedback-text {
+  font-size: $text-base;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  display: block;
+}
+.assignment-detail-page__feedback-date {
+  font-size: $text-xs;
+  color: $color-text-tertiary;
+  margin-top: 8rpx;
+  display: block;
+}
+
+/* Reject Reason */
+.assignment-detail-page__reject-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-sm;
+  padding: $space-md;
+  background-color: $state-cancelled-bg;
+  border-radius: $radius-xs;
+}
+.assignment-detail-page__reject-icon { font-size: $text-md; flex-shrink: 0; }
+.assignment-detail-page__reject-text {
+  font-size: $text-base;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}
+
+/* Actions */
+.assignment-detail-page__action {
+  margin-top: $space-md;
+}
+.assignment-detail-page__action-hint {
+  padding: $space-sm $space-md;
+  background-color: $state-pending-bg;
+  border-radius: $radius-xs;
+  font-size: $text-sm;
+  color: $state-pending;
+  margin-bottom: $space-md;
+  text-align: center;
+  &--confirmed {
+    background-color: $state-confirmed-bg;
+    color: $state-confirmed;
   }
-  .item-label { font-size: 26rpx; color: var(--color-text-tertiary); }
-  .item-value { font-size: 26rpx; color: var(--color-text-primary); text-align: right; max-width: 60%;
-    &.highlight { color: var(--color-primary); font-weight: 600; }
+}
+.assignment-detail-page__action-btns {
+  display: flex;
+  gap: $space-lg;
+}
+
+.assignment-detail-page__btn {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: $radius-full;
+  font-size: $text-md;
+  font-weight: 500;
+  border: none;
+  text-align: center;
+
+  &--accept {
+    background-color: $state-confirmed;
+    color: #fff;
+  }
+  &--reject {
+    background-color: transparent;
+    color: $state-cancelled;
+    border: 2rpx solid $state-cancelled;
+  }
+  &--checkin {
+    background-color: $color-primary;
+    color: #fff;
+  }
+  &--loading {
+    opacity: .7;
   }
 }
 
-.fee-highlight {
-  text-align: center; padding: 32rpx 0;
-
-  .fee-amount { font-size: 64rpx; font-weight: 800; color: var(--state-error); display: block; }
-  .fee-desc { font-size: 24rpx; color: var(--color-text-tertiary); margin-top: 8rpx; display: block; }
+/* Loading */
+.assignment-detail-page__loading {
+  padding: 120rpx 0;
+  text-align: center;
+  color: $color-text-tertiary;
+  font-size: $text-md;
 }
-
-.feedback-content {
-  padding: 20rpx; background: rgba(167,139,250,.06);
-  border-radius: var(--radius-xs);
-
-  .feedback-text { font-size: 26rpx; color: var(--color-text-secondary); line-height: 1.6; display: block; }
-  .feedback-date { font-size: 22rpx; color: var(--color-text-tertiary); margin-top: 8rpx; display: block; }
-}
-
-.cast-list { display: flex; flex-direction: column; gap: 12rpx; }
-.cast-item {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 16rpx; background: var(--color-bg-page); border-radius: var(--radius-xs);
-}
-.cast-name { font-size: 28rpx; color: var(--color-text-primary); font-weight: 500; }
-.cast-role { font-size: 24rpx; color: var(--color-primary); }
-
-.reject-reason {
-  display: flex; align-items: flex-start; gap: 12rpx; padding: 16rpx;
-  background: rgba(239,68,68,.06); border-radius: var(--radius-xs);
-
-  .reason-icon { font-size: 28rpx; }
-  .reason-text { font-size: 26rpx; color: var(--color-text-secondary); line-height: 1.6; }
-}
-
-.action-section {
-  margin-top: 20rpx;
-
-  .action-hint { display: flex; align-items: center; gap: 8rpx; padding: 16rpx 0; margin-bottom: 16rpx;
-    .hint-icon { font-size: 28rpx; }
-    .hint-text { font-size: 24rpx; color: var(--state-warning); }
-  }
-
-  .action-btns { display: flex; gap: 20rpx; }
-
-  &.confirmed {
-  .confirmed-hint { display: flex; align-items: center; gap: 8rpx; padding: 16rpx; background: rgba(34,197,94,.06); border-radius: var(--radius-xs); margin-bottom: 20rpx;
-    .confirmed-icon { font-size: 28rpx; }
-    .confirmed-text { font-size: 24rpx; color: var(--state-success); }
-  }
-  }
-}
-
-.loading-state { padding: 60rpx 0; text-align: center; color: var(--color-text-tertiary); }
 </style>
