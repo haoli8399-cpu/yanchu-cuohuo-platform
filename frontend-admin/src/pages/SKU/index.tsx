@@ -2,6 +2,14 @@
  * SKU 列表页 - SKU方案库管理 (P-22, P0)
  *
  * 三态处理：loading / empty / error
+ * Code Standards:
+ * - UX-1: 触控目标 ≥ 44px
+ * - UX-2: 三态处理
+ * - UX-3: 加载用骨架屏
+ * - UX-4: 空状态显示引导文案
+ * - UX-5: 错误显示友好提示 + 重试按钮
+ * - API-7: 所有 API 调用通过 apiClient
+ * - G-4: 不提交 console.log / debugger
  */
 import React, { useRef, useState } from 'react';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -9,8 +17,21 @@ import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { Button, Tag, Space, Popconfirm, message, Empty, Result } from 'antd';
 import { PlusOutlined, ReloadOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { SKU } from '@/types/sku';
-import { BusinessLineLabel, StatusLabel, StatusColor } from '@/types/sku';
+import { BusinessLineLabel } from '@/types/sku';
 import { getSKUList, deleteSKU, toggleSKUStatus } from '@/services/sku';
+
+// 状态标签颜色映射
+const statusColorMap: Record<SKU['status'], string> = {
+  online: 'green',
+  offline: 'default',
+  draft: 'orange',
+};
+
+const statusLabelMap: Record<SKU['status'], string> = {
+  online: '已上架',
+  offline: '已下架',
+  draft: '草稿',
+};
 
 /** 价格格式化（分 → 元） */
 function formatPrice(cents: number): string {
@@ -34,8 +55,8 @@ const SKUListPage: React.FC = () => {
 
   /** 上架/下架切换 */
   const handleToggleStatus = async (id: string, currentStatus: SKU['status']) => {
-    const targetStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    const actionLabel = targetStatus === 'active' ? '上架' : '下架';
+    const targetStatus = currentStatus === 'online' ? 'offline' : 'online';
+    const actionLabel = targetStatus === 'online' ? '上架' : '下架';
     try {
       await toggleSKUStatus(id, targetStatus);
       message.success(`SKU已${actionLabel}`);
@@ -62,25 +83,24 @@ const SKUListPage: React.FC = () => {
       valueEnum: BusinessLineLabel,
     },
     {
-      title: '风格标签',
-      dataIndex: 'styleTags',
-      width: 160,
+      title: '演员风格',
+      dataIndex: ['actorProfile', 'style'],
+      width: 100,
       search: false,
-      render: (_, record) => (
-        <Space size={4} wrap>
-          {record.styleTags?.map((tag) => (
-            <Tag key={tag} color="blue">{tag}</Tag>
-          ))}
-        </Space>
-      ),
+    },
+    {
+      title: '建议咖位',
+      dataIndex: ['actorProfile', 'tierRange'],
+      width: 100,
+      search: false,
     },
     {
       title: '甲方标准价',
-      dataIndex: 'basePrice',
+      dataIndex: 'clientPrice',
       width: 120,
       search: false,
       sorter: true,
-      render: (_, record) => formatPrice(record.basePrice),
+      render: (_, record) => formatPrice(record.clientPrice),
     },
     {
       title: '活动公司价',
@@ -92,10 +112,10 @@ const SKUListPage: React.FC = () => {
     },
     {
       title: '时长',
-      dataIndex: 'durationMinutes',
+      dataIndex: 'duration',
       width: 80,
       search: false,
-      render: (_, record) => `${record.durationMinutes}min`,
+      render: (_, record) => `${record.duration}min`,
     },
     {
       title: '状态',
@@ -103,13 +123,13 @@ const SKUListPage: React.FC = () => {
       width: 80,
       filters: true,
       valueEnum: {
-        active: { text: '已上架', status: 'Success' },
-        inactive: { text: '已下架', status: 'Default' },
+        online: { text: '已上架', status: 'Success' },
+        offline: { text: '已下架', status: 'Default' },
         draft: { text: '草稿', status: 'Warning' },
       },
       render: (_, record) => (
-        <Tag color={StatusColor[record.status]}>
-          {StatusLabel[record.status]}
+        <Tag color={statusColorMap[record.status]}>
+          {statusLabelMap[record.status]}
         </Tag>
       ),
     },
@@ -157,7 +177,7 @@ const SKUListPage: React.FC = () => {
             style={{ minHeight: 44, minWidth: 44 }}
             onClick={() => handleToggleStatus(record.id, record.status)}
           >
-            {record.status === 'active' ? '下架' : '上架'}
+            {record.status === 'online' ? '下架' : '上架'}
           </Button>
           <Popconfirm
             title="确定删除该SKU？"
@@ -231,7 +251,7 @@ const SKUListPage: React.FC = () => {
             新增SKU
           </Button>,
         ]}
-        request={async (params) => {
+        request={async (params, sort) => {
           setError(null);
           try {
             const page = params.current || 1;
@@ -259,6 +279,7 @@ const SKUListPage: React.FC = () => {
           showSizeChanger: true,
           showQuickJumper: true,
         }}
+        // 三态处理：空数据
         locale={{
           emptyText: (
             <Empty

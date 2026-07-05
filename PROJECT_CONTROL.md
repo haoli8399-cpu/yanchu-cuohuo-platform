@@ -154,11 +154,12 @@
 
 ```
 1. 读 AGENT_RULES.md           ← 提醒自己规则
-2. 读 FREEZE.md                ← 确认不在冻结区
+2. 读 FREEZE.md                ← 确认不在冻结区（重点读第 6 节「当前任务」）
 3. 读 PROJECT_CONTROL.md       ← 确认理解全景
-4. 确认改的是哪个子项目        ← miniprogram/frontend-agent/backend 等
+4. 确认改的是哪个子项目        ← 仅 miniprogram/，其余冻结
 5. 确认改了哪个角色的功能      ← 活动公司/演员/运营
-6. 执行修改
-7. 编译验证（不改的项目也得检查不破坏构建）
-8. git commit + push（不要 rebase）
+6. 读该页面的设计方案 HTML     ← 视觉对齐依据
+7. 执行修改
+8. 编译验证（不改的项目也得检查不破坏构建）
+9. git commit + push（不要 rebase）
 ```

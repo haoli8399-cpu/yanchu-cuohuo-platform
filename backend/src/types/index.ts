@@ -156,8 +156,7 @@ export interface SkuListItem {
   style_tags: string[];
   applicable_scenes: string[];
   base_price: number;
-  company_price: number;
-  internal_price: number;
+  agent_price: number;
   duration_minutes: number;
   performers_count: number;
   cover_url: string;

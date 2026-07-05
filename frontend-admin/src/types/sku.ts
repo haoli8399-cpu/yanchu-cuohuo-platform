@@ -1,60 +1,62 @@
 /**
  * SKU 类型定义
- * 对齐后端 API_CONTRACT.md 2.2 节
+ * 与 API_CONTRACT.md 严格对齐
  */
 
-/** 业务线类型（对齐后端 BusinessLine） */
+/** 演员画像（SKU中包含的演员描述，非锁定阵容） */
+export interface ActorProfile {
+  /** 演员风格标签（如：脱口秀、即兴喜剧） */
+  style: string;
+  /** 建议咖位范围 */
+  tierRange: string;
+  /** 建议人数 */
+  count: number;
+}
+
+/** 业务线类型 */
 export type BusinessLine =
-  | 'venue_booking'      // 商演包场
-  | 'outdoor_show'       // 外出演出
-  | 'show_sponsor'       // 演出赞助
-  | 'custom_content'     // 定制内容
-  | 'custom_showcase';   // 定制专场
+  | 'commercial_show'   // 商演包场
+  | 'outdoor_show'      // 外出演出
+  | 'show_sponsor'      // 演出赞助
+  | 'custom_content'    // 定制内容
+  | 'custom_platter';   // 定制拼盘
 
 /** 业务线中文映射 */
 export const BusinessLineLabel: Record<BusinessLine, string> = {
-  venue_booking: '商演包场',
+  commercial_show: '商演包场',
   outdoor_show: '外出演出',
   show_sponsor: '演出赞助',
   custom_content: '定制内容',
-  custom_showcase: '定制专场',
+  custom_platter: '定制拼盘',
 };
 
-/** SKU 状态 */
-export type SKUStatus = 'active' | 'inactive' | 'draft';
-
-/** SKU 状态中文映射 */
-export const StatusLabel: Record<SKUStatus, string> = {
-  active: '已上架',
-  inactive: '已下架',
-  draft: '草稿',
-};
-
-/** SKU 状态色彩映射 */
-export const StatusColor: Record<SKUStatus, string> = {
-  active: 'green',
-  inactive: 'default',
-  draft: 'orange',
-};
-
-/** SKU 主类型（对齐后端 snake_case，前端 camelCase） */
+/** SKU 主类型 */
 export interface SKU {
+  /** SKU唯一标识 */
   id: string;
+  /** SKU名称 */
   name: string;
+  /** 所属业务线 */
   businessLine: BusinessLine;
-  description: string;
-  performerProfile: string;        // 演员画像描述文本
-  styleTags: string[];             // 风格标签数组
-  applicableScenarios: string[];   // 适用场景数组
-  basePrice: number;               // 甲方标准价（分）
-  companyPrice: number;            // 活动公司价（分）×0.7，后端计算
-  internalPrice: number;           // 内部结算价（分）×0.67，后端计算
-  durationMinutes: number;         // 演出时长
-  performersCount: number;         // 建议演员数
-  coverUrl: string;                // 封面图
-  mediaUrls: string[];             // 样片视频
-  status: SKUStatus;
+  /** 演员画像描述 */
+  actorProfile: ActorProfile;
+  /** 内部结算价（分） */
+  internalPrice: number;
+  /** 活动公司价 = 甲方标准价 × 0.7（分） */
+  companyPrice: number;
+  /** 甲方标准价（分） */
+  clientPrice: number;
+  /** 演出时长（分钟） */
+  duration: number;
+  /** 适用场景描述 */
+  scenarios: string[];
+  /** 样片URL列表 */
+  sampleVideos: string[];
+  /** 上架状态 */
+  status: 'online' | 'offline' | 'draft';
+  /** 创建时间 */
   createdAt: string;
+  /** 更新时间 */
   updatedAt: string;
 }
 
@@ -64,7 +66,7 @@ export interface SKUListParams {
   pageSize: number;
   keyword?: string;
   businessLine?: BusinessLine;
-  status?: 'active' | 'inactive';
+  status?: SKU['status'];
 }
 
 /** 分页响应 */

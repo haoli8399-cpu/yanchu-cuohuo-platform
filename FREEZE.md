@@ -40,6 +40,60 @@
 | **原因** | 数据库改造成本极高，涉及后端代码、已有数据迁移，容易引发线上故障 |
 | **如果要改** | 豪哥确认 + 完整的迁移方案 + 备份 + 灰度 |
 
+## 6. 当前任务：小程序设计方案对齐落地
+
+> **这是目前唯一在执行的开发任务**，每次执行任务前必须先读本段，严格按照 3 批计划执行，不可跳批次/改顺序。
+
+| 项目 | 说明 |
+|------|------|
+| **任务概述** | 小程序端（miniprogram/）UI/UX 与「喜剧工厂小程序设计方案」完全对齐 |
+| **方案来源** | `~/Desktop/喜剧工厂小程序设计方案.zip` → 解压到 `/Users/wudixingyunxingleo/CodeBuddy/20260704225501/喜剧工厂设计方案/` |
+| **可改范围** | 仅 `miniprogram/` 目录下代码，其他三个子项目（backend/frontend-admin/frontend-agent）严禁改动 |
+| **验收标准** | 每个页面与设计方案 HTML 原型视觉一致，CSS Token 体系完全匹配 |
+
+### 执行顺序（3 批，不可逆）
+
+| 批次 | 内容 | 页面 | 状态 |
+|:----:|------|------|:----:|
+| **第 1 批** | 全局基础 + 高频页面 | CSS Tokens 体系 → 登录页 → 发现页 | ✅ 已完成 |
+| **第 2 批** | 活动公司端页面 | 方案列表/详情 → 需求提交/列表/详情 → 个人中心(公司) | ✅ 已完成 |
+| **第 3 批** | 演员端页面 | 排期列表/详情/日历 → 结算/签到/信誉分 → 演员入驻 → 个人中心(演员) | ⏳ 待第 2 批验收 |
+
+### 每批工作流
+
+```
+1. 读本文件（FREEZE.md）第 6 节 → 确认当前批次
+2. 读对应页面的设计方案 HTML → 确认视觉规范
+3. 读 colors_and_type.css → 确认 CSS Token 值
+4. 执行修改
+5. 编译验证（npx uni build --platform mp-weixin）
+6. 通知豪哥验收
+7. 豪哥确认后，更新本文件批次状态为 ✅，进入下一批
+```
+
+### 设计文件索引
+
+| 页面 | 设计文件路径 |
+|------|-------------|
+| CSS Tokens | `喜剧工厂设计方案/workspace/comedy-factory/colors_and_type.css` |
+| 登录页 | `喜剧工厂设计方案/workspace/comedy-factory/pages/login.html` |
+| 发现页 | `喜剧工厂设计方案/workspace/comedy-factory/pages/discover.html` |
+| 方案列表 | `喜剧工厂设计方案/workspace/comedy-factory/pages/sku-list.html` |
+| 方案详情 | `喜剧工厂设计方案/workspace/comedy-factory/pages/sku-detail.html` |
+| 需求列表 | `喜剧工厂设计方案/workspace/comedy-factory/pages/request-list.html` |
+| 提交需求 | `喜剧工厂设计方案/workspace/comedy-factory/pages/request-submit.html` |
+| 需求详情 | `喜剧工厂设计方案/workspace/comedy-factory/pages/request-detail.html` |
+| 个人中心(公司) | `喜剧工厂设计方案/workspace/comedy-factory/pages/user-company.html` |
+| 个人中心(演员) | `喜剧工厂设计方案/workspace/comedy-factory/pages/user-performer.html` |
+| 排期列表 | `喜剧工厂设计方案/workspace/comedy-factory/pages/schedule-list.html` |
+| 排期详情 | `喜剧工厂设计方案/workspace/comedy-factory/pages/schedule-detail.html` |
+| 结算页 | `喜剧工厂设计方案/workspace/comedy-factory/pages/settlement.html` |
+| 签到页 | `喜剧工厂设计方案/workspace/comedy-factory/pages/checkin.html` |
+| 信誉分页 | `喜剧工厂设计方案/workspace/comedy-factory/pages/credit.html` |
+| 演员入驻 | `喜剧工厂设计方案/workspace/comedy-factory/pages/onboarding.html` |
+
+---
+
 ## 5. 价格体系
 
 | 项目 | 说明 |

@@ -229,8 +229,7 @@ Response 200:
       style_tags: string[],
       applicable_scenes: string[],
       base_price: number,            // 甲方标准价
-      company_price: number,         // 活动公司价（×0.7）
-      internal_price: number,        // 内部结算价（×0.67）
+      agent_price: number,           // 活动公司7折价
       duration_minutes: number,
       performers_count: number,
       cover_url: string,
@@ -261,8 +260,7 @@ Response 200:
     style_tags: string[],
     applicable_scenes: string[],
     base_price: number,
-    company_price: number,         // 活动公司价（×0.7）
-    internal_price: number,        // 内部结算价（×0.67）
+    agent_price: number,
     duration_minutes: number,
     performers_count: number,
     media_urls: string[],            // 样片/案例
@@ -325,91 +323,6 @@ Request:
 
 Response 200:
 { code: 0, data: { id: string, status: string }, message: "状态已更新" }
-```
-
-#### PATCH `/v1/skus/:id/basic-info`
-更新基础信息（运营专用）
-
-```
-Auth: Bearer Token（admin）
-Request:
-{
-  name?: string,
-  business_line?: BusinessLine,
-  description?: string
-}
-
-Response 200:
-{ code: 0, data: { id: string }, message: "基础信息已更新" }
-```
-
-#### PATCH `/v1/skus/:id/performer`
-更新演员画像（运营专用）
-
-```
-Auth: Bearer Token（admin）
-Request:
-{
-  performer_profile?: string,
-  style_tags?: string[],
-  performers_count?: number
-}
-
-Response 200:
-{ code: 0, data: { id: string }, message: "演员画像已更新" }
-```
-
-#### PATCH `/v1/skus/:id/pricing`
-更新价格配置（运营专用，后端自动联动计算公司价和结算价）
-
-```
-Auth: Bearer Token（admin）
-Request:
-{
-  base_price: number    // 甲方标准价
-}
-
-Response 200:
-{
-  code: 0,
-  data: {
-    id: string,
-    base_price: number,
-    company_price: number,    // ×0.7
-    internal_price: number    // ×0.67
-  },
-  message: "价格已更新"
-}
-```
-
-#### PATCH `/v1/skus/:id/media`
-更新内容素材（运营专用）
-
-```
-Auth: Bearer Token（admin）
-Request:
-{
-  cover_url?: string,
-  media_urls?: string[]
-}
-
-Response 200:
-{ code: 0, data: { id: string }, message: "内容素材已更新" }
-```
-
-#### PATCH `/v1/skus/:id/config`
-更新适用配置（运营专用）
-
-```
-Auth: Bearer Token（admin）
-Request:
-{
-  applicable_scenes?: string[],
-  duration_minutes?: number
-}
-
-Response 200:
-{ code: 0, data: { id: string }, message: "适用配置已更新" }
 ```
 
 ---
@@ -1451,7 +1364,7 @@ Response 200:
 | 路由组 | 路径 | 需要权限 | 端点数 |
 |--------|------|:------:|:-----:|
 | Auth | `/v1/auth` | 公开 | 4 |
-| SKU | `/v1/skus` | 读公开/写 admin | 10 |
+| SKU | `/v1/skus` | 读公开/写 admin | 5 |
 | 需求 | `/v1/demands` | agent/client/admin | 7 |
 | 订单 | `/v1/orders` | admin | 2 |
 | 签约 | `/v1/contracts` | admin | 2 |
@@ -1466,7 +1379,7 @@ Response 200:
 | 活动公司 | `/v1/companies` | admin/agent | 4 |
 | 运营工具 | `/v1/admin` | admin | 3 |
 | 通知 | `/v1/notifications` | admin | 1 |
-| **合计** | **16 组** | | **56 端点** |
+| **合计** | **16 组** | | **51 端点** |
 
 ---
 

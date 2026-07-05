@@ -1,0 +1,26 @@
+{
+  "name": "喜剧工厂",
+  "appid": "__UNI__YANJI__",
+  "description": "喜剧工厂微信小程序",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "wx60d185cab446ab40",
+    "setting": {
+      "urlCheck": false,
+      "es6": true,
+      "postcss": true,
+      "minified": true
+    },
+    "usingComponents": true,
+    "permission": {
+      "scope.userLocation": {
+        "desc": "签到打卡需要获取您的位置信息"
+      }
+    },
+    "requiredPrivateInfos": [],
+    "lazyCodeLoading": "requiredComponents"
+  },
+  "vueVersion": "3"
+}
