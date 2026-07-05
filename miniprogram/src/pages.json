@@ -20,7 +20,10 @@
     {"path": "pages/assignment/calendar", "style": {"navigationBarTitleText": "排期日历"}},
     {"path": "pages/checkin/index", "style": {"navigationBarTitleText": "签到打卡"}},
     {"path": "pages/settlement/index", "style": {"navigationBarTitleText": "结算记录"}},
-    {"path": "pages/credit/index", "style": {"navigationBarTitleText": "信誉分"}}
+    {"path": "pages/credit/index", "style": {"navigationBarTitleText": "信誉分"}},
+    {"path": "pages/case/detail", "style": {"navigationBarTitleText": "案例详情"}},
+    {"path": "pages/notification/index", "style": {"navigationBarTitleText": "通知中心"}},
+    {"path": "pages/search/index", "style": {"navigationBarTitleText": "搜索"}}
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",
@@ -40,7 +43,9 @@
       "van-tag": "/wxcomponents/vant/tag/index",
       "van-empty": "/wxcomponents/vant/empty/index",
       "van-icon": "/wxcomponents/vant/icon/index",
-      "van-popup": "/wxcomponents/vant/popup/index"
+      "van-popup": "/wxcomponents/vant/popup/index",
+      "van-rate": "/wxcomponents/vant/rate/index",
+      "van-search": "/wxcomponents/vant/search/index"
     }
   },
   "tabBar": {

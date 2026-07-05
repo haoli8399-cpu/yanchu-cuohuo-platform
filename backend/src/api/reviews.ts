@@ -1,47 +1,190 @@
-// 评价API
-import type { FastifyInstance } from 'fastify';
+// ============================================================
+// 评价系统路由处理器
+// GET  /v1/reviews             — 评价列表（按SKU筛选）
+// POST /v1/reviews             — 提交评价（活动公司，需有已完成订单）
+// GET  /v1/reviews/stats/:sku_id — 某SKU的评价统计（平均分/总数）
+// ============================================================
+
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validation.js';
 import { query } from '../utils/db.js';
-import { successResponse, errorResponse, createdResponse } from '../utils/response.js';
+import {
+  successResponse,
+  errorResponse,
+  paginatedResponse,
+  normalizePagination,
+  createdResponse,
+} from '../utils/response.js';
 
-const reviewBody = z.object({
-  demand_id: z.string().uuid(), overall_rating: z.number().min(1).max(5),
-  performance_rating: z.number().min(1).max(5).optional(),
-  punctuality_rating: z.number().min(1).max(5).optional(),
-  content_rating: z.number().min(1).max(5).optional(),
-  interaction_rating: z.number().min(1).max(5).optional(),
-  satisfaction_rating: z.number().min(1).max(5).optional(),
-  text_content: z.string().optional(),
+// ============================================================
+// Zod 校验 Schema
+// ============================================================
+
+const skuIdParamSchema = z.object({ sku_id: z.string().uuid() });
+
+const listQuerySchema = z.object({
+  sku_id: z.string().uuid().optional(),
+  demand_id: z.string().uuid().optional(),
+  company_id: z.string().uuid().optional(),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).optional().default(20),
 });
 
-export default async function reviewRoutes(app: FastifyInstance) {
-  app.post('/', { preHandler: [authMiddleware, requireRole('agent','performer'), validate({ body: reviewBody })] },
-    async (req, reply) => {
-      const b = req.body as z.infer<typeof reviewBody>;
-      const dup = await query('SELECT id FROM reviews WHERE demand_id=$1 AND from_user_id=$2', [b.demand_id, req.user?.sub]);
-      if (dup.rows.length > 0) return reply.status(409).send(errorResponse(8001, '该订单已评价'));
+const createBodySchema = z.object({
+  sku_id: z.string().uuid(),
+  demand_id: z.string().uuid(),
+  rating: z.number().int().min(1).max(5),
+  content: z.string().min(1),
+});
 
-      const result = await query(
-        `INSERT INTO reviews (demand_id, from_user_id, from_type, overall_rating, performance_rating, punctuality_rating, content_rating, interaction_rating, satisfaction_rating, text_content)
-         VALUES ($1,$2,(SELECT role FROM users WHERE id=$2),$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-        [b.demand_id, req.user?.sub, b.overall_rating, b.performance_rating, b.punctuality_rating, b.content_rating, b.interaction_rating, b.satisfaction_rating, b.text_content]
+// ============================================================
+// 数据库行类型
+// ============================================================
+
+interface ReviewRow {
+  id: string;
+  sku_id: string;
+  demand_id: string;
+  company_id: string;
+  rating: number;
+  content: string;
+  created_at: string;
+}
+
+// ============================================================
+// 路由注册
+// ============================================================
+
+export default async function reviewRoutes(app: FastifyInstance): Promise<void> {
+  // GET /v1/reviews - 评价列表（按SKU筛选）
+  app.get(
+    '/',
+    {
+      preHandler: [validate({ query: listQuerySchema })],
+    },
+    async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+      const q = request.query as z.infer<typeof listQuerySchema>;
+      const { page, pageSize, offset } = normalizePagination(q.page, q.pageSize);
+
+      const conditions: string[] = [];
+      const params: unknown[] = [];
+      let idx = 0;
+
+      if (q.sku_id) {
+        idx++;
+        conditions.push(`r.sku_id = $${idx}`);
+        params.push(q.sku_id);
+      }
+      if (q.demand_id) {
+        idx++;
+        conditions.push(`r.demand_id = $${idx}`);
+        params.push(q.demand_id);
+      }
+      if (q.company_id) {
+        idx++;
+        conditions.push(`r.company_id = $${idx}`);
+        params.push(q.company_id);
+      }
+
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+      const limitIdx = idx + 1;
+      const offsetIdx = idx + 2;
+
+      const [dataResult, countResult] = await Promise.all([
+        query<ReviewRow>(
+          `SELECT r.* FROM reviews r
+           ${whereClause}
+           ORDER BY r.created_at DESC
+           LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+          [...params, pageSize, offset]
+        ),
+        query<{ total: string }>(
+          `SELECT COUNT(*) AS total FROM reviews r ${whereClause}`,
+          params
+        ),
+      ]);
+
+      reply.send(
+        paginatedResponse(dataResult.rows, Number(countResult.rows[0].total), page, pageSize)
       );
-      return reply.status(201).send(createdResponse({ id: result.rows[0].id }, '评价已提交'));
-    });
+    }
+  );
 
-  app.get('/', { preHandler: [authMiddleware] }, async (req, reply) => {
-    const { performer_id, demand_id, page, pageSize } = req.query as Record<string,string>;
-    const cond: string[] = []; const p: unknown[] = []; let i=1;
-    if (performer_id) { cond.push(`r.to_performer_id=$${i++}`); p.push(performer_id); }
-    if (demand_id) { cond.push(`r.demand_id=$${i++}`); p.push(demand_id); }
-    const w=cond.length?`WHERE ${cond.join(' AND ')}`:'';
-    const pg=Math.max(1,Number(page)||1); const ps=Math.min(100,Number(pageSize)||20);
-    const [items,count] = await Promise.all([
-      query(`SELECT r.*, u.name as from_name FROM reviews r JOIN users u ON r.from_user_id=u.id ${w} ORDER BY r.created_at DESC LIMIT $${i++} OFFSET $${i++}`,[...p,ps,(pg-1)*ps]),
-      query(`SELECT COUNT(*) FROM reviews r ${w}`,p)
-    ]);
-    return reply.send({code:0,data:{items:items.rows,total:Number(count.rows[0].count),page:pg,pageSize:ps},message:'ok'});
-  });
+  // POST /v1/reviews - 提交评价（活动公司，需有已完成订单）
+  app.post(
+    '/',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('agent'),
+        validate({ body: createBodySchema }),
+      ],
+    },
+    async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+      const body = request.body as z.infer<typeof createBodySchema>;
+      const companyId = request.user.sub;
+
+      // 验证该活动公司是否有已完成订单关联此需求
+      const orderCheck = await query<{ id: string }>(
+        `SELECT d.id FROM demands d
+         WHERE d.id = $1 AND d.client_id = $2 AND d.status IN ('finished', 'settled', 'final_payment_received')`,
+        [body.demand_id, companyId]
+      );
+
+      if (orderCheck.rows.length === 0) {
+        reply.status(403).send(errorResponse(1005, '无权评价：没有与该需求关联的已完成订单'));
+        return;
+      }
+
+      // 防止重复评价
+      const dupCheck = await query<{ id: string }>(
+        'SELECT id FROM reviews WHERE demand_id = $1 AND company_id = $2',
+        [body.demand_id, companyId]
+      );
+
+      if (dupCheck.rows.length > 0) {
+        reply.status(409).send(errorResponse(8001, '该订单已评价'));
+        return;
+      }
+
+      const result = await query<{ id: string }>(
+        `INSERT INTO reviews (sku_id, demand_id, company_id, rating, content)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id`,
+        [body.sku_id, body.demand_id, companyId, body.rating, body.content]
+      );
+
+      reply.status(201).send(createdResponse({ id: result.rows[0].id }, '评价已提交'));
+    }
+  );
+
+  // GET /v1/reviews/stats/:sku_id - 某SKU的评价统计
+  app.get(
+    '/stats/:sku_id',
+    {
+      preHandler: [validate({ params: skuIdParamSchema })],
+    },
+    async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+      const { sku_id } = request.params as z.infer<typeof skuIdParamSchema>;
+
+      const result = await query<{ avg_rating: string; total_count: string }>(
+        `SELECT
+           COALESCE(ROUND(AVG(r.rating), 1), 0) AS avg_rating,
+           COUNT(*)::text AS total_count
+         FROM reviews r
+         WHERE r.sku_id = $1`,
+        [sku_id]
+      );
+
+      const stats = {
+        sku_id,
+        avg_rating: Number(result.rows[0].avg_rating),
+        total_count: Number(result.rows[0].total_count),
+      };
+
+      reply.send(successResponse(stats));
+    }
+  );
 }

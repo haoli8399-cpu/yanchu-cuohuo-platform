@@ -73,6 +73,37 @@
             </view>
           </view>
         </view>
+
+        <!-- Section 4: 评价（已签约状态显示） -->
+        <view v-if="demand.status === '已签约'" class="review-card">
+          <text class="review-card-title">评价本次演出</text>
+          <text class="review-card-hint">您的评价将帮助其他活动公司更好地选择方案</text>
+
+          <view class="review-rate-row">
+            <text class="review-label">评分</text>
+            <van-rate v-model="reviewRating" :size="40" color="#f59e0b" void-color="#e5e5ea" />
+          </view>
+
+          <view class="review-textarea-wrap">
+            <textarea
+              v-model="reviewContent"
+              class="review-textarea"
+              placeholder="分享您的演出体验..."
+              :maxlength="300"
+              :auto-height="true"
+            />
+            <text class="review-count">{{ reviewContent.length }}/300</text>
+          </view>
+
+          <button
+            class="btn-submit-review"
+            :disabled="reviewRating === 0 || !reviewContent.trim() || submitting"
+            @click="doSubmitReview"
+          >
+            {{ submitting ? '提交中...' : '提交评价' }}
+          </button>
+        </view>
+
         <view style="height: 40rpx;"></view>
       </scroll-view>
     </template>
@@ -88,12 +119,17 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
-import { getDemandDetail, confirmPlan as apiConfirmPlan, rejectPlan as apiRejectPlan } from "@/services/api";
+import { getDemandDetail, confirmPlan as apiConfirmPlan, rejectPlan as apiRejectPlan, submitReview } from "@/services/api";
 import type { DemandRequest } from "@/types";
 
 const demandId = ref("");
 const demand = ref<DemandRequest | null>(null);
 const loading = ref(true);
+
+// 评价表单
+const reviewRating = ref(0);
+const reviewContent = ref("");
+const submitting = ref(false);
 
 onLoad((options: any) => {
   demandId.value = options?.id || "";
@@ -181,6 +217,30 @@ async function rejectPlan() {
   });
 }
 
+async function doSubmitReview() {
+  if (reviewRating.value === 0 || !reviewContent.value.trim()) return;
+  submitting.value = true;
+  try {
+    const res = await submitReview({
+      sku_id: demand.value!.sku_id,
+      demand_id: demandId.value,
+      rating: reviewRating.value,
+      content: reviewContent.value.trim()
+    });
+    if (res.ok) {
+      uni.showToast({ title: "评价已提交", icon: "success" });
+      reviewRating.value = 0;
+      reviewContent.value = "";
+    } else {
+      uni.showToast({ title: res.error || "提交失败", icon: "none" });
+    }
+  } catch (e) {
+    uni.showToast({ title: "网络错误", icon: "none" });
+  } finally {
+    submitting.value = false;
+  }
+}
+
 function goBack() {
   uni.navigateBack();
 }
@@ -260,4 +320,85 @@ function goEdit() {
 .timeline-content { }
 .tl-title { font-size: 28rpx; font-weight: 500; color: var(--color-text-primary, #1a1a2e); }
 .tl-time { font-size: 22rpx; color: var(--color-text-tertiary, #9ca3af); margin-top: 4rpx; display: block; }
+
+/* 评价卡片 */
+.review-card {
+  margin: 24rpx 32rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.review-card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1a2e);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.review-card-hint {
+  font-size: 24rpx;
+  color: var(--color-text-tertiary, #9ca3af);
+  display: block;
+  margin-bottom: 28rpx;
+  line-height: 1.5;
+}
+
+.review-rate-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.review-label {
+  font-size: 28rpx;
+  color: var(--color-text-primary, #1a1a2e);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.review-textarea-wrap {
+  position: relative;
+  margin-bottom: 24rpx;
+}
+
+.review-textarea {
+  width: 100%;
+  min-height: 160rpx;
+  padding: 24rpx;
+  background: var(--color-bg-page, #f5f5f7);
+  border-radius: 16rpx;
+  font-size: 26rpx;
+  color: var(--color-text-primary, #1a1a2e);
+  box-sizing: border-box;
+}
+
+.review-count {
+  position: absolute;
+  right: 24rpx;
+  bottom: 24rpx;
+  font-size: 22rpx;
+  color: var(--color-text-tertiary, #9ca3af);
+}
+
+.btn-submit-review {
+  width: 100%;
+  height: 80rpx;
+  background: var(--color-primary, #7c3aed);
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 500;
+  border: none;
+  border-radius: 9999px;
+  line-height: 80rpx;
+  text-align: center;
+}
+
+.btn-submit-review[disabled] {
+  background: #d1d5db;
+  color: #fff;
+}
 </style>

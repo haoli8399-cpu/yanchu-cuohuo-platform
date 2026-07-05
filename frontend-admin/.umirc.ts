@@ -19,6 +19,7 @@ export default defineConfig({
     { name: '公司管理', path: '/companies', component: '@/pages/Company/index' },
     { name: '价格配置', path: '/price-configs', component: '@/pages/PriceConfig/index' },
     { name: '案例管理', path: '/cases', component: '@/pages/CaseManagement/index' },
+    { name: '评价管理', path: '/reviews', component: '@/pages/ReviewManagement/index' },
     { name: '模板管理', path: '/templates', component: '@/pages/TemplateManagement/index' },
     { name: '操作日志', path: '/system/logs', component: '@/pages/System/OperationLogs' },
     { name: '调整模板', path: '/demands/templates', component: '@/pages/Demand/AdjustmentTemplates' },

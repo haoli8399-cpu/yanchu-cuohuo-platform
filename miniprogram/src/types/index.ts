@@ -275,6 +275,29 @@ export interface PriceCalcuationRequest {
   performerCount: number;
 }
 
+// ── 评价 ──
+export interface Review {
+  id: string;
+  sku_id: string;
+  demand_id?: string;
+  company_name?: string;
+  rating: number;          // 1-5
+  content: string;
+  created_at: string;
+}
+
+export interface ReviewStats {
+  average: number;
+  total: number;
+  distribution: { score: number; count: number }[];
+}
+
+// ── 热门搜索词 ──
+export interface HotKeyword {
+  keyword: string;
+  count: number;
+}
+
 /** 价格计算结果 */
 export interface PriceCalcuationResult {
   totalPrice: number;           // 甲方标准价（分）

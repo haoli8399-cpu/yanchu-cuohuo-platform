@@ -8,7 +8,8 @@ import type {
   LoginResult, SKUProduct, SKUDetail, DemandRequest, PlanItem, UnifiedPlan,
   Assignment, CheckinRecord, SettlementRecord, CreditScore,
   ActorOnboarding, ApiResponse, UserInfo,
-  TierInfo, PriceCalcuationResult, SKUExtended
+  TierInfo, PriceCalcuationResult, SKUExtended,
+  Review, ReviewStats, HotKeyword
 } from '@/types';
 
 // ── 配置 ──
@@ -613,6 +614,150 @@ export async function rejectPlan(demandId: string, reason?: string): Promise<Api
   return request<{ success: boolean }>(`/demands/${demandId}/reject-plan`, { method: 'POST', data: { reason: reason || '' } });
 }
 
+// ── 评价 API ──
+const MOCK_REVIEWS: Record<string, Review[]> = {
+  'sku-001': [
+    { id: 'rev-001', sku_id: 'sku-001', company_name: '某互联网公司', rating: 5, content: '演出效果超出预期！5位演员各具风格，互动环节特别出彩，年会现场笑声不断。已推荐给其他部门。', created_at: '2026-06-15' },
+    { id: 'rev-002', sku_id: 'sku-001', company_name: '某金融企业', rating: 5, content: '相声拼盘形式很适合企业活动，演员专业度高。唯一建议是灯光可以更丰富一些。', created_at: '2026-06-10' },
+    { id: 'rev-003', sku_id: 'sku-001', company_name: '某科技公司', rating: 4, content: '整体不错，互动环节设计用心。但第一位演员稍微有点冷场，后面越来越好。', created_at: '2026-05-28' },
+    { id: 'rev-004', sku_id: 'sku-001', company_name: '某电商公司', rating: 5, content: '第三次合作了，每次都稳定发挥。主持人控场能力强，演员段子新鲜不生硬。', created_at: '2026-05-20' },
+  ],
+  'sku-002': [
+    { id: 'rev-005', sku_id: 'sku-002', company_name: '某广告公司', rating: 4, content: '即兴喜剧非常适合团建！员工参与感强，大家都在笑。不过120分钟有点长，90分钟可能更好。', created_at: '2026-06-01' },
+  ],
+  'sku-004': [
+    { id: 'rev-006', sku_id: 'sku-004', company_name: '某快消品牌', rating: 5, content: '个人专场质量很高，演员内容扎实，品牌冠名效果也很好。VIP客户反馈极佳。', created_at: '2026-05-15' },
+  ],
+};
+
+function computeReviewStats(skuId: string): ReviewStats {
+  const reviews = MOCK_REVIEWS[skuId] || [];
+  if (reviews.length === 0) return { average: 0, total: 0, distribution: [] };
+  const total = reviews.length;
+  const avg = reviews.reduce((s, r) => s + r.rating, 0) / total;
+  const dist: Record<number, number> = {};
+  reviews.forEach(r => { dist[r.rating] = (dist[r.rating] || 0) + 1; });
+  return {
+    average: Math.round(avg * 10) / 10,
+    total,
+    distribution: [5, 4, 3, 2, 1].map(s => ({ score: s, count: dist[s] || 0 }))
+  };
+}
+
+export async function getReviews(skuId: string): Promise<ApiResponse<Review[]>> {
+  if (USE_MOCK) {
+    return { ok: true, data: MOCK_REVIEWS[skuId] || [] };
+  }
+  return request<Review[]>(`/reviews?sku_id=${skuId}`);
+}
+
+export async function getReviewStats(skuId: string): Promise<ApiResponse<ReviewStats>> {
+  if (USE_MOCK) {
+    return { ok: true, data: computeReviewStats(skuId) };
+  }
+  return request<ReviewStats>(`/reviews/stats/${skuId}`);
+}
+
+export async function submitReview(data: {
+  sku_id: string; demand_id: string; rating: number; content: string;
+}): Promise<ApiResponse<Review>> {
+  if (USE_MOCK) {
+    const review: Review = {
+      id: 'rev-' + Date.now(),
+      sku_id: data.sku_id,
+      demand_id: data.demand_id,
+      company_name: '某科技公司',
+      rating: data.rating,
+      content: data.content,
+      created_at: new Date().toISOString().slice(0, 10)
+    };
+    if (!MOCK_REVIEWS[data.sku_id]) MOCK_REVIEWS[data.sku_id] = [];
+    MOCK_REVIEWS[data.sku_id].unshift(review);
+    return { ok: true, data: review };
+  }
+  return request<Review>('/reviews', { method: 'POST', data });
+}
+
+// ── 热门搜索词 ──
+const MOCK_HOT_KEYWORDS: HotKeyword[] = [
+  { keyword: '脱口秀', count: 1256 },
+  { keyword: '即兴喜剧', count: 832 },
+  { keyword: '企业年会', count: 721 },
+  { keyword: '团建', count: 568 },
+  { keyword: '漫才', count: 432 },
+  { keyword: '个人专场', count: 356 },
+  { keyword: '品牌活动', count: 289 },
+  { keyword: '商场暖场', count: 156 },
+];
+
+export async function getHotKeywords(): Promise<ApiResponse<HotKeyword[]>> {
+  if (USE_MOCK) {
+    return { ok: true, data: MOCK_HOT_KEYWORDS };
+  }
+  return request<HotKeyword[]>('/search/hot-keywords');
+}
+
+// ── 通知 API ──
+export interface NotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  content: string;
+  is_read: boolean;
+  related_id?: string;
+  related_type?: string;
+  created_at: string;
+}
+
+const MOCK_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: 'notif-001', type: 'demand_status', title: '需求状态更新',
+    content: '您的脱口秀拼盘之夜需求已收到方案，请前往查看。', is_read: false,
+    related_id: 'demand-001', related_type: 'demand', created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'notif-002', type: 'plan_confirmed', title: '方案已确认',
+    content: '即兴喜剧团建专场的方案已确认，演出时间2026年7月15日19:30。', is_read: false,
+    related_id: 'demand-003', related_type: 'demand', created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'notif-003', type: 'assignment_new', title: '新排期待确认',
+    content: '您有一个新的排期待确认：脱口秀拼盘之夜，7月20日20:00，扮演开场演员。', is_read: true,
+    related_id: 'asgn-002', related_type: 'assignment', created_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'notif-004', type: 'settlement', title: '结算完成',
+    content: '6月份演出结算已发放，¥2200已到账，请查收。', is_read: true,
+    related_id: 'stl-001', related_type: 'settlement', created_at: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'notif-005', type: 'system', title: '系统通知',
+    content: '喜剧工厂小程序已更新至v2.0版本，新增演员级别定价和智能匹配功能。', is_read: true,
+    created_at: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(),
+  },
+];
+
+export async function getNotificationList(params?: { page?: number; pageSize?: number }): Promise<ApiResponse<NotificationItem[]>> {
+  if (USE_MOCK) {
+    const page = params?.page || 1;
+    const pageSize = params?.pageSize || 20;
+    const sorted = [...MOCK_NOTIFICATIONS].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    const start = (page - 1) * pageSize;
+    const paginated = sorted.slice(start, start + pageSize);
+    return { ok: true, data: paginated, total: sorted.length };
+  }
+  return request<NotificationItem[]>('/notifications', { method: 'GET', data: params as unknown as Record<string, unknown> });
+}
+
+export async function markNotificationRead(id: string): Promise<ApiResponse<{ success: boolean }>> {
+  if (USE_MOCK) {
+    const item = MOCK_NOTIFICATIONS.find(n => n.id === id);
+    if (item) item.is_read = true;
+    return { ok: true, data: { success: true } };
+  }
+  return request<{ success: boolean }>(`/notifications/${id}/read`, { method: 'PATCH' });
+}
+
 // ── 价格计算 API ──
 export async function calculatePrice(params: {
   skuId: string; tier: string; durationMinutes: number; performerCount: number;
@@ -642,4 +787,81 @@ export async function calculatePrice(params: {
     };
   }
   return request<PriceCalcuationResult>('/pricing/calculate', { method: 'POST', data: params as unknown as Record<string, unknown> });
+}
+
+// ── 案例 API ──
+export interface CaseDetail {
+  id: string;
+  sku_id: string | null;
+  title: string;
+  event_date: string;
+  audience_count: number | null;
+  tier: string | null;
+  rating: number | null;
+  cover_images: string[];
+  description: string | null;
+  content: string | null;
+  client_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+const MOCK_CASES: CaseDetail[] = [
+  {
+    id: 'case-001', sku_id: 'sku-001', title: '某互联网大厂年会脱口秀之夜',
+    event_date: '2026-01-15', audience_count: 300, tier: 'T3', rating: 96,
+    cover_images: [],
+    description: '为某知名互联网公司年会定制脱口秀拼盘演出，5位风格迥异的脱口秀演员轮番上阵，90分钟笑料不断。演出穿插员工互动环节，现场气氛热烈。客户反馈："这是三年来最受欢迎的年会节目。"',
+    content: '<p>为某知名互联网公司年会定制脱口秀拼盘演出，5位风格迥异的脱口秀演员轮番上阵，90分钟笑料不断。演出穿插员工互动环节，现场气氛热烈。客户反馈："这是三年来最受欢迎的年会节目。"</p>',
+    client_name: '某互联网大厂', created_at: '2026-06-01', updated_at: '2026-06-01'
+  },
+  {
+    id: 'case-002', sku_id: 'sku-001', title: '金融科技公司品牌答谢活动',
+    event_date: '2025-12-20', audience_count: 150, tier: 'T4', rating: 92,
+    cover_images: [],
+    description: '金融科技公司VIP客户答谢晚宴上的脱口秀演出，选用T4级别明星演员团队，搭配主持人现场互动。客户品牌元素巧妙融入段子，既保证娱乐效果又实现品牌传播。',
+    content: '<p>金融科技公司VIP客户答谢晚宴上的脱口秀演出，选用T4级别明星演员团队，搭配主持人现场互动。客户品牌元素巧妙融入段子，既保证娱乐效果又实现品牌传播。</p>',
+    client_name: '某金融科技公司', created_at: '2026-06-01', updated_at: '2026-06-01'
+  },
+  {
+    id: 'case-003', sku_id: 'sku-002', title: '知名电商平台团建即兴喜剧工作坊',
+    event_date: '2026-03-08', audience_count: 80, tier: 'T2', rating: 88,
+    cover_images: [],
+    description: '电商平台团队建设活动，选择即兴喜剧工作坊形式。3位即兴演员带领团队参与互动游戏和即兴表演，在欢笑中提升团队协作能力。120分钟的沉浸式体验获得全员好评。',
+    content: '<p>电商平台团队建设活动，选择即兴喜剧工作坊形式。3位即兴演员带领团队参与互动游戏和即兴表演，在欢笑中提升团队协作能力。120分钟的沉浸式体验获得全员好评。</p>',
+    client_name: '某电商平台', created_at: '2026-06-01', updated_at: '2026-06-01'
+  },
+  {
+    id: 'case-004', sku_id: 'sku-003', title: '创业公司周年庆漫才双人秀',
+    event_date: '2026-05-01', audience_count: 60, tier: 'T1', rating: 85,
+    cover_images: [],
+    description: '小型创业公司周年庆活动，选择漫才双人秀形式。快节奏的日式漫才风格与创业公司的活力氛围高度契合，60分钟的演出紧凑有趣，适合小规模高质量的企业活动。',
+    content: '<p>小型创业公司周年庆活动，选择漫才双人秀形式。快节奏的日式漫才风格与创业公司的活力氛围高度契合，60分钟的演出紧凑有趣，适合小规模高质量的企业活动。</p>',
+    client_name: '某创业科技公司', created_at: '2026-06-01', updated_at: '2026-06-01'
+  },
+  {
+    id: 'case-005', sku_id: 'sku-004', title: '高端品牌个人专场冠名演出',
+    event_date: '2026-04-15', audience_count: 200, tier: 'T5', rating: 98,
+    cover_images: [],
+    description: '某高端消费品牌冠名的脱口秀个人专场，选用T5咖位演员演出。品牌元素全方位融入舞台设计、互动环节和演员段子中，VIP客户反馈极佳，品牌曝光效果显著。',
+    content: '<p>某高端消费品牌冠名的脱口秀个人专场，选用T5咖位演员演出。品牌元素全方位融入舞台设计、互动环节和演员段子中，VIP客户反馈极佳，品牌曝光效果显著。</p>',
+    client_name: '某高端消费品牌', created_at: '2026-06-01', updated_at: '2026-06-01'
+  },
+];
+
+export async function getCaseDetail(id: string): Promise<ApiResponse<CaseDetail>> {
+  if (USE_MOCK) {
+    const found = MOCK_CASES.find(c => c.id === id);
+    if (found) return { ok: true, data: found };
+    return { ok: false, error: '案例不存在' };
+  }
+  return request<CaseDetail>(`/cases/${id}`);
+}
+
+export async function getCasesBySKU(skuId: string): Promise<ApiResponse<CaseDetail[]>> {
+  if (USE_MOCK) {
+    const list = MOCK_CASES.filter(c => c.sku_id === skuId);
+    return { ok: true, data: list, total: list.length };
+  }
+  return request<CaseDetail[]>(`/cases?sku_id=${skuId}`);
 }

@@ -75,6 +75,18 @@
           </view>
           <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
         </view>
+        <view class="menu-item" @click="navigateTo('/pages/notification/index')" hover-class="menu-hover">
+          <view class="menu-left">
+            <view class="icon-circle" style="background: #fff7ed;">
+              <van-icon name="bell-o" size="32rpx" color="#f97316" />
+            </view>
+            <text class="menu-text">消息通知</text>
+          </view>
+          <view class="menu-right">
+            <view v-if="unreadCount > 0" class="unread-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</view>
+            <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
+          </view>
+        </view>
         <view class="menu-item" style="border-bottom: none;" @click="navigateTo('/pages/user/invoice/index')" hover-class="menu-hover">
           <view class="menu-left">
             <view class="icon-circle" style="background: #fffbeb;">
@@ -232,9 +244,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue';
+import { ref, computed, reactive, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { formatPrice } from '@/utils/format';
+import { getNotificationList } from '@/services/api';
 
 const authStore = useAuthStore();
 
@@ -257,6 +270,24 @@ const stats = reactive({
   assignmentCount: 5,
   monthlyIncome: 12800,
   creditScore: 920
+});
+
+const unreadCount = ref(0);
+
+async function fetchUnreadCount() {
+  try {
+    const res = await getNotificationList({ page: 1, pageSize: 50 });
+    if (res.ok) {
+      const list = res.data || [];
+      unreadCount.value = list.filter((n: any) => !n.is_read).length;
+    }
+  } catch (e) {
+    console.error('获取未读通知数失败:', e);
+  }
+}
+
+onMounted(() => {
+  fetchUnreadCount();
 });
 
 function navigateTo(url: string) { uni.navigateTo({ url }); }
@@ -337,6 +368,22 @@ function handleLogout() {
 .menu-left { display: flex; align-items: center; gap: 20rpx; }
 .icon-circle { width: 64rpx; height: 64rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .menu-text { font-size: 30rpx; color: #1a1a2e; }
+
+/* 消息通知红点 */
+.menu-right { display: flex; align-items: center; gap: 12rpx; }
+.unread-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 10rpx;
+  border-radius: 9999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 22rpx;
+  font-weight: 600;
+}
 
 /* ===== 退出登录 ===== */
 .logout-section { padding: 40rpx 32rpx; }

@@ -1,5 +1,11 @@
 <template>
   <view class="discover-page">
+    <!-- ====== 搜索条 ====== -->
+    <view class="search-bar" @click="goSearch">
+      <van-icon name="search" size="32rpx" color="#9ca3af" />
+      <text class="search-placeholder">搜索演出方案</text>
+    </view>
+
     <!-- ====== Banner 轮播 ====== -->
     <swiper
       class="banner-swiper"
@@ -136,6 +142,10 @@ function goSkuDetail(id: string) {
   uni.navigateTo({ url: `/pages/sku/detail?id=${id}` });
 }
 
+function goSearch() {
+  uni.navigateTo({ url: '/pages/search/index' });
+}
+
 function callPhone() {
   uni.makePhoneCall({ phoneNumber: "400-xxx-xxxx", fail: () => {} });
 }
@@ -146,6 +156,23 @@ function callPhone() {
   min-height: 100vh;
   background: var(--color-bg-page);
   padding-bottom: 120rpx;
+}
+
+/* ===== 搜索条 ===== */
+.search-bar {
+  margin: 20rpx 32rpx 0;
+  background: #fff;
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.search-placeholder {
+  font-size: 26rpx;
+  color: #9ca3af;
 }
 
 /* ===== Banner ===== */

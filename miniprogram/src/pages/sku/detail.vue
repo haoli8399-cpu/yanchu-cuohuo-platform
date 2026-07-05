@@ -96,6 +96,60 @@
         <text class="price-note">最终价格根据具体需求确定，含演员差旅费</text>
       </view>
 
+      <!-- 用户评价 -->
+      <view class="section-card" v-if="reviews && reviews.length > 0">
+        <view class="section-header-row">
+          <text class="section-title">用户评价</text>
+          <text class="section-more">好评 {{ reviewStats.average }}分 · {{ reviewStats.total }}条 ›</text>
+        </view>
+        <view v-for="rev in reviews.slice(0, 3)" :key="rev.id" class="review-item">
+          <view class="review-top">
+            <text class="review-company">{{ rev.company_name || '匿名用户' }}</text>
+            <view class="review-stars">
+              <van-icon v-for="i in 5" :key="i" name="star" size="24rpx" :color="i <= rev.rating ? '#f59e0b' : '#e5e5ea'" />
+            </view>
+          </view>
+          <text class="review-content">{{ rev.content }}</text>
+        </view>
+      </view>
+
+      <!-- 精彩案例 -->
+      <view class="section-card" v-if="detail.caseStudies?.length">
+        <view class="section-header-row">
+          <text class="section-title">精彩案例</text>
+          <text class="case-count">{{ detail.caseStudies.length }}个案例</text>
+        </view>
+        <scroll-view scroll-x class="case-scroll" :show-scrollbar="false">
+          <view class="case-scroll-inner">
+            <view
+              v-for="cs in detail.caseStudies"
+              :key="cs.id"
+              class="case-card"
+              @click="goCaseDetail(cs.id)"
+            >
+              <view class="case-cover">
+                <image v-if="cs.coverImage" :src="cs.coverImage" mode="aspectFill" class="case-cover-img" />
+                <view v-else class="case-cover-placeholder">
+                  <text class="case-cover-emoji">🎭</text>
+                </view>
+                <view class="case-cover-badge" v-if="cs.tier">T{{ cs.tier }}</view>
+              </view>
+              <view class="case-info">
+                <text class="case-title" lines="1">{{ cs.title }}</text>
+                <view class="case-meta">
+                  <text class="case-meta-item" v-if="cs.eventDate">{{ cs.eventDate }}</text>
+                  <text class="case-meta-item" v-if="cs.audienceCount">{{ cs.audienceCount }}人</text>
+                </view>
+                <view class="case-rating" v-if="cs.rating">
+                  <van-icon name="star" size="22rpx" color="#f59e0b" />
+                  <text class="case-rating-text">{{ cs.rating }}%好评</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+
       <!-- 底部 CTA -->
       <view class="bottom-cta">
         <button class="btn-consult" @click="callPhone">咨询</button>
@@ -108,13 +162,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import { getSKUDetail } from '@/services/api';
-import type { SKUDetail } from '@/types';
+import { getSKUDetail, getReviews, getReviewStats } from '@/services/api';
+import type { SKUDetail, Review, ReviewStats } from '@/types';
 import { formatPrice } from '@/utils/format';
 
 const detail = ref<SKUDetail | null>(null);
 const skuId = ref('');
 const loading = ref(true);
+const reviews = ref<Review[]>([]);
+const reviewStats = ref<ReviewStats>({ average: 0, total: 0, distribution: [] });
 
 onLoad((options: any) => {
   skuId.value = options?.id || '';
@@ -135,6 +191,19 @@ async function fetchDetail() {
   }
 }
 
+async function fetchReviews() {
+  try {
+    const [revRes, statsRes] = await Promise.all([
+      getReviews(skuId.value),
+      getReviewStats(skuId.value)
+    ]);
+    if (revRes.ok && revRes.data) reviews.value = revRes.data;
+    if (statsRes.ok && statsRes.data) reviewStats.value = statsRes.data;
+  } catch (e) {
+    console.error('加载评价失败:', e);
+  }
+}
+
 function goBack() { uni.navigateBack(); }
 function callPhone() {
   uni.makePhoneCall({ phoneNumber: "400-xxx-xxxx", fail: () => {} });
@@ -144,8 +213,13 @@ function goSubmitDemand() {
     url: `/pages/request/submit?skuId=${skuId.value}`
   });
 }
+function goCaseDetail(id: string) {
+  uni.navigateTo({ url: `/pages/case/detail?id=${id}` });
+}
 
-onMounted(() => {});
+onMounted(() => {
+  fetchReviews();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -284,8 +358,24 @@ onMounted(() => {});
     font-size: 32rpx;
     font-weight: 600;
     color: var(--color-text-primary);
-    display: block;
-    margin-bottom: 28rpx;
+    margin-bottom: 0;
+  }
+}
+
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28rpx;
+
+  .section-more {
+    font-size: 24rpx;
+    color: var(--color-primary);
+  }
+
+  .case-count {
+    font-size: 24rpx;
+    color: var(--color-text-tertiary);
   }
 }
 
@@ -375,6 +465,76 @@ onMounted(() => {});
   line-height: 1.5;
   display: block;
 }
+
+// 用户评价
+.review-item {
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid var(--color-divider);
+
+  &:last-child { border-bottom: none; padding-bottom: 0; }
+}
+
+.review-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.review-company {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.review-stars {
+  display: flex;
+  gap: 4rpx;
+}
+
+.review-content {
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  display: block;
+}
+
+// 精彩案例
+.case-scroll { width: 100%; }
+.case-scroll-inner { display: flex; gap: 16rpx; white-space: nowrap; }
+.case-card {
+  flex-shrink: 0;
+  width: 280rpx;
+  background: var(--color-bg-page);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.case-cover {
+  width: 280rpx;
+  height: 180rpx;
+  position: relative;
+  overflow: hidden;
+}
+.case-cover-img { width: 100%; height: 100%; }
+.case-cover-placeholder {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.case-cover-emoji { font-size: 60rpx; }
+.case-cover-badge {
+  position: absolute; top: 12rpx; right: 12rpx;
+  background: var(--color-primary); color: #fff;
+  font-size: 22rpx; padding: 4rpx 12rpx; border-radius: 9999px;
+}
+.case-info { padding: 16rpx; }
+.case-title { font-size: 26rpx; font-weight: 500; color: var(--color-text-primary); }
+.case-meta { display: flex; gap: 12rpx; margin-top: 6rpx; }
+.case-meta-item { font-size: 22rpx; color: var(--color-text-tertiary); }
+.case-rating { display: flex; align-items: center; gap: 4rpx; margin-top: 8rpx; }
+.case-rating-text { font-size: 22rpx; color: #f59e0b; }
 
 // 底部 CTA
 .bottom-cta {
