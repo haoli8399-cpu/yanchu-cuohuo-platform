@@ -25,8 +25,8 @@ import {
   message,
   Alert,
   Steps,
+  Descriptions,
   Popconfirm,
-  Steps,
 } from 'antd';
 import {
   ArrowLeftOutlined,
