@@ -7,7 +7,8 @@
 import type {
   LoginResult, SKUProduct, SKUDetail, DemandRequest, PlanItem, UnifiedPlan,
   Assignment, CheckinRecord, SettlementRecord, CreditScore,
-  ActorOnboarding, ApiResponse, UserInfo
+  ActorOnboarding, ApiResponse, UserInfo,
+  TierInfo, PriceCalcuationResult, SKUExtended
 } from '@/types';
 
 // ── 配置 ──
@@ -321,8 +322,10 @@ export async function getSKUList(params?: {
 
 export async function getSKUDetail(id: string): Promise<ApiResponse<SKUDetail>> {
   if (USE_MOCK) {
-    const detail = MOCK_SKU_DETAIL[id] || { ...MOCK_SKUS.find(s => s.id === id), price_tiers: [], review_summary: { average_score: 0, total_count: 0, distribution: [] }, gallery_urls: [], faq: [] } as unknown as SKUDetail;
-    return { ok: true, data: detail };
+    const base = MOCK_SKU_DETAIL[id] || { ...MOCK_SKUS.find(s => s.id === id), price_tiers: [], review_summary: { average_score: 0, total_count: 0, distribution: [] }, gallery_urls: [], faq: [] } as unknown as SKUDetail;
+    // 注入扩展字段（演员级别/默认配置）
+    const ext = MOCK_SKU_EXTENDED[id] || { tierInfo: MOCK_TIER_INFO, defaultTier: 'T3', durationOptions: [30, 45, 60, 75, 90], defaultDuration: 60, minPerformers: 2, maxPerformers: 4 };
+    return { ok: true, data: { ...base, ...ext } as unknown as SKUDetail };
   }
   return request<SKUDetail>(`/skus/${id}`);
 }
@@ -478,6 +481,26 @@ export async function removeFavorite(id: string): Promise<ApiResponse<{ success:
 }
 
 // ── 信誉分 API (B端) ──
+// ── 演员级别/定价 Mock ──
+const MOCK_TIER_INFO: TierInfo[] = [
+  { tier: 'T0', label: '新人演员', description: '初入舞台，活力十足', suitableFor: '适合社区活动/小型暖场', unitPrice: 20000 },
+  { tier: 'T1', label: '潜力演员', description: '1年以上舞台经验', suitableFor: '适合小型企业活动', unitPrice: 30000 },
+  { tier: 'T2', label: '成熟演员', description: '2年以上舞台经验，台风稳健', suitableFor: '适合中型企业活动', unitPrice: 40000 },
+  { tier: 'T3', label: '资深演员', description: '3年以上舞台经验，作品丰富', suitableFor: '适合年会/品牌活动主力', unitPrice: 60000 },
+  { tier: 'T4', label: '明星演员', description: '5年以上舞台经验，小有名气', suitableFor: '适合大型年会/品牌冠名', unitPrice: 100000 },
+  { tier: 'T5', label: '咖位演员', description: '有综艺/电视演出经验', suitableFor: '适合VIP答谢/高端品牌活动', unitPrice: 160000 },
+  { tier: 'T6', label: '顶流演员', description: '知名脱口秀演员，票房号召力强', suitableFor: '适合品牌代言级活动', unitPrice: 250000 },
+];
+
+// ── 每个 SKU 的扩展配置（默认级别/时长/人数） ──
+const MOCK_SKU_EXTENDED: Record<string, Partial<SKUExtended>> = {
+  'sku-001': { tierInfo: MOCK_TIER_INFO, defaultTier: 'T3', durationOptions: [30, 45, 60, 75, 90], defaultDuration: 60, minPerformers: 2, maxPerformers: 6 },
+  'sku-002': { tierInfo: MOCK_TIER_INFO, defaultTier: 'T2', durationOptions: [60, 90, 120], defaultDuration: 90, minPerformers: 3, maxPerformers: 5 },
+  'sku-003': { tierInfo: MOCK_TIER_INFO, defaultTier: 'T1', durationOptions: [30, 45, 60], defaultDuration: 45, minPerformers: 2, maxPerformers: 2 },
+  'sku-004': { tierInfo: MOCK_TIER_INFO, defaultTier: 'T4', durationOptions: [60, 90, 120], defaultDuration: 90, minPerformers: 1, maxPerformers: 2 },
+  'sku-005': { tierInfo: MOCK_TIER_INFO, defaultTier: 'T2', durationOptions: [45, 60, 75, 90], defaultDuration: 60, minPerformers: 3, maxPerformers: 6 },
+};
+
 // ── Admin: 分类管理 API ──
 export async function getCategories(): Promise<ApiResponse<Category[]>> {
   if (USE_MOCK) {
@@ -588,4 +611,35 @@ export async function rejectPlan(demandId: string, reason?: string): Promise<Api
     return { ok: true, data: { success: true } };
   }
   return request<{ success: boolean }>(`/demands/${demandId}/reject-plan`, { method: 'POST', data: { reason: reason || '' } });
+}
+
+// ── 价格计算 API ──
+export async function calculatePrice(params: {
+  skuId: string; tier: string; durationMinutes: number; performerCount: number;
+}): Promise<ApiResponse<PriceCalcuationResult>> {
+  if (USE_MOCK) {
+    const tierObj = MOCK_TIER_INFO.find(t => t.tier === params.tier);
+    if (!tierObj) return { ok: false, error: `不支持的演员级别: ${params.tier}` };
+
+    const unitPrice = tierObj.unitPrice; // 分 / 15分钟
+    const segments = Math.max(1, Math.round(params.durationMinutes / 15));
+    const totalPrice = unitPrice * segments * params.performerCount;
+    const companyPrice = Math.round(totalPrice * 0.85); // 活动公司渠道价 85折
+
+    return {
+      ok: true,
+      data: {
+        totalPrice,
+        companyPrice,
+        unitPrice,
+        breakdown: {
+          tier: params.tier,
+          durationMinutes: params.durationMinutes,
+          performerCount: params.performerCount,
+          unitPrice
+        }
+      }
+    };
+  }
+  return request<PriceCalcuationResult>('/pricing/calculate', { method: 'POST', data: params as unknown as Record<string, unknown> });
 }

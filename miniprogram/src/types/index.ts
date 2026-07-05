@@ -221,3 +221,69 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
   page: number;
   page_size: number;
 }
+
+// ========== SKU 详情页扩展类型 ==========
+
+/** 演员级别说明 */
+export interface TierInfo {
+  tier: string;        // "T3"
+  label: string;       // "资深演员"
+  description: string; // "3年以上舞台经验"
+  suitableFor: string; // "适合中型企业活动/年会"
+  unitPrice: number;   // 15分钟单价（分）
+}
+
+/** 场地要求 */
+export interface VenueRequirement {
+  type: string;         // "室内"
+  minArea: string;      // "50㎡"
+  equipment: string[];  // ["无线麦克风×2", "基础舞台灯光"]
+  seatingOptions: string[]; // ["剧场式", "圆桌式", "开放式"]
+}
+
+/** 同类案例 */
+export interface CaseStudy {
+  id: string;
+  title: string;
+  coverImage?: string;
+  eventDate: string;
+  audienceCount: number;
+  tier: string;
+  rating: number;       // 好评率 0-100
+  description?: string;
+}
+
+/** SKU 扩展信息 */
+export interface SKUExtended extends SKUProduct {
+  tierInfo: TierInfo[];          // 可选级别列表+定价
+  defaultTier: string;           // 默认推荐级别
+  durationOptions: number[];     // 可选时长 [30,45,60,75,90]
+  defaultDuration: number;       // 默认推荐时长
+  minPerformers: number;         // 最少人数
+  maxPerformers: number;         // 最多人数
+  venueRequirement: VenueRequirement;
+  caseStudies: CaseStudy[];
+  programIntro: string;          // 节目介绍（富文本）
+  coverImages: string[];         // 多张封面图
+}
+
+/** 价格计算请求 */
+export interface PriceCalcuationRequest {
+  skuId: string;
+  tier: string;
+  durationMinutes: number;
+  performerCount: number;
+}
+
+/** 价格计算结果 */
+export interface PriceCalcuationResult {
+  totalPrice: number;           // 甲方标准价（分）
+  companyPrice: number;         // 活动公司渠道价（分）
+  unitPrice: number;            // 所选级别15分钟单价（分）
+  breakdown: {
+    tier: string;
+    durationMinutes: number;
+    performerCount: number;
+    unitPrice: number;
+  };
+}
