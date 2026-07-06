@@ -23,6 +23,7 @@ export default defineConfig({
       routes: [
         { name: '运营总看板', path: '/dashboard', component: '@/pages/Dashboard' },
         { name: '运营工作台', path: '/workbench', component: '@/pages/OperationWorkbench/index' },
+        { name: '商机管理', path: '/opportunities', component: '@/pages/OpportunityManagement/index' },
         {
           name: '需求管理',
           routes: [
