@@ -6,7 +6,7 @@ import { query } from '../utils/db.js';
 import { successResponse, errorResponse } from '../utils/response.js';
 
 const phoneCodeBody = z.object({ phone: z.string().regex(/^1[3-9]\d{9}$/) });
-const phoneLoginBody = z.object({ phone: z.string().regex(/^1[3-9]\d{9}$/), code: z.string().length(6), role: z.enum(['agent']) });
+const phoneLoginBody = z.object({ phone: z.string().regex(/^1[3-9]\d{9}$/), code: z.string().length(6), role: z.enum(['agent', 'admin']) });
 
 export default async function authRoutes(app: FastifyInstance) {
   // 发送验证码

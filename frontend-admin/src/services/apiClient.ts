@@ -124,11 +124,10 @@ async function request<T>(
     // 处理 HTTP 状态码异常
     if (!response.ok) {
       if (response.status === 401) {
-        // Token 过期，清除并提示重新登录
+        // Token 过期，清除并跳转登录页
         localStorage.removeItem('admin_token');
         message.error('登录已过期，请重新登录');
-        // 跳转登录页（由路由守卫处理）
-        window.location.hash = '#/login';
+        window.location.replace('/admin/login');
         throw new Error('未授权，请重新登录');
       }
       if (response.status === 403) {

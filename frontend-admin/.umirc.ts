@@ -14,6 +14,7 @@ export default defineConfig({
   request: {},
   layout: { title: '喜剧工厂运营后台', locale: false },
   routes: [
+    { path: '/login', component: '@/pages/Login/index', hideInMenu: true, layout: false },
     { path: '/', redirect: '/dashboard' },
 
     // 📊 运营管理
