@@ -1,5 +1,7 @@
 <template>
   <view class="settlement-page">
+    <CfNavBar title="结算记录" />
+    
     <!-- Monthly Summary -->
     <view class="settlement-page__summary" v-if="summary.totalAmount > 0">
       <view class="settlement-page__summary-item">
@@ -89,6 +91,7 @@ import { getSettlementList } from '@/services/api';
 import type { SettlementRecord } from '@/types';
 import CfStatusTag from '@/components/CfStatusTag.vue';
 import CfEmptyState from '@/components/CfEmptyState.vue';
+import CfNavBar from '@/components/CfNavBar.vue';
 
 const loading = ref(true);
 const refreshing = ref(false);

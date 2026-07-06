@@ -1,5 +1,7 @@
 <template>
   <view class="credit-page">
+    <CfNavBar title="我的信誉分" :showBack="true" backText="返回" />
+
     <!-- Score Hero -->
     <view class="credit-page__hero">
       <view class="credit-page__circle">
@@ -100,9 +102,7 @@
           </view>
         </view>
       </view>
-      <view v-else class="credit-page__empty">
-        <text>暂无信誉记录</text>
-      </view>
+      <CfEmptyState v-else icon="star-o" text="暂无信誉记录" />
     </view>
 
     <!-- Info -->
@@ -137,6 +137,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { getCreditScore } from '@/services/api';
 import type { CreditScore } from '@/types';
+import CfNavBar from '@/components/CfNavBar.vue';
+import CfEmptyState from '@/components/CfEmptyState.vue';
 
 const creditData = ref<CreditScore>({
   actor_id: '',
@@ -372,13 +374,6 @@ onMounted(() => { fetchCredit(); });
   color: $color-text-tertiary;
   display: block;
   margin-top: 4rpx;
-}
-
-.credit-page__empty {
-  padding: $space-xl 0;
-  text-align: center;
-  color: $color-text-tertiary;
-  font-size: $text-md;
 }
 
 /* Info */

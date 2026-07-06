@@ -1,151 +1,134 @@
 <template>
   <view class="user-page">
-    <!-- ===== 活动公司端：紫渐变头部 ===== -->
+    <!-- ===== 活动公司端：BEM风格 + 卡片化设计 ===== -->
     <template v-if="authStore.isAgent">
-      <view class="profile-header">
-        <view class="profile-row">
-          <view class="profile-avatar">
-            <text class="avatar-text">{{ userInitial }}</text>
+      <!-- 导航栏 -->
+      <CfNavBar title="我的" :showBack="false" />
+
+      <!-- 用户卡片头部 -->
+      <view class="user-page__header">
+        <view class="user-page__profile">
+          <view class="user-page__avatar">
+            <text class="user-page__avatar-text">{{ userInitial }}</text>
           </view>
-          <view class="profile-info">
-            <text class="profile-name">{{ authStore.userInfo?.company_name || authStore.userInfo?.name || '未登录' }}</text>
-            <view class="profile-tags">
-              <text class="tag-role">活动公司</text>
-              <text class="tag-verified">认证企业</text>
+          <view class="user-page__info">
+            <text class="user-page__name">{{ authStore.userInfo?.company_name || authStore.userInfo?.name || '未登录' }}</text>
+            <view class="user-page__badges">
+              <view class="user-page__badge user-page__badge--role"><text>活动公司</text></view>
+              <view class="user-page__badge user-page__badge--verified"><text>认证企业</text></view>
             </view>
           </view>
         </view>
       </view>
 
-      <!-- 数据概览浮层卡片 -->
-      <view class="stats-card">
-        <view class="stats-row">
-          <view class="stat-item">
-            <text class="stat-value" style="color: #1a1a2e;">{{ stats.demandCount }}</text>
-            <text class="stat-label">需求总数</text>
-          </view>
-          <view class="stat-divider"></view>
-          <view class="stat-item">
-            <text class="stat-value" style="color: #f59e0b;">{{ stats.activeCount }}</text>
-            <text class="stat-label">进行中</text>
-          </view>
-          <view class="stat-divider"></view>
-          <view class="stat-item">
-            <text class="stat-value" style="color: #22c55e;">{{ stats.signedCount }}</text>
-            <text class="stat-label">已签约</text>
-          </view>
+      <!-- 数据概览卡片 -->
+      <view class="user-page__overview">
+        <view class="user-page__overview-item">
+          <text class="user-page__overview-num">{{ stats.demandCount }}</text>
+          <text class="user-page__overview-label">需求总数</text>
+        </view>
+        <view class="user-page__overview-divider" />
+        <view class="user-page__overview-item">
+          <text class="user-page__overview-num user-page__overview-num--pending">{{ stats.activeCount }}</text>
+          <text class="user-page__overview-label">进行中</text>
+        </view>
+        <view class="user-page__overview-divider" />
+        <view class="user-page__overview-item">
+          <text class="user-page__overview-num user-page__overview-num--confirmed">{{ stats.signedCount }}</text>
+          <text class="user-page__overview-label">已签约</text>
         </view>
       </view>
 
       <!-- 功能菜单组 1 -->
-      <view class="menu-group">
-        <view class="menu-item" @click="switchTab('/pages/request/list')" hover-class="menu-hover">
-          <view class="menu-left">
-            <view class="icon-circle" style="background: #f5f3ff;">
-              <van-icon name="todo-list-o" size="32rpx" color="#7c3aed" />
-            </view>
-            <text class="menu-text">我的需求</text>
+      <view class="user-page__menu">
+        <view class="user-page__menu-item" @click="switchTab('/pages/request/list')" hover-class="user-page__menu-item--active">
+          <view class="user-page__menu-icon" style="background: #f5f3ff;">
+            <van-icon name="todo-list-o" size="32rpx" color="#7c3aed" />
           </view>
-          <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
+          <text class="user-page__menu-text">我的需求</text>
+          <text class="user-page__menu-arrow">&#8250;</text>
         </view>
-        <view class="menu-item" @click="navigateTo('/pages/user/favorites/index')" hover-class="menu-hover">
-          <view class="menu-left">
-            <view class="icon-circle" style="background: #fef2f2;">
-              <van-icon name="like-o" size="32rpx" color="#ef4444" />
-            </view>
-            <text class="menu-text">我的收藏</text>
+        <view class="user-page__menu-item" @click="navigateTo('/pages/user/favorites/index')" hover-class="user-page__menu-item--active">
+          <view class="user-page__menu-icon" style="background: #fef2f2;">
+            <van-icon name="like-o" size="32rpx" color="#ef4444" />
           </view>
-          <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
+          <text class="user-page__menu-text">我的收藏</text>
+          <text class="user-page__menu-arrow">&#8250;</text>
         </view>
-        <view class="menu-item" @click="navigateTo('/pages/user/orders/index')" hover-class="menu-hover">
-          <view class="menu-left">
-            <view class="icon-circle" style="background: #eff6ff;">
-              <van-icon name="clock-o" size="32rpx" color="#3b82f6" />
-            </view>
-            <text class="menu-text">历史订单</text>
+        <view class="user-page__menu-item" @click="navigateTo('/pages/user/orders/index')" hover-class="user-page__menu-item--active">
+          <view class="user-page__menu-icon" style="background: #eff6ff;">
+            <van-icon name="clock-o" size="32rpx" color="#3b82f6" />
           </view>
-          <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
+          <text class="user-page__menu-text">历史订单</text>
+          <text class="user-page__menu-arrow">&#8250;</text>
         </view>
-        <view class="menu-item" @click="navigateTo('/pages/user/company/index')" hover-class="menu-hover">
-          <view class="menu-left">
-            <view class="icon-circle" style="background: #f5f3ff;">
-              <van-icon name="shop-o" size="32rpx" color="#7c3aed" />
-            </view>
-            <text class="menu-text">企业信息</text>
+        <view class="user-page__menu-item" @click="navigateTo('/pages/user/company/index')" hover-class="user-page__menu-item--active">
+          <view class="user-page__menu-icon" style="background: #f5f3ff;">
+            <van-icon name="shop-o" size="32rpx" color="#7c3aed" />
           </view>
-          <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
+          <text class="user-page__menu-text">企业信息</text>
+          <text class="user-page__menu-arrow">&#8250;</text>
         </view>
-        <view class="menu-item" @click="navigateTo('/pages/notification/index')" hover-class="menu-hover">
-          <view class="menu-left">
-            <view class="icon-circle" style="background: #fff7ed;">
-              <van-icon name="bell-o" size="32rpx" color="#f97316" />
-            </view>
-            <text class="menu-text">消息通知</text>
+        <view class="user-page__menu-item" @click="navigateTo('/pages/notification/index')" hover-class="user-page__menu-item--active">
+          <view class="user-page__menu-icon" style="background: #fff7ed;">
+            <van-icon name="bell-o" size="32rpx" color="#f97316" />
           </view>
-          <view class="menu-right">
-            <view v-if="unreadCount > 0" class="unread-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</view>
-            <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
+          <text class="user-page__menu-text">消息通知</text>
+          <view class="user-page__menu-right">
+            <view v-if="unreadCount > 0" class="user-page__unread-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</view>
+            <text class="user-page__menu-arrow">&#8250;</text>
           </view>
         </view>
-        <view class="menu-item" style="border-bottom: none;" @click="navigateTo('/pages/user/invoice/index')" hover-class="menu-hover">
-          <view class="menu-left">
-            <view class="icon-circle" style="background: #fffbeb;">
-              <van-icon name="bill-o" size="32rpx" color="#f59e0b" />
-            </view>
-            <text class="menu-text">发票管理</text>
+        <view class="user-page__menu-item user-page__menu-item--last" @click="navigateTo('/pages/user/invoice/index')" hover-class="user-page__menu-item--active">
+          <view class="user-page__menu-icon" style="background: #fffbeb;">
+            <van-icon name="bill-o" size="32rpx" color="#f59e0b" />
           </view>
-          <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
+          <text class="user-page__menu-text">发票管理</text>
+          <text class="user-page__menu-arrow">&#8250;</text>
         </view>
       </view>
 
       <!-- 功能菜单组 2 -->
-      <view class="menu-group">
-        <view class="menu-item" @click="navigateTo('/pages/user/feedback/index')" hover-class="menu-hover">
-          <view class="menu-left">
-            <view class="icon-circle" style="background: #eef2ff;">
-              <van-icon name="service-o" size="32rpx" color="#6366f1" />
-            </view>
-            <text class="menu-text">联系客服</text>
+      <view class="user-page__menu">
+        <view class="user-page__menu-item" @click="navigateTo('/pages/user/feedback/index')" hover-class="user-page__menu-item--active">
+          <view class="user-page__menu-icon" style="background: #eef2ff;">
+            <van-icon name="service-o" size="32rpx" color="#6366f1" />
           </view>
-          <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
+          <text class="user-page__menu-text">联系客服</text>
+          <text class="user-page__menu-arrow">&#8250;</text>
         </view>
-        <view class="menu-item" @click="navigateTo('/pages/user/feedback/index')" hover-class="menu-hover">
-          <view class="menu-left">
-            <view class="icon-circle" style="background: #f0fdf4;">
-              <van-icon name="chat-o" size="32rpx" color="#22c55e" />
-            </view>
-            <text class="menu-text">意见反馈</text>
+        <view class="user-page__menu-item" @click="navigateTo('/pages/user/feedback/index')" hover-class="user-page__menu-item--active">
+          <view class="user-page__menu-icon" style="background: #f0fdf4;">
+            <van-icon name="chat-o" size="32rpx" color="#22c55e" />
           </view>
-          <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
+          <text class="user-page__menu-text">意见反馈</text>
+          <text class="user-page__menu-arrow">&#8250;</text>
         </view>
-        <view class="menu-item" @click="navigateTo('/pages/user/agreement/index')" hover-class="menu-hover">
-          <view class="menu-left">
-            <view class="icon-circle" style="background: #f5f3ff;">
-              <van-icon name="info-o" size="32rpx" color="#7c3aed" />
-            </view>
-            <text class="menu-text">关于我们</text>
+        <view class="user-page__menu-item" @click="navigateTo('/pages/user/agreement/index')" hover-class="user-page__menu-item--active">
+          <view class="user-page__menu-icon" style="background: #f5f3ff;">
+            <van-icon name="info-o" size="32rpx" color="#7c3aed" />
           </view>
-          <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
+          <text class="user-page__menu-text">关于我们</text>
+          <text class="user-page__menu-arrow">&#8250;</text>
         </view>
-        <view class="menu-item" style="border-bottom: none;" @click="navigateTo('/pages/user/settings/index')" hover-class="menu-hover">
-          <view class="menu-left">
-            <view class="icon-circle" style="background: #f7f7f8;">
-              <van-icon name="setting-o" size="32rpx" color="#6b7280" />
-            </view>
-            <text class="menu-text">设置</text>
+        <view class="user-page__menu-item user-page__menu-item--last" @click="navigateTo('/pages/user/settings/index')" hover-class="user-page__menu-item--active">
+          <view class="user-page__menu-icon" style="background: #f7f7f8;">
+            <van-icon name="setting-o" size="32rpx" color="#6b7280" />
           </view>
-          <van-icon name="arrow" size="28rpx" color="#c4c4cc" />
+          <text class="user-page__menu-text">设置</text>
+          <text class="user-page__menu-arrow">&#8250;</text>
         </view>
       </view>
 
       <!-- 退出登录 -->
-      <view class="logout-section">
-        <button class="logout-btn" @click="handleLogout">退出登录</button>
+      <view class="user-page__logout">
+        <button class="user-page__logout-btn" @click="handleLogout">退出登录</button>
       </view>
     </template>
 
     <!-- ===== 演员端（暂留原样式，Phase 3 改） ===== -->
     <template v-if="authStore.isPerformer">
+      <CfNavBar title="我的" :showBack="false" />
       <view class="user-card">
         <view class="user-avatar" :style="{ background: avatarBg }">
           <text class="avatar-text">{{ userInitial }}</text>
@@ -202,13 +185,14 @@
           <van-icon slot="icon" name="setting-o" size="36rpx" class="menu-icon" />
         </van-cell>
       </van-cell-group>
-      <view class="logout-section">
-        <button class="logout-btn" @click="handleLogout">退出登录</button>
+      <view class="user-page__logout">
+        <button class="user-page__logout-btn" @click="handleLogout">退出登录</button>
       </view>
     </template>
 
     <!-- ===== 管理员端（暂留原样式） ===== -->
     <template v-if="authStore.isAdmin">
+      <CfNavBar title="我的" :showBack="false" />
       <view class="user-card">
         <view class="user-avatar" :style="{ background: avatarBg }">
           <text class="avatar-text">{{ userInitial }}</text>
@@ -234,12 +218,10 @@
           <van-icon slot="icon" name="setting-o" size="36rpx" class="menu-icon" />
         </van-cell>
       </van-cell-group>
-      <view class="logout-section">
-        <button class="logout-btn" @click="handleLogout">退出登录</button>
+      <view class="user-page__logout">
+        <button class="user-page__logout-btn" @click="handleLogout">退出登录</button>
       </view>
     </template>
-
-    <TabBar current="/pages/user/index" />
   </view>
 </template>
 
@@ -248,6 +230,7 @@ import { ref, computed, reactive, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { formatPrice } from '@/utils/format';
 import { getNotificationList } from '@/services/api';
+import CfNavBar from '@/components/CfNavBar.vue';
 
 const authStore = useAuthStore();
 
@@ -312,111 +295,280 @@ function handleLogout() {
 </script>
 
 <style lang="scss" scoped>
-.user-page { min-height: 100vh; background: #f5f5f7; padding-bottom: 120rpx; }
+.user-page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 120rpx;
 
-/* ===== 公司端：紫渐变头部 ===== */
-.profile-header {
-  background: linear-gradient(135deg, #7c3aed, #5b21b6);
-  padding: 48rpx 32rpx 80rpx;
-  border-radius: 0 0 48rpx 48rpx;
-}
-.profile-row { display: flex; align-items: center; gap: 24rpx; }
-.profile-avatar {
-  width: 112rpx; height: 112rpx; border-radius: 50%;
-  background: rgba(255,255,255,0.25);
-  display: flex; align-items: center; justify-content: center;
-  border: 4rpx solid #ffffff;
-}
-.profile-avatar .avatar-text { font-size: 44rpx; font-weight: 700; color: #ffffff; }
-.profile-info { display: flex; flex-direction: column; gap: 12rpx; }
-.profile-name { font-size: 36rpx; font-weight: 600; color: #ffffff; }
-.profile-tags { display: flex; align-items: center; gap: 12rpx; }
-.tag-role {
-  display: inline-flex; align-items: center;
-  padding: 4rpx 16rpx; border-radius: 9999px;
-  font-size: 22rpx; color: #ffffff;
-  background: rgba(255,255,255,0.2);
-}
-.tag-verified {
-  display: inline-flex; align-items: center;
-  padding: 4rpx 16rpx; border-radius: 9999px;
-  font-size: 22rpx; font-weight: 500;
-  background: #fbbf24; color: #1a1a2e;
+  // ===== 头部区域 =====
+  &__header {
+    background: linear-gradient(135deg, $color-primary, $color-primary-dark);
+    padding: $space-xl $space-base 80rpx;
+  }
+
+  &__profile {
+    display: flex;
+    align-items: center;
+  }
+
+  &__avatar {
+    width: 112rpx;
+    height: 112rpx;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4rpx solid #ffffff;
+    margin-right: $space-lg;
+  }
+
+  &__avatar-text {
+    font-size: 44rpx;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 12rpx;
+  }
+
+  &__name {
+    font-size: $text-xl;
+    font-weight: 600;
+    color: #ffffff;
+    display: block;
+  }
+
+  &__badges {
+    display: flex;
+    gap: $space-sm;
+  }
+
+  &__badge {
+    padding: 4rpx 16rpx;
+    border-radius: $radius-full;
+    font-size: $text-xs;
+
+    &--role {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    &--verified {
+      background: #fbbf24;
+      color: $color-text-primary;
+    }
+  }
+
+  // ===== 数据概览浮层卡片 =====
+  &__overview {
+    margin: -48rpx $space-lg 24rpx;
+    position: relative;
+    z-index: 1;
+    background: $color-bg-card;
+    border-radius: $radius-md;
+    padding: $space-lg;
+    display: flex;
+    align-items: center;
+    box-shadow: $shadow-sm;
+  }
+
+  &__overview-item {
+    flex: 1;
+    text-align: center;
+  }
+
+  &__overview-num {
+    font-size: $text-3xl;
+    font-weight: 700;
+    color: $color-text-primary;
+    display: block;
+
+    &--pending {
+      color: $state-pending;
+    }
+
+    &--confirmed {
+      color: $state-confirmed;
+    }
+  }
+
+  &__overview-label {
+    font-size: $text-xs;
+    color: $color-text-tertiary;
+    margin-top: 4rpx;
+    display: block;
+  }
+
+  &__overview-divider {
+    width: 1rpx;
+    height: 48rpx;
+    background-color: $color-divider;
+  }
+
+  // ===== 菜单组 =====
+  &__menu {
+    margin: 0 $space-lg 24rpx;
+    background: $color-bg-card;
+    border-radius: $radius-md;
+    overflow: hidden;
+  }
+
+  &__menu-item {
+    display: flex;
+    align-items: center;
+    padding: $space-lg $space-lg;
+    border-bottom: 1rpx solid $color-divider;
+
+    &--last {
+      border-bottom: none;
+    }
+
+    &--active {
+      background-color: $color-bg-page;
+    }
+  }
+
+  &__menu-icon {
+    width: 72rpx;
+    height: 72rpx;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: $space-md;
+  }
+
+  &__menu-text {
+    flex: 1;
+    font-size: $text-md;
+    color: $color-text-primary;
+  }
+
+  &__menu-arrow {
+    color: $color-text-placeholder;
+    font-size: $text-sm;
+  }
+
+  &__menu-right {
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+  }
+
+  &__unread-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36rpx;
+    height: 36rpx;
+    padding: 0 10rpx;
+    border-radius: $radius-full;
+    background: $state-error;
+    color: #ffffff;
+    font-size: 22rpx;
+    font-weight: 600;
+  }
+
+  // ===== 退出登录 =====
+  &__logout {
+    padding: 40rpx $space-xl;
+  }
+
+  &__logout-btn {
+    width: 100%;
+    height: 88rpx;
+    background: transparent;
+    border: 1rpx solid $state-error;
+    border-radius: $radius-lg;
+    color: $state-error;
+    font-size: 28rpx;
+    line-height: 88rpx;
+  }
 }
 
-/* ===== 数据概览卡片 ===== */
-.stats-card {
-  margin: -40rpx 32rpx 24rpx;
-  position: relative; z-index: 10;
-  background: #ffffff; border-radius: 32rpx; padding: 32rpx;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-.stats-row { display: flex; align-items: center; }
-.stat-item { flex: 1; display: flex; flex-direction: column; align-items: center; }
-.stat-value { font-size: 48rpx; font-weight: 700; display: block; }
-.stat-label { font-size: 24rpx; color: #9ca3af; margin-top: 8rpx; display: block; }
-.stat-divider { width: 1px; height: 40rpx; background: #f0f0f2; }
-
-/* ===== 菜单组 ===== */
-.menu-group { margin: 0 32rpx 24rpx; background: #ffffff; border-radius: 24rpx; overflow: hidden; }
-.menu-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 28rpx 32rpx;
-  border-bottom: 1px solid #f0f0f2;
-}
-.menu-hover { background: #f9f9fb; }
-.menu-left { display: flex; align-items: center; gap: 20rpx; }
-.icon-circle { width: 64rpx; height: 64rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.menu-text { font-size: 30rpx; color: #1a1a2e; }
-
-/* 消息通知红点 */
-.menu-right { display: flex; align-items: center; gap: 12rpx; }
-.unread-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36rpx;
-  height: 36rpx;
-  padding: 0 10rpx;
-  border-radius: 9999px;
-  background: #ef4444;
-  color: #ffffff;
-  font-size: 22rpx;
-  font-weight: 600;
-}
-
-/* ===== 退出登录 ===== */
-.logout-section { padding: 40rpx 32rpx; }
-.logout-btn {
-  width: 100%; height: 88rpx; background: transparent;
-  border: 1px solid var(--state-error, #ef4444);
-  border-radius: var(--radius-lg, 16rpx);
-  color: var(--state-error, #ef4444);
-  font-size: 28rpx; line-height: 88rpx;
-}
-
-/* ===== 演员端/管理员端旧样式 ===== */
+// ===== 演员端/管理员端旧样式（Phase 3 改，不动） =====
 .user-card {
-  display: flex; align-items: center; background: var(--color-bg-card, #ffffff);
-  padding: 48rpx 32rpx; margin-bottom: 24rpx;
+  display: flex;
+  align-items: center;
+  background: $color-bg-card;
+  padding: 48rpx 32rpx;
+  margin-bottom: 24rpx;
 }
 .user-avatar {
-  width: 100rpx; height: 100rpx; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; margin-right: 24rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
 }
-.user-avatar .avatar-text { font-size: 40rpx; font-weight: 700; color: #fff; }
-.user-info { flex: 1; }
-.user-name { font-size: 36rpx; font-weight: 700; color: var(--color-text-primary, #1a1a2e); display: block; }
-.user-role { margin-top: 6rpx; }
-.role-badge { font-size: 22rpx; color: var(--color-primary, #7c3aed); background: var(--color-bg-card, #f5f3ff); padding: 4rpx 16rpx; border-radius: 8rpx; }
-.user-company { font-size: 24rpx; color: var(--color-text-secondary, #6b7280); margin-top: 6rpx; display: block; }
-.user-edit { font-size: 26rpx; color: var(--color-text-tertiary, #9ca3af); }
-
-.stats-grid { margin: 0 24rpx 24rpx; background: #fff; border-radius: 16rpx; overflow: hidden; }
-.stat-content { text-align: center; padding: 24rpx 0; }
-.stat-content .stat-value { font-size: 36rpx; font-weight: 700; color: var(--color-primary, #7c3aed); display: block; }
-.stat-content .stat-label { font-size: 22rpx; color: #9ca3af; margin-top: 4rpx; display: block; }
-
-.menu-section { margin: 0 24rpx 24rpx; border-radius: 16rpx; overflow: hidden; }
-.menu-icon { margin-right: 16rpx; }
+.user-avatar .avatar-text {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #fff;
+}
+.user-info {
+  flex: 1;
+}
+.user-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: $color-text-primary;
+  display: block;
+}
+.user-role {
+  margin-top: 6rpx;
+}
+.role-badge {
+  font-size: 22rpx;
+  color: $color-primary;
+  background: $color-primary-bg;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+}
+.user-company {
+  font-size: 24rpx;
+  color: $color-text-secondary;
+  margin-top: 6rpx;
+  display: block;
+}
+.user-edit {
+  font-size: 26rpx;
+  color: $color-text-tertiary;
+}
+.stats-grid {
+  margin: 0 24rpx 24rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+.stat-content {
+  text-align: center;
+  padding: 24rpx 0;
+}
+.stat-content .stat-value {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: $color-primary;
+  display: block;
+}
+.stat-content .stat-label {
+  font-size: 22rpx;
+  color: #9ca3af;
+  margin-top: 4rpx;
+  display: block;
+}
+.menu-section {
+  margin: 0 24rpx 24rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+.menu-icon {
+  margin-right: 16rpx;
+}
 </style>

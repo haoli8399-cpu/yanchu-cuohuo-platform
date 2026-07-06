@@ -8,6 +8,14 @@ import type { ApiResponse } from './apiClient';
 import type { PaginatedResponse } from '@/types/sku';
 import type { ReviewListItem, ReviewListParams } from '@/types/review';
 
+/** 新增评价请求体 */
+export interface CreateReviewRequest {
+  sku_id: string;
+  overall_rating: number;
+  text_content: string;
+  company_name?: string;
+}
+
 /** 获取评价列表 */
 export async function getReviewList(
   params: ReviewListParams,
@@ -22,4 +30,18 @@ export async function getReviewList(
   return apiClient.get<PaginatedResponse<ReviewListItem>>(
     `/reviews?${query.toString()}`,
   );
+}
+
+/** 新增评价 */
+export async function createReview(
+  data: CreateReviewRequest,
+): Promise<ApiResponse<ReviewListItem>> {
+  return apiClient.post<ReviewListItem>('/reviews', data as unknown as Record<string, unknown>);
+}
+
+/** 删除评价 */
+export async function deleteReview(
+  id: string,
+): Promise<ApiResponse<null>> {
+  return apiClient.delete<null>(`/reviews/${id}`);
 }

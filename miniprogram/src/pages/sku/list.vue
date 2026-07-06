@@ -1,9 +1,7 @@
 <template>
   <view class="sku-list-page">
     <!-- 导航栏 -->
-    <view class="nav-bar">
-      <text class="nav-title">方案列表</text>
-    </view>
+    <CfNavBar title="方案列表" />
 
     <!-- 搜索栏 -->
     <view class="search-bar">
@@ -70,64 +68,66 @@
     </van-popup>
 
     <!-- 方案列表 -->
-    <scroll-view
-      scroll-y
-      class="sku-list"
-      @scrolltolower="onLoadMore"
-      refresher-enabled
-      :refresher-triggered="refreshing"
-      @refresherrefresh="onRefresh"
-    >
-      <view v-if="loading && page === 1" class="loading-state">
-        <van-loading type="spinner" size="48rpx" custom-class="loading-spinner" />
-        <text class="loading-text">加载中...</text>
-      </view>
-
-      <template v-else-if="skuList.length > 0">
-        <view
-          v-for="sku in skuList"
-          :key="sku.id"
-          class="sku-card"
-          @click="goDetail(sku.id)"
-        >
-          <!-- 封面 -->
-          <view class="sku-cover">
-            <view class="sku-cover-placeholder">
-              {{ sku.category_label?.charAt(0) || '' }}
-            </view>
+    <view class="sku-list-wrap">
+      <scroll-view
+        scroll-y
+        class="sku-list"
+        enable-flex
+        @scrolltolower="onLoadMore"
+        refresher-enabled
+        :refresher-triggered="refreshing"
+        @refresherrefresh="onRefresh"
+      >
+        <view class="sku-list-inner">
+          <view v-if="loading && page === 1" class="loading-state">
+            <van-loading type="spinner" size="48rpx" custom-class="loading-spinner" />
+            <text class="loading-text">加载中...</text>
           </view>
-          <view class="sku-card-body">
-            <!-- Row 1: Title + Tag -->
-            <view class="sku-row1">
-              <text class="sku-title">{{ sku.title }}</text>
-              <text v-if="sku.category_label" class="sku-tag">{{ sku.category_label }}</text>
-            </view>
-            <!-- Row 2: Subtitle -->
-            <view class="sku-subtitle" v-if="sku.description">{{ sku.description }}</view>
-            <!-- Row 3: Price + Rating -->
-            <view class="sku-row3">
-              <view class="sku-price">
-                <text class="price-symbol">¥</text>
-                <text class="price-value">{{ formatPrice(sku.min_price) }}</text>
-                <text class="price-unit">/场</text>
-              </view>
-              <view class="sku-rating" v-if="sku.rating">
-                <van-icon name="star" size="20rpx" color="#f59e0b" />
-                <text class="rating-value">{{ sku.rating }}</text>
-                <text class="rating-sold">已售{{ sku.sales_count || 0 }}</text>
-              </view>
-            </view>
-          </view>
-        </view>
 
-        <view v-if="noMore && skuList.length > 0" class="no-more">没有更多了</view>
-        <view v-if="loading && page > 1" class="loading-more">
-          <van-loading size="28rpx" /> 加载中...
-        </view>
-      </template>
+          <template v-else-if="skuList.length > 0">
+            <view
+              v-for="sku in skuList"
+              :key="sku.id"
+              class="sku-card"
+              @click="goDetail(sku.id)"
+            >
+              <!-- 封面 -->
+              <view class="sku-cover">
+                <view class="sku-cover-placeholder">
+                  {{ sku.category_label?.charAt(0) || '' }}
+                </view>
+              </view>
+              <view class="sku-card-body">
+                <view class="sku-row1">
+                  <text class="sku-title">{{ sku.title }}</text>
+                  <text v-if="sku.category_label" class="sku-tag">{{ sku.category_label }}</text>
+                </view>
+                <view class="sku-subtitle" v-if="sku.description">{{ sku.description }}</view>
+                <view class="sku-row3">
+                  <view class="sku-price">
+                    <text class="price-symbol">¥</text>
+                    <text class="price-value">{{ formatPrice(sku.min_price) }}</text>
+                    <text class="price-unit">/场</text>
+                  </view>
+                  <view class="sku-rating" v-if="sku.rating">
+                    <van-icon name="star" size="20rpx" color="#f59e0b" />
+                    <text class="rating-value">{{ sku.rating }}</text>
+                    <text class="rating-sold">已售{{ sku.sales_count || 0 }}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
 
-      <EmptyState v-else icon="bill-o" title="暂无演出方案" description="搜索其他类型试试" />
-    </scroll-view>
+            <view v-if="noMore && skuList.length > 0" class="no-more">没有更多了</view>
+            <view v-if="loading && page > 1" class="loading-more">
+              <van-loading size="28rpx" /> 加载中...
+            </view>
+          </template>
+
+          <EmptyState v-else icon="bill-o" title="暂无演出方案" description="搜索其他类型试试" />
+        </view>
+      </scroll-view>
+    </view>
 
     <TabBar current="/pages/sku/list" />
     <FloatingPhone />
@@ -139,6 +139,7 @@ import { ref, computed, onMounted } from 'vue';
 import { getSKUList } from '@/services/api';
 import type { SKUProduct } from '@/types';
 import { formatPrice } from '@/utils/format';
+import CfNavBar from '@/components/CfNavBar.vue';
 
 const keyword = ref('');
 const selectedCategory = ref('');
@@ -149,7 +150,6 @@ const page = ref(1);
 const pageSize = 20;
 const noMore = ref(false);
 
-// ── 价格筛选 ──
 const showPricePicker = ref(false);
 const selectedPriceRange = ref('');
 const priceRanges = [
@@ -165,7 +165,6 @@ const priceLabel = computed(() => {
   return r ? r.label : '价格排序';
 });
 
-// ── 排序 ──
 type SortMode = 'default' | 'price_asc' | 'price_desc' | 'rating';
 const sortMode = ref<SortMode>('default');
 const sortLabel = computed(() => {
@@ -173,7 +172,6 @@ const sortLabel = computed(() => {
   return map[sortMode.value];
 });
 
-// ── 分类 ──
 const categories = [
   { label: '全部', value: '' },
   { label: '脱口秀', value: '脱口秀' },
@@ -253,20 +251,6 @@ onMounted(() => { fetchSKUs(true); });
   overflow: hidden;
 }
 
-.nav-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 88rpx;
-  background: var(--color-bg-card);
-  border-bottom: 1rpx solid var(--color-divider);
-  .nav-title {
-    font-size: 34rpx;
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
-}
-
 .search-bar {
   padding: 12rpx 32rpx;
   .search-input-wrap {
@@ -288,8 +272,6 @@ onMounted(() => { fetchSKUs(true); });
 .category-tabs {
   padding: 12rpx 32rpx 0;
   white-space: nowrap;
-  display: flex;
-  gap: 16rpx;
   .category-tab {
     display: inline-block;
     padding: 12rpx 32rpx;
@@ -297,12 +279,12 @@ onMounted(() => { fetchSKUs(true); });
     font-size: 26rpx;
     font-weight: 400;
     color: var(--color-text-secondary);
-    background: #f0f0f2;
+    background: $color-bg-input;
     white-space: nowrap;
     margin-right: 16rpx;
     &.active {
-      background: var(--color-primary);
-      color: #fff;
+      background: $color-primary;
+      color: $color-text-inverse;
       font-weight: 500;
     }
   }
@@ -311,7 +293,7 @@ onMounted(() => { fetchSKUs(true); });
 .filter-bar {
   display: flex;
   gap: 16rpx;
-  padding: 24rpx 32rpx 8rpx;
+  padding: 24rpx 32rpx 24rpx;
   overflow-x: auto;
   white-space: nowrap;
   .filter-tag {
@@ -352,12 +334,24 @@ onMounted(() => { fetchSKUs(true); });
   }
 }
 
-.sku-list {
+// 列表区域
+.sku-list-wrap {
   flex: 1;
-  padding: 0 32rpx 140rpx;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sku-list {
+  height: 100%;
+  padding: 0 32rpx 180rpx;
+  box-sizing: border-box;
+}
+
+.sku-list-inner {
   display: flex;
   flex-direction: column;
   gap: 24rpx;
+  padding-top: 16rpx;
 }
 
 .sku-card {
@@ -365,6 +359,8 @@ onMounted(() => { fetchSKUs(true); });
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .sku-cover {
@@ -374,7 +370,7 @@ onMounted(() => { fetchSKUs(true); });
   .sku-cover-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #7c3aed33, #a78bfa33);
+    background: linear-gradient(135deg, $color-primary-bg, $color-primary-subtle);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -436,12 +432,18 @@ onMounted(() => { fetchSKUs(true); });
   display: flex;
   align-items: center;
   gap: 4rpx;
-  .rating-value { font-size: 24rpx; color: #f59e0b; font-weight: 500; }
+  .rating-value { font-size: 24rpx; color: $state-warning; font-weight: 500; }
   .rating-sold { font-size: 24rpx; color: var(--color-text-tertiary); margin-left: 4rpx; }
 }
 
-.loading-state { padding: 20rpx 0; }
-.loading-text { font-size: 28rpx; color: var(--color-text-tertiary); }
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 0;
+  .loading-text { font-size: 28rpx; color: var(--color-text-tertiary); margin-top: 16rpx; }
+}
+
 .no-more { text-align: center; padding: 30rpx 0; font-size: 24rpx; color: var(--color-text-tertiary); }
 .loading-more { display: flex; align-items: center; justify-content: center; padding: 30rpx 0; font-size: 24rpx; color: var(--color-text-tertiary); gap: 8rpx; }
 </style>

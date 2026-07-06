@@ -1,32 +1,34 @@
 <template>
   <view class="login-page">
-    <!-- 顶部：紫色渐变 + 品牌 -->
-    <view class="top-gradient">
-      <view class="brand-content">
-        <text class="brand-name">喜剧工厂</text>
-        <text class="brand-tagline">连接优质演出内容</text>
+    <!-- Purple gradient brand area with background image -->
+    <view class="login-page__brand">
+      <image class="login-page__brand-bg" src="/static/images/login-bg.jpg" mode="aspectFill" />
+      <view class="login-page__brand-overlay">
+        <text class="login-page__title">喜剧工厂</text>
+        <text class="login-page__subtitle">连接优质演出内容</text>
       </view>
     </view>
 
-    <!-- 底部：白色卡片 + 登录按钮 -->
-    <view class="bottom-card">
+    <!-- White card area -->
+    <view class="login-page__card">
       <button
-        class="wechat-btn"
+        class="login-page__wechat-btn"
         :disabled="loading"
         :style="{ opacity: loading ? 0.7 : 1 }"
         @click="handleLogin"
       >
-        <image class="wechat-icon" src="/static/icons/wechat.png" mode="aspectFit" />
-        <text class="wechat-btn-text">微信一键登录</text>
+        <image class="login-page__wechat-icon" src="/static/icons/wechat.png" mode="aspectFit" />
+        <text>微信一键登录</text>
       </button>
 
-      <view class="agreement-row">
-        <text class="agreement-link" @click="showAgreement">用户协议</text>
-        <view class="agreement-dot"></view>
-        <text class="agreement-link" @click="showPrivacy">隐私政策</text>
+      <view class="login-page__agreement">
+        <text class="login-page__agreement-text">
+          登录即表示同意
+          <text class="login-page__link" @tap="showAgreement">《用户协议》</text>
+          和
+          <text class="login-page__link" @tap="showPrivacy">《隐私政策》</text>
+        </text>
       </view>
-
-      <view class="safe-bottom"></view>
     </view>
   </view>
 </template>
@@ -84,140 +86,106 @@ function showPrivacy() {
 <style lang="scss" scoped>
 .login-page {
   min-height: 100vh;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  background: var(--color-bg-page);
-}
+  background-color: $color-bg-page;
 
-/* ===== 顶部紫色渐变区 ===== */
-.top-gradient {
-  background: linear-gradient(170deg, #7c3aed 0%, #5b21b6 100%);
-  position: relative;
-  height: 45vh;
-  min-height: 320px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  // ── 紫色渐变品牌区 ──
+  &__brand {
+    position: relative;
+    height: 50vh;
+    min-height: 360px;
+    background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
 
-  &::before {
-    content: '';
+  &__brand-bg {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(124,58,237,.3), rgba(91,33,182,.5));
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
     opacity: 0.15;
   }
-}
 
-.brand-content {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  padding: 0 64rpx;
-}
+  &__brand-overlay {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-.brand-name {
-  font-size: 64rpx;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.06em;
-  line-height: 1.3;
-}
+  &__title {
+    font-size: 64rpx;
+    font-weight: 700;
+    color: $color-text-inverse;
+    letter-spacing: 4rpx;
+    margin-bottom: $space-sm;
+  }
 
-.brand-tagline {
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 16rpx;
-  letter-spacing: 0.04em;
-}
+  &__subtitle {
+    font-size: $text-md;
+    color: rgba(255, 255, 255, 0.7);
+  }
 
-/* ===== 底部白色卡片 ===== */
-.bottom-card {
-  position: relative;
-  z-index: 2;
-  margin-top: -48rpx;
-  background: #ffffff;
-  border-radius: 48rpx 48rpx 0 0;
-  padding: 64rpx 0 0 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-}
+  // ── 白色卡片 ──
+  &__card {
+    background-color: $color-bg-card;
+    border-radius: $radius-lg $radius-lg 0 0;
+    margin-top: -40rpx;
+    position: relative;
+    z-index: 2;
+    padding: 64rpx $space-2xl;
+    padding-bottom: calc(64rpx + env(safe-area-inset-bottom));
+    flex: 1;
+  }
 
-/* ===== 微信登录按钮 ===== */
-.wechat-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-  width: calc(100% - 128rpx);
-  margin: 0 64rpx;
-  height: 96rpx;
-  border-radius: 9999px;
-  background-color: #07C160;
-  border: none;
-  color: #ffffff;
-  font-size: 30rpx;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.3);
-  transition: opacity 0.2s ease;
-  padding: 0;
-  line-height: 1;
-}
+  // ── 微信登录按钮 ──
+  &__wechat-btn {
+    width: 100%;
+    height: 96rpx;
+    background-color: #07C160;
+    color: $color-text-inverse;
+    border-radius: $radius-full;
+    font-size: $text-lg;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-sm;
+    border: none;
+    padding: 0;
+    line-height: 1;
+    box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.3);
+    transition: opacity $transition-fast;
 
-.wechat-btn:active {
-  opacity: 0.85;
-}
+    &::after { border: none; }
 
-.wechat-icon {
-  width: 40rpx;
-  height: 40rpx;
-  vertical-align: middle;
-}
+    &:active { opacity: 0.85; }
+  }
 
-.wechat-btn-text {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #ffffff;
-  letter-spacing: 0.02em;
-  vertical-align: middle;
-}
+  &__wechat-icon {
+    width: 40rpx;
+    height: 40rpx;
+  }
 
-/* ===== 协议行 ===== */
-.agreement-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-  margin-top: 40rpx;
-  padding: 0 64rpx;
-}
+  // ── 协议链接 ──
+  &__agreement {
+    margin-top: $space-xl;
+    text-align: center;
+  }
 
-.agreement-link {
-  font-size: 24rpx;
-  color: var(--color-text-tertiary);
-  text-decoration: none;
-}
+  &__agreement-text {
+    font-size: $text-sm;
+    color: $color-text-tertiary;
+  }
 
-.agreement-link:active {
-  color: var(--color-text-secondary);
-}
-
-.agreement-dot {
-  width: 6rpx;
-  height: 6rpx;
-  border-radius: 50%;
-  background-color: #d1d5db;
-}
-
-.safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 20px);
-  margin-top: auto;
-  width: 100%;
+  &__link {
+    color: $color-text-link;
+  }
 }
 </style>

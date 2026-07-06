@@ -1,5 +1,7 @@
 <template>
   <view class="assignment-detail-page">
+    <CfNavBar title="排期详情" :showBack="true" backText="返回" />
+
     <template v-if="detail">
       <!-- Status Banner -->
       <view class="assignment-detail-page__banner">
@@ -114,6 +116,7 @@ import { ref } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { getAssignmentDetail, confirmAssignment } from '@/services/api';
 import type { Assignment } from '@/types';
+import CfNavBar from '@/components/CfNavBar.vue';
 import CfStatusTag from '@/components/CfStatusTag.vue';
 
 const detail = ref<Assignment | null>(null);

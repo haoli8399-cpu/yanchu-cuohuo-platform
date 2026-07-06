@@ -27,10 +27,12 @@
           </view>
           <view class="divider"></view>
           <view class="info-list">
-            <view class="info-row" v-for="(item, idx) in infoRows" :key="idx" v-if="item.value">
-              <text class="info-label">{{ item.label }}</text>
-              <text class="info-value">{{ item.value }}</text>
-            </view>
+            <template v-for="(item, idx) in infoRows" :key="idx">
+              <view class="info-row" v-if="item.value">
+                <text class="info-label">{{ item.label }}</text>
+                <text class="info-value">{{ item.value }}</text>
+              </view>
+            </template>
           </view>
         </view>
 

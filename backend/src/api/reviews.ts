@@ -1,8 +1,9 @@
 // ============================================================
 // 评价系统路由处理器
-// GET  /v1/reviews             — 评价列表（按SKU筛选）
-// POST /v1/reviews             — 提交评价（活动公司，需有已完成订单）
-// GET  /v1/reviews/stats/:sku_id — 某SKU的评价统计（平均分/总数）
+// GET    /v1/reviews              — 评价列表（按SKU筛选）
+// POST   /v1/reviews              — 提交评价（活动公司，需有已完成订单）
+// DELETE /v1/reviews/:id          — 删除评价（admin）
+// GET    /v1/reviews/stats/:sku_id — 某SKU的评价统计（平均分/总数）
 // ============================================================
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
@@ -37,6 +38,7 @@ const createBodySchema = z.object({
   demand_id: z.string().uuid(),
   rating: z.number().int().min(1).max(5),
   content: z.string().min(1),
+  company_name: z.string().optional(),
 });
 
 // ============================================================
@@ -150,13 +152,29 @@ export default async function reviewRoutes(app: FastifyInstance): Promise<void> 
       }
 
       const result = await query<{ id: string }>(
-        `INSERT INTO reviews (sku_id, demand_id, company_id, rating, content)
-         VALUES ($1, $2, $3, $4, $5)
+        `INSERT INTO reviews (sku_id, demand_id, company_id, rating, content, company_name)
+         VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING id`,
-        [body.sku_id, body.demand_id, companyId, body.rating, body.content]
+        [body.sku_id, body.demand_id, companyId, body.rating, body.content, body.company_name || null]
       );
 
       reply.status(201).send(createdResponse({ id: result.rows[0].id }, '评价已提交'));
+    }
+  );
+
+  // DELETE /v1/reviews/:id - 删除评价（admin）
+  app.delete(
+    '/:id',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('admin'),
+      ],
+    },
+    async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+      const { id } = request.params as { id: string };
+      await query('DELETE FROM reviews WHERE id = $1', [id]);
+      reply.send(successResponse(null, '评价已删除'));
     }
   );
 

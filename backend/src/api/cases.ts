@@ -30,7 +30,7 @@ const listQuerySchema = z.object({
   sku_id: z.string().uuid().optional(),
   tier: z.enum(['T0', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6']).optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).optional().default(20),
+  pageSize: z.coerce.number().int().min(1).max(1000).optional().default(20),
 });
 
 const createBodySchema = z.object({

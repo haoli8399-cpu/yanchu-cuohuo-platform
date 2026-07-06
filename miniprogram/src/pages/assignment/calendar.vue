@@ -1,6 +1,8 @@
 // @ts-nocheck
 <template>
   <view class="calendar-page">
+    <CfNavBar title="排期日历" :showBack="true" backText="返回" />
+
     <!-- Month Selector -->
     <view class="calendar-page__month-selector">
       <text class="calendar-page__month-arrow" @click="prevMonth">&#x2039;</text>
@@ -34,15 +36,15 @@
     <!-- Legend -->
     <view class="calendar-page__legend">
       <view class="calendar-page__legend-item">
-        <view class="calendar-page__legend-dot" style="background-color: $state-confirmed;" />
+        <view class="calendar-page__legend-dot calendar-page__legend-dot--confirmed" />
         <text>已确认</text>
       </view>
       <view class="calendar-page__legend-item">
-        <view class="calendar-page__legend-dot" style="background-color: $state-pending;" />
+        <view class="calendar-page__legend-dot calendar-page__legend-dot--pending" />
         <text>待确认</text>
       </view>
       <view class="calendar-page__legend-item">
-        <view class="calendar-page__legend-dot" style="background-color: $state-quoted;" />
+        <view class="calendar-page__legend-dot calendar-page__legend-dot--completed" />
         <text>已完成</text>
       </view>
     </view>
@@ -92,6 +94,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { getAssignmentList } from '@/services/api';
 import type { Assignment } from '@/types';
+import CfNavBar from '@/components/CfNavBar.vue';
 import CfStatusTag from '@/components/CfStatusTag.vue';
 import CfEmptyState from '@/components/CfEmptyState.vue';
 
@@ -289,7 +292,6 @@ onMounted(() => {
 .calendar-page__grid {
   display: flex;
   flex-wrap: wrap;
-  padding: 0 $space-sm;
   margin: 0 $space-base;
   background-color: $color-bg-card;
   border-radius: $radius-md;
@@ -363,6 +365,10 @@ onMounted(() => {
   width: 12rpx;
   height: 12rpx;
   border-radius: 50%;
+
+  &--confirmed { background-color: $state-confirmed; }
+  &--pending { background-color: $state-pending; }
+  &--completed { background-color: $state-quoted; }
 }
 
 /* Detail */
