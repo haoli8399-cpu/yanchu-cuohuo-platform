@@ -526,6 +526,15 @@ function goPendingList() {
   uni.switchTab({ url: '/pages/request/list' });
 }
 
+function onAISend() {
+  // Phase 1 仅做 UI 入口，点击发送给出提示
+  if (!aiPrompt.value.trim()) {
+    uni.showToast({ title: '请输入你的需求', icon: 'none' });
+    return;
+  }
+  uni.showToast({ title: 'AI 功能将在 Phase 2 上线', icon: 'none' });
+}
+
 onMounted(() => {});
 </script>
 
@@ -896,5 +905,144 @@ onMounted(() => {});
     margin-top: 8rpx;
     display: block;
   }
+}
+// 提交方式 Tab
+.submit-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  padding: 16rpx 32rpx;
+  background: $color-bg-card;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.submit-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20rpx 0;
+  border-radius: $radius-full;
+  font-size: $text-base;
+  color: $color-text-secondary;
+  background: $color-bg-page;
+  font-weight: 500;
+  &.active {
+    background: $color-primary;
+    color: $color-text-inverse;
+  }
+  &:active { opacity: 0.85; }
+}
+
+// AI 聊天页
+.ai-chat-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ai-chat-scroll {
+  flex: 1;
+  padding: 24rpx 32rpx;
+}
+
+.ai-message {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+  &.user {
+    flex-direction: row-reverse;
+    .ai-bubble {
+      background: $color-primary;
+      color: $color-text-inverse;
+      border-bottom-right-radius: 4rpx;
+    }
+  }
+  &.ai .ai-bubble {
+    background: $color-bg-card;
+    color: $color-text-primary;
+    border-bottom-left-radius: 4rpx;
+  }
+}
+
+.ai-avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 9999px;
+  background: $color-primary-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  flex-shrink: 0;
+}
+
+.ai-bubble {
+  max-width: 70%;
+  padding: 20rpx 24rpx;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md;
+  .ai-bubble-text {
+    font-size: $text-base;
+    line-height: 1.5;
+    display: block;
+  }
+  .ai-bubble-hint {
+    font-size: $text-sm;
+    color: $color-text-tertiary;
+    margin-top: 8rpx;
+    display: block;
+  }
+}
+
+.ai-placeholder {
+  margin-top: 60rpx;
+  text-align: center;
+  text {
+    font-size: $text-sm;
+    color: $color-text-tertiary;
+  }
+}
+
+.ai-chat-input-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx 32rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.06);
+}
+
+.ai-chat-input {
+  flex: 1;
+  height: 72rpx;
+  background: $color-bg-page;
+  border-radius: $radius-full;
+  padding: 0 24rpx;
+  font-size: $text-base;
+  color: $color-text-primary;
+  border: 2rpx solid $color-border;
+}
+
+.ai-chat-send {
+  flex-shrink: 0;
+  height: 72rpx;
+  padding: 0 32rpx;
+  border-radius: $radius-full;
+  background: $color-primary;
+  color: $color-text-inverse;
+  font-size: $text-base;
+  font-weight: 500;
+  line-height: 72rpx;
+  text-align: center;
+  border: none;
+  &:active { opacity: 0.85; }
 }
 </style>
