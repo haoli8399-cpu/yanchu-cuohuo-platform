@@ -12,8 +12,31 @@
       </view>
     </view>
 
-    <!-- 表单内容 -->
-    <scroll-view scroll-y class="form-scroll" :scroll-into-view="scrollInto">
+    <!-- 提交方式 Tab 切换 -->
+    <view class="submit-tabs">
+      <view
+        class="submit-tab"
+        :class="{ active: submitMode === 'sku' }"
+        @click="submitMode = 'sku'"
+      >
+        <text>📋 选方案提交</text>
+      </view>
+      <view
+        class="submit-tab"
+        :class="{ active: submitMode === 'ai' }"
+        @click="submitMode = 'ai'"
+      >
+        <text>💬 描述需求提交</text>
+      </view>
+    </view>
+
+    <!-- 表单内容：选方案提交 -->
+    <scroll-view
+      v-if="submitMode === 'sku'"
+      scroll-y
+      class="form-scroll"
+      :scroll-into-view="scrollInto"
+    >
 
       <!-- SKU 自定义配置区（从 SKU 详情页跳转时显示） -->
       <view class="sku-config-section" v-if="skuInfo">
@@ -196,8 +219,40 @@
       <view style="height: 160rpx;"></view>
     </scroll-view>
 
-    <!-- 底部固定按钮 -->
-    <view class="bottom-bar">
+    <!-- AI 描述需求提交（Phase 2 功能，Phase 1 仅 UI 入口） -->
+    <view v-else class="ai-chat-page">
+      <scroll-view scroll-y class="ai-chat-scroll">
+        <view class="ai-message ai">
+          <view class="ai-avatar">🤖</view>
+          <view class="ai-bubble">
+            <text class="ai-bubble-text">你好！请告诉我你的演出需求，我会帮你匹配最合适的方案。</text>
+            <text class="ai-bubble-hint">（可以粘贴微信聊天记录）</text>
+          </view>
+        </view>
+        <view v-if="aiPrompt" class="ai-message user">
+          <view class="ai-bubble">
+            <text class="ai-bubble-text">{{ aiPrompt }}</text>
+          </view>
+        </view>
+        <view class="ai-placeholder">
+          <text>AI 经纪人对话功能将在 Phase 2 实现</text>
+        </view>
+        <view style="height: 160rpx;"></view>
+      </scroll-view>
+
+      <view class="ai-chat-input-bar">
+        <input
+          class="ai-chat-input"
+          v-model="aiPrompt"
+          placeholder="输入你的演出需求..."
+          placeholder-style="color: #c4c4cc;"
+        />
+        <button class="ai-chat-send" @click="onAISend">发送</button>
+      </view>
+    </view>
+
+    <!-- 底部固定按钮：仅选方案模式显示 -->
+    <view v-if="submitMode === 'sku'" class="bottom-bar">
       <button class="btn-draft" @click="saveDraft">保存草稿</button>
       <button class="btn-submit" @click="handleSubmit" :disabled="submitting">
         <text v-if="!submitting">提交需求</text>
@@ -244,6 +299,8 @@ import type { TierInfo } from '@/types';
 
 const scrollInto = ref('');
 const submitting = ref(false);
+const submitMode = ref<'sku' | 'ai'>('sku');
+const aiPrompt = ref('');
 
 // 表单数据
 const form = reactive({
@@ -391,6 +448,13 @@ async function loadSkuDetail(id: string) {
 }
 
 onLoad((options: any) => {
+  // URL 参数 mode=ai 时默认打开 AI 描述需求 Tab
+  if (options?.mode === 'ai') {
+    submitMode.value = 'ai';
+  }
+  if (options?.prompt) {
+    aiPrompt.value = decodeURIComponent(options.prompt);
+  }
   if (options?.skuId) {
     form.sku_id = options.skuId;
     skuId.value = options.skuId;

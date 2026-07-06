@@ -1,31 +1,55 @@
 <template>
   <view class="discover-page">
+    <!-- ====== Hero 标题区 ====== -->
+    <view class="hero-section">
+      <text class="hero-title">喜剧工厂</text>
+      <text class="hero-subtitle">快速拿到演出方案</text>
+    </view>
+
+    <!-- ====== AI 需求输入框 ====== -->
+    <view class="ai-input-section">
+      <view class="ai-input-header">
+        <van-icon name="chat-o" size="36rpx" color="#7c3aed" />
+        <text class="ai-input-title">说出你的需求，AI帮你配方案</text>
+      </view>
+      <view class="ai-input-card" @click="goAI">
+        <textarea
+          class="ai-textarea"
+          v-model="aiPrompt"
+          placeholder="年会想搞个脱口秀，300人..."
+          placeholder-style="color: #9ca3af;"
+          :auto-height="false"
+          :fixed="true"
+          :disabled="true"
+          :show-confirm-bar="false"
+        />
+        <view class="ai-send-btn" @click.stop="goAI">
+          <van-icon name="send" size="32rpx" color="#ffffff" />
+        </view>
+      </view>
+    </view>
+
+    <!-- ====== 活动类型快捷入口 ====== -->
+    <view class="activity-section">
+      <text class="activity-title">你想办什么活动？</text>
+      <scroll-view scroll-x class="activity-scroll" show-scrollbar="false">
+        <view class="activity-list">
+          <view
+            v-for="item in activityTypes"
+            :key="item"
+            class="activity-item"
+            @click="goActivityType(item)"
+          >
+            <text>{{ item }}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
     <!-- ====== 搜索条 ====== -->
     <view class="search-bar" @click="goSearch">
       <van-icon name="search" size="32rpx" color="#9ca3af" />
       <text class="search-placeholder">搜索演出方案</text>
-    </view>
-
-    <!-- ====== Banner 轮播 ====== -->
-    <view class="banner-wrap">
-      <swiper
-        class="banner-swiper"
-        circular
-        autoplay
-        interval="4000"
-        indicator-dots
-        indicator-color="rgba(255,255,255,0.4)"
-        indicator-active-color="#ffffff"
-      >
-        <swiper-item v-for="banner in banners" :key="banner.id">
-          <view class="banner-item">
-            <image class="banner-img" :src="banner.image" mode="aspectFill" />
-            <view class="banner-overlay">
-              <text class="banner-title">{{ banner.title }}</text>
-            </view>
-          </view>
-        </swiper-item>
-      </swiper>
     </view>
 
     <!-- ====== 快捷入口 4个 ====== -->
@@ -56,10 +80,32 @@
       </view>
     </view>
 
+    <!-- ====== Banner 轮播 ====== -->
+    <view class="banner-wrap">
+      <swiper
+        class="banner-swiper"
+        circular
+        autoplay
+        interval="4000"
+        indicator-dots
+        indicator-color="rgba(255,255,255,0.4)"
+        indicator-active-color="#ffffff"
+      >
+        <swiper-item v-for="banner in banners" :key="banner.id">
+          <view class="banner-item">
+            <image class="banner-img" :src="banner.image" mode="aspectFill" />
+            <view class="banner-overlay">
+              <text class="banner-title">{{ banner.title }}</text>
+            </view>
+          </view>
+        </swiper-item>
+      </swiper>
+    </view>
+
     <!-- ====== 热门推荐 ====== -->
     <view class="section">
       <view class="section-header">
-        <text class="section-title">热门推荐</text>
+        <text class="section-title">热门方案</text>
         <text class="section-more" @click="goPage('/pages/sku/list')">查看全部 ›</text>
       </view>
 
@@ -107,6 +153,8 @@ const banners = [
 ];
 
 const hotSkus = ref<(SKUProduct & { rating?: string; desc?: string; price?: number })[]>([]);
+const aiPrompt = ref('');
+const activityTypes = ['年会', '团建', '答谢', '商场', '发布会'];
 
 onMounted(async () => {
   try {
@@ -140,6 +188,16 @@ function goSearch() {
   uni.navigateTo({ url: '/pages/search/index' });
 }
 
+function goAI() {
+  const prompt = encodeURIComponent(aiPrompt.value || '');
+  uni.navigateTo({ url: `/pages/request/submit?mode=ai&prompt=${prompt}` });
+}
+
+function goActivityType(type: string) {
+  const keyword = encodeURIComponent(type);
+  uni.navigateTo({ url: `/pages/sku/list?keyword=${keyword}` });
+}
+
 function callPhone() {
   uni.makePhoneCall({ phoneNumber: "400-xxx-xxxx", fail: () => {} });
 }
@@ -150,6 +208,112 @@ function callPhone() {
   min-height: 100vh;
   background: var(--color-bg-page);
   padding-bottom: 120rpx;
+}
+
+/* ===== Hero 标题区 ===== */
+.hero-section {
+  margin: 32rpx 32rpx 0;
+  .hero-title {
+    font-size: $text-3xl;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    display: block;
+  }
+  .hero-subtitle {
+    font-size: $text-md;
+    color: var(--color-text-secondary);
+    margin-top: 8rpx;
+    display: block;
+  }
+}
+
+/* ===== AI 输入区 ===== */
+.ai-input-section {
+  margin: 24rpx 32rpx 0;
+}
+
+.ai-input-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+  .ai-input-title {
+    font-size: $text-lg;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+}
+
+.ai-input-card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: 24rpx;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: flex-end;
+  gap: 16rpx;
+  .ai-textarea {
+    flex: 1;
+    min-height: 120rpx;
+    max-height: 180rpx;
+    font-size: $text-base;
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    background: transparent;
+    border: none;
+    outline: none;
+  }
+  .ai-send-btn {
+    width: 72rpx;
+    height: 72rpx;
+    border-radius: 9999px;
+    background: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    &:active { opacity: 0.85; }
+  }
+}
+
+/* ===== 活动类型快捷入口 ===== */
+.activity-section {
+  margin: 24rpx 32rpx 0;
+  .activity-title {
+    font-size: $text-md;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 16rpx;
+    display: block;
+  }
+}
+
+.activity-scroll {
+  white-space: nowrap;
+}
+
+.activity-list {
+  display: inline-flex;
+  gap: 16rpx;
+  padding-right: 32rpx;
+}
+
+.activity-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18rpx 32rpx;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-card);
+  border: 2rpx solid var(--color-border);
+  font-size: $text-base;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  &:active {
+    background: var(--color-primary-bg);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
 }
 
 /* ===== 搜索条 ===== */

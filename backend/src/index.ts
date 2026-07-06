@@ -25,6 +25,10 @@ import notificationRoutes from './api/notifications.js';
 import authRoutes from './api/auth.js';
 import caseRoutes from './api/cases.js';
 import aiTemplateRoutes from './api/ai-templates.js';
+import opportunityRoutes from './api/opportunities.js';
+import quoteRoutes from './api/quotes.js';
+import followUpRoutes from './api/follow-ups.js';
+import aiFeedbackRoutes from './api/ai-feedback.js';
 import pricingRoutes from './api/pricing.js';
 
 // ---- 扩展 @fastify/jwt 类型 ----
@@ -109,6 +113,10 @@ await app.register(notificationRoutes, { prefix: '/v1/notifications' });
 await app.register(caseRoutes, { prefix: '/v1/cases' });
 await app.register(aiTemplateRoutes, { prefix: '/v1/ai-templates' });
 await app.register(pricingRoutes, { prefix: '/v1/pricing' });
+await app.register(opportunityRoutes, { prefix: '/v1' });
+await app.register(quoteRoutes, { prefix: '/v1' });
+await app.register(followUpRoutes, { prefix: '/v1' });
+await app.register(aiFeedbackRoutes, { prefix: '/v1' });
 
 // ============================================================
 // 启动服务器
