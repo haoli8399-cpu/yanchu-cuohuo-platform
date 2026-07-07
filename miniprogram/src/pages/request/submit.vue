@@ -219,24 +219,59 @@
       <view style="height: 160rpx;"></view>
     </scroll-view>
 
-    <!-- AI 描述需求提交（Phase 2 功能，Phase 1 仅 UI 入口） -->
+    <!-- AI 描述需求提交（Phase 2 对接后端推荐接口） -->
     <view v-else class="ai-chat-page">
       <scroll-view scroll-y class="ai-chat-scroll">
+        <!-- 欢迎语 -->
         <view class="ai-message ai">
           <view class="ai-avatar">🤖</view>
           <view class="ai-bubble">
-            <text class="ai-bubble-text">你好！请告诉我你的演出需求，我会帮你匹配最合适的方案。</text>
-            <text class="ai-bubble-hint">（可以粘贴微信聊天记录）</text>
+            <text class="ai-bubble-text">你好！请描述你的演出需求，例如：「年会想搞个脱口秀，300人，预算1万内」，AI 帮你配三档方案。</text>
           </view>
         </view>
+
+        <!-- 用户需求气泡 -->
         <view v-if="aiPrompt" class="ai-message user">
           <view class="ai-bubble">
             <text class="ai-bubble-text">{{ aiPrompt }}</text>
           </view>
         </view>
-        <view class="ai-placeholder">
-          <text>AI 经纪人对话功能将在 Phase 2 实现</text>
+
+        <!-- 生成中 -->
+        <view v-if="aiLoading" class="ai-loading">
+          <van-loading size="32rpx" color="#7c3aed" />
+          <text class="ai-loading-text">AI 正在分析需求并生成方案...</text>
         </view>
+
+        <!-- 三档推荐方案卡片 -->
+        <view v-if="aiPlans.length" class="ai-plans">
+          <view
+            v-for="plan in aiPlans"
+            :key="plan.level"
+            class="ai-plan-card"
+            :class="plan.level"
+            @click="selectAIPlan(plan)"
+          >
+            <view class="ai-plan-head">
+              <text class="ai-plan-badge">{{ plan.level_label }}</text>
+              <text class="ai-plan-title">{{ plan.sku_title }}</text>
+            </view>
+            <view class="ai-plan-meta">
+              <text class="ai-plan-meta-item">级别：{{ plan.tier_label }}</text>
+              <text class="ai-plan-meta-item">时长：{{ plan.duration }}分钟</text>
+            </view>
+            <view class="ai-plan-price">¥{{ formatPrice(plan.price / 100) }}</view>
+            <text class="ai-plan-reason">{{ plan.reason }}</text>
+            <view class="ai-plan-cta">点击调整并下单 ›</view>
+          </view>
+        </view>
+
+        <!-- 降级提示 -->
+        <view v-if="aiError" class="ai-error">
+          <text class="ai-error-text">{{ aiError }}</text>
+          <view class="ai-error-btn" @click="submitMode = 'sku'">切换到「选方案提交」 ›</view>
+        </view>
+
         <view style="height: 160rpx;"></view>
       </scroll-view>
 
@@ -244,8 +279,10 @@
         <input
           class="ai-chat-input"
           v-model="aiPrompt"
+          :focus="aiInputFocus"
           placeholder="输入你的演出需求..."
           placeholder-style="color: #c4c4cc;"
+          @confirm="onAISend"
         />
         <button class="ai-chat-send" @click="onAISend">发送</button>
       </view>
@@ -292,15 +329,19 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import { getDemandList, getSKUDetail, calculatePrice } from '@/services/api';
+import { getDemandList, getSKUDetail, calculatePrice, recommendPlan } from '@/services/api';
 import { submitDemand } from '@/services/api';
 import { formatPrice } from '@/utils/format';
-import type { TierInfo } from '@/types';
+import type { TierInfo, AIPlanOption } from '@/types';
 
 const scrollInto = ref('');
 const submitting = ref(false);
 const submitMode = ref<'sku' | 'ai'>('sku');
 const aiPrompt = ref('');
+const aiPlans = ref<AIPlanOption[]>([]);   // AI 三档推荐方案
+const aiLoading = ref(false);              // AI 生成中
+const aiError = ref('');                   // AI 降级提示
+const aiInputFocus = ref(false);           // AI 模式聚焦输入框
 
 // 表单数据
 const form = reactive({
@@ -426,7 +467,7 @@ function resetConfig() {
   calculatedCompanyPrice.value = defaultCompanyPrice.value;
 }
 
-async function loadSkuDetail(id: string) {
+async function loadSkuDetail(id: string, initTier?: string, initDuration?: number) {
   try {
     const res = await getSKUDetail(id);
     if (res.ok && res.data) {
@@ -439,18 +480,21 @@ async function loadSkuDetail(id: string) {
       if (data.defaultDuration) defaultDuration.value = data.defaultDuration;
       if (data.minPerformers) performerCount.value = data.minPerformers;
 
-      selectedTier.value = defaultTier.value;
-      selectedDuration.value = defaultDuration.value;
+      // AI 方案点击进来时，用其指定的级别/时长覆盖默认，并展开自定义区
+      selectedTier.value = initTier || defaultTier.value;
+      selectedDuration.value = initDuration || defaultDuration.value;
+      if (initTier || initDuration) customizing.value = true;
 
-      await calcDefaultPrice(id, defaultTier.value, defaultDuration.value, performerCount.value);
+      await calcDefaultPrice(id, selectedTier.value, selectedDuration.value, performerCount.value);
     }
   } catch (e) { /* 静默失败 */ }
 }
 
 onLoad((options: any) => {
-  // URL 参数 mode=ai 时默认打开 AI 描述需求 Tab
+  // URL 参数 mode=ai 时默认打开 AI 描述需求 Tab 并聚焦输入框
   if (options?.mode === 'ai') {
     submitMode.value = 'ai';
+    aiInputFocus.value = true;
   }
   if (options?.prompt) {
     aiPrompt.value = decodeURIComponent(options.prompt);
@@ -526,13 +570,41 @@ function goPendingList() {
   uni.switchTab({ url: '/pages/request/list' });
 }
 
-function onAISend() {
-  // Phase 1 仅做 UI 入口，点击发送给出提示
-  if (!aiPrompt.value.trim()) {
+async function onAISend() {
+  const text = aiPrompt.value.trim();
+  if (!text) {
     uni.showToast({ title: '请输入你的需求', icon: 'none' });
     return;
   }
-  uni.showToast({ title: 'AI 功能将在 Phase 2 上线', icon: 'none' });
+  aiLoading.value = true;
+  aiError.value = '';
+  aiPlans.value = [];
+  try {
+    const res = await recommendPlan({ prompt: text });
+    if (res.ok && res.data) {
+      aiPlans.value = [res.data.budget, res.data.recommended, res.data.upgrade];
+    } else {
+      // 接口不可用：降级提示，引导用户切换 Tab
+      aiError.value = res.error || 'AI 服务暂不可用，请切换到「选方案提交」Tab';
+    }
+  } catch (e) {
+    aiError.value = 'AI 服务暂不可用，请切换到「选方案提交」Tab';
+  } finally {
+    aiLoading.value = false;
+  }
+}
+
+// 点击 AI 推荐卡片 → 进入「选方案提交」配置器，并预填级别/时长供进一步调整
+async function selectAIPlan(plan: AIPlanOption) {
+  if (!plan.sku_id) {
+    uni.showToast({ title: '该方案暂无可配置方案', icon: 'none' });
+    return;
+  }
+  submitMode.value = 'sku';
+  form.sku_id = plan.sku_id;
+  skuId.value = plan.sku_id;
+  await loadSkuDetail(plan.sku_id, plan.tier, plan.duration);
+  uni.showToast({ title: '已载入方案，可调整后提交', icon: 'none' });
 }
 
 onMounted(() => {});
@@ -1044,5 +1116,104 @@ onMounted(() => {});
   text-align: center;
   border: none;
   &:active { opacity: 0.85; }
+}
+
+// AI 生成中
+.ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin: 24rpx 0;
+  padding: 20rpx 24rpx;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-sm;
+  .ai-loading-text { font-size: $text-base; color: $color-text-secondary; }
+}
+
+// 三档推荐方案
+.ai-plans { margin-top: 12rpx; }
+.ai-plan-card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: $shadow-md;
+  border-left: 6rpx solid $color-primary;
+  &:active { opacity: 0.92; }
+  &.recommended { border-left-color: #e67e22; }
+  &.upgrade { border-left-color: #d4af37; }
+}
+.ai-plan-head {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+  .ai-plan-badge {
+    font-size: 22rpx;
+    color: #fff;
+    background: $color-primary;
+    padding: 4rpx 14rpx;
+    border-radius: 9999px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .ai-plan-title {
+    font-size: 30rpx;
+    font-weight: 600;
+    color: $color-text-primary;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+.ai-plan-card.recommended .ai-plan-badge { background: #e67e22; }
+.ai-plan-card.upgrade .ai-plan-badge { background: #d4af37; }
+.ai-plan-meta {
+  display: flex;
+  gap: 24rpx;
+  margin-bottom: 12rpx;
+  .ai-plan-meta-item { font-size: 24rpx; color: $color-text-secondary; }
+}
+.ai-plan-price {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: $color-primary;
+  margin-bottom: 8rpx;
+}
+.ai-plan-reason {
+  font-size: 24rpx;
+  color: $color-text-secondary;
+  line-height: 1.5;
+  display: block;
+}
+.ai-plan-cta {
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  color: $color-primary;
+  font-weight: 500;
+}
+
+// 降级提示
+.ai-error {
+  margin-top: 24rpx;
+  padding: 24rpx;
+  background: #fef2f2;
+  border-radius: $radius-md;
+  border: 1rpx solid #fecaca;
+  .ai-error-text {
+    font-size: 26rpx;
+    color: #dc2626;
+    line-height: 1.5;
+    display: block;
+  }
+  .ai-error-btn {
+    margin-top: 16rpx;
+    display: inline-block;
+    font-size: 26rpx;
+    color: $color-primary;
+    font-weight: 500;
+  }
 }
 </style>

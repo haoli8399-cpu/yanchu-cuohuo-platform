@@ -328,3 +328,25 @@ export interface PriceCalcuationResult {
     unitPrice: number;
   };
 }
+
+// ========== Phase 2: AI 推荐方案 ==========
+
+/** AI 单档推荐方案（省钱 / 主推 / 升级） */
+export interface AIPlanOption {
+  level: 'budget' | 'recommended' | 'upgrade'; // 档位标识
+  level_label: string;        // '省钱方案' | '主推方案' | '升级方案'
+  sku_id: string;             // 关联 SKU 方案
+  sku_title: string;          // 方案名称
+  tier: string;               // 演员级别 (T0~T6)
+  tier_label: string;         // 级别说明（如 资深演员）
+  duration: number;           // 演出时长（分钟）
+  price: number;              // 报价（分）
+  reason: string;             // 推荐理由
+}
+
+/** AI 推荐结果：三档方案 */
+export interface AIRecommendResult {
+  budget: AIPlanOption;       // 省钱档
+  recommended: AIPlanOption;  // 主推档
+  upgrade: AIPlanOption;      // 升级档
+}

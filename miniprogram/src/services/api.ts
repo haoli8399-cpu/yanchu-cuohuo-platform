@@ -9,7 +9,8 @@ import type {
   Assignment, CheckinRecord, SettlementRecord, CreditScore,
   ActorOnboarding, ApiResponse, UserInfo,
   TierInfo, PriceCalcuationResult, SKUExtended,
-  Review, ReviewStats, HotKeyword
+  Review, ReviewStats, HotKeyword,
+  AIPlanOption, AIRecommendResult
 } from '@/types';
 
 // ── 配置 ──
@@ -293,7 +294,15 @@ export async function getSKUList(params?: {
   if (USE_MOCK) {
     let list = MOCK_SKUS;
     if (params?.category) list = list.filter(s => s.category === params.category);
-    if (params?.keyword) list = list.filter(s => s.title.includes(params.keyword!) || s.description.includes(params.keyword!));
+    if (params?.keyword) {
+      // 自然语言搜索：按中文词块 / 英文单词分词，要求全部命中（如「年会脱口秀」需同时含年会、脱口秀）
+      const kw = String(params.keyword).toLowerCase();
+      const tokens = kw.match(/[一-龥]+|[a-z0-9]+/g) || [kw];
+      list = list.filter(s => {
+        const hay = `${s.title} ${s.description} ${s.category_label || ''} ${(s.tags || []).join(' ')}`.toLowerCase();
+        return tokens.every(t => hay.includes(t));
+      });
+    }
     // 价格筛选
     if (params?.priceRange) {
       const [min, max] = params.priceRange.split('-').map(Number);
@@ -864,4 +873,69 @@ export async function getCasesBySKU(skuId: string): Promise<ApiResponse<CaseDeta
     return { ok: true, data: list, total: list.length };
   }
   return request<CaseDetail[]>(`/cases?sku_id=${skuId}`);
+}
+
+// ── Phase 2: AI 推荐方案 ──
+// 后端返回格式：{ code:0, data:{ budget:{...}, recommended:{...}, upgrade:{...} } }
+export async function recommendPlan(data: { prompt: string }): Promise<ApiResponse<AIRecommendResult>> {
+  if (USE_MOCK) {
+    // 开发阶段：返回三档演示方案，保证本地可走通 AI 推荐 → 配置 → 提交 闭环
+    return { ok: true, data: buildMockAIRecommend(data.prompt) };
+  }
+  try {
+    const raw: any = await request('/ai/recommend-plan', { method: 'POST', data });
+    if (raw && raw.code === 0 && raw.data) {
+      return { ok: true, data: raw.data as AIRecommendResult };
+    }
+    return { ok: false, error: raw?.message || raw?.error || 'AI 服务暂不可用，请切换到「选方案提交」Tab' };
+  } catch (e) {
+    // 网络异常或后端不可达：降级提示
+    return { ok: false, error: 'AI 服务暂不可用，请切换到「选方案提交」Tab' };
+  }
+}
+
+// 根据 prompt 生成三档 mock 推荐方案（省钱 / 主推 / 升级）
+function mockAIPlanPrice(tier: string, duration: number, count: number): number {
+  const t = MOCK_TIER_INFO.find(x => x.tier === tier);
+  if (!t) return 0;
+  const segments = Math.max(1, Math.round(duration / 15));
+  return t.unitPrice * segments * count;
+}
+
+function buildMockAIRecommend(prompt: string): AIRecommendResult {
+  const p = prompt || '';
+  // 根据关键词识别场景，决定主推 SKU
+  let main = MOCK_SKUS[0]; // 默认：脱口秀拼盘
+  if (/漫才/.test(p)) main = MOCK_SKUS[2];
+  else if (/即兴/.test(p)) main = MOCK_SKUS[1];
+  else if (/个人专场|专场|明星|咖位/.test(p)) main = MOCK_SKUS[3];
+  else if (/新喜剧|实验|sketch/i.test(p)) main = MOCK_SKUS[4];
+
+  const tierLabel = (t: string) => MOCK_TIER_INFO.find(x => x.tier === t)?.label || t;
+
+  const budget: AIPlanOption = {
+    level: 'budget', level_label: '省钱方案',
+    sku_id: MOCK_SKUS[2].id, sku_title: MOCK_SKUS[2].title,
+    tier: 'T1', tier_label: tierLabel('T1'), duration: 45,
+    price: mockAIPlanPrice('T1', 45, 2),
+    reason: '预算优先：双人漫才快节奏爆笑，成本低、效果好，适合暖场或小型活动。'
+  };
+
+  const recommended: AIPlanOption = {
+    level: 'recommended', level_label: '主推方案',
+    sku_id: main.id, sku_title: main.title,
+    tier: 'T3', tier_label: tierLabel('T3'), duration: 60,
+    price: mockAIPlanPrice('T3', 60, 2),
+    reason: `综合你的需求「${p.slice(0, 20)}」推荐：资深演员阵容，性价比最高的标准配置，适合大多数企业活动。`
+  };
+
+  const upgrade: AIPlanOption = {
+    level: 'upgrade', level_label: '升级方案',
+    sku_id: MOCK_SKUS[3].id, sku_title: MOCK_SKUS[3].title,
+    tier: 'T4', tier_label: tierLabel('T4'), duration: 90,
+    price: mockAIPlanPrice('T4', 90, 1),
+    reason: '追求极致效果：明星演员个人专场 + 90 分钟精品内容 + 品牌定制，适合高端客户答谢与品牌冠名。'
+  };
+
+  return { budget, recommended, upgrade };
 }

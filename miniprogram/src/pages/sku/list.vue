@@ -136,6 +136,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { onLoad, onShow } from '@dcloudio/uni-app';
 import { getSKUList } from '@/services/api';
 import type { SKUProduct } from '@/types';
 import { formatPrice } from '@/utils/format';
@@ -239,7 +240,21 @@ function goDetail(id: string) {
   uni.navigateTo({ url: `/pages/sku/detail?id=${id}` });
 }
 
-onMounted(() => { fetchSKUs(true); });
+onLoad((options: any) => {
+  // 任务3：活动类型快捷入口跳转预筛选（navigateTo 场景兜底）
+  if (options?.activity) keyword.value = options.activity;
+  fetchSKUs(true);
+});
+
+onShow(() => {
+  // 任务3：sku/list 是 tabBar 页，switchTab 无法传参，故用缓存中转接收 activity 并预筛选
+  const activity = uni.getStorageSync('skuActivityFilter');
+  if (activity) {
+    uni.removeStorageSync('skuActivityFilter');
+    keyword.value = activity;
+    fetchSKUs(true);
+  }
+});
 </script>
 
 <style lang="scss" scoped>

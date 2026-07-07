@@ -28,8 +28,9 @@ import aiTemplateRoutes from './api/ai-templates.js';
 import opportunityRoutes from './api/opportunities.js';
 import quoteRoutes from './api/quotes.js';
 import followUpRoutes from './api/follow-ups.js';
-import aiFeedbackRoutes from './api/ai-feedback.js';
+import aiRoutes from './api/ai.js';
 import pricingRoutes from './api/pricing.js';
+import aiFeedbackRoutes from './api/ai-feedback.js';
 
 // ---- 扩展 @fastify/jwt 类型 ----
 declare module '@fastify/jwt' {
@@ -116,6 +117,7 @@ await app.register(pricingRoutes, { prefix: '/v1/pricing' });
 await app.register(opportunityRoutes, { prefix: '/v1' });
 await app.register(quoteRoutes, { prefix: '/v1' });
 await app.register(followUpRoutes, { prefix: '/v1' });
+await app.register(aiRoutes, { prefix: '/v1' });
 await app.register(aiFeedbackRoutes, { prefix: '/v1' });
 
 // ============================================================

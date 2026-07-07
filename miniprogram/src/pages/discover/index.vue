@@ -189,13 +189,15 @@ function goSearch() {
 }
 
 function goAI() {
-  const prompt = encodeURIComponent(aiPrompt.value || '');
-  uni.navigateTo({ url: `/pages/request/submit?mode=ai&prompt=${prompt}` });
+  // 任务2：仅携带 mode=ai，由提需求页自动切到「描述需求提交」Tab 并聚焦输入框
+  uni.navigateTo({ url: '/pages/request/submit?mode=ai' });
 }
 
 function goActivityType(type: string) {
-  const keyword = encodeURIComponent(type);
-  uni.navigateTo({ url: `/pages/sku/list?keyword=${keyword}` });
+  // 任务3：活动类型跳转方案列表并预筛选。
+  // sku/list 是 tabBar 页，navigateTo 无法传参，改用本地缓存中转 + switchTab。
+  uni.setStorageSync('skuActivityFilter', type);
+  uni.switchTab({ url: '/pages/sku/list' });
 }
 
 function callPhone() {
