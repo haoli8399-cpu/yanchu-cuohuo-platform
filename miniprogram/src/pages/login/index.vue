@@ -1,0 +1,149 @@
+<template>
+  <view class="login-page">
+    <!-- Purple gradient brand area -->
+    <view class="login-page__brand">
+      <image class="login-page__brand-bg" src="/static/images/login-bg.jpg" mode="aspectFill" />
+      <view class="login-page__brand-overlay">
+        <text class="login-page__title">喜剧工厂</text>
+        <text class="login-page__subtitle">连接优质演出内容</text>
+      </view>
+    </view>
+
+    <!-- White card area -->
+    <view class="login-page__card">
+      <button
+        class="login-page__wechat-btn"
+        open-type="getPhoneNumber"
+        @getphonenumber="handleWechatLogin"
+      >
+        <text class="login-page__wechat-icon">&#x1F4F1;</text>
+        <text>微信一键登录</text>
+      </button>
+      <view class="login-page__agreement">
+        <text class="login-page__agreement-text">
+          登录即表示同意
+          <text class="login-page__link" @tap="openAgreement('user')">《用户协议》</text>
+          和
+          <text class="login-page__link" @tap="openAgreement('privacy')">《隐私政策》</text>
+        </text>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script setup lang="ts">
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+
+function handleWechatLogin() {
+  // TODO: implement WeChat phone number login
+  uni.showToast({ title: '登录中...', icon: 'loading' })
+  setTimeout(() => {
+    userStore.setToken('mock_token_123')
+    userStore.setRole('company')
+    uni.switchTab({ url: '/pages/discover/index' })
+  }, 1500)
+}
+
+function openAgreement(type: string) {
+  // TODO: open agreement page
+  uni.showToast({ title: type === 'user' ? '用户协议' : '隐私政策', icon: 'none' })
+}
+</script>
+
+<style lang="scss" scoped>
+.login-page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+
+  &__brand {
+    position: relative;
+    height: 50vh;
+    background: linear-gradient(135deg, $color-primary, $color-primary-active);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    .login-page__brand-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.15;
+    }
+  }
+
+  &__brand-overlay {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__title {
+    font-size: 64rpx;
+    font-weight: 700;
+    color: $color-text-inverse;
+    letter-spacing: 4rpx;
+    margin-bottom: $space-sm;
+  }
+
+  &__subtitle {
+    font-size: $text-md;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  &__card {
+    background-color: $color-bg-card;
+    border-radius: $radius-lg $radius-lg 0 0;
+    margin-top: -40rpx;
+    position: relative;
+    z-index: 2;
+    padding: 64rpx $space-2xl;
+    padding-bottom: calc(64rpx + env(safe-area-inset-bottom));
+  }
+
+  &__wechat-btn {
+    width: 100%;
+    height: 96rpx;
+    background-color: #07C160;
+    color: $color-text-inverse;
+    border-radius: $radius-full;
+    font-size: $text-lg;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-sm;
+    border: none;
+
+    &::after { border: none; }
+
+    &:active { opacity: 0.85; }
+  }
+
+  &__wechat-icon {
+    font-size: 40rpx;
+  }
+
+  &__agreement {
+    margin-top: $space-xl;
+    text-align: center;
+  }
+
+  &__agreement-text {
+    font-size: $text-sm;
+    color: $color-text-tertiary;
+  }
+
+  &__link {
+    color: $color-text-link;
+  }
+}
+</style>
