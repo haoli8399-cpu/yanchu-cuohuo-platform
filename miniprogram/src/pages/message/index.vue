@@ -74,7 +74,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { getNotificationList } from '@/services/api';
+import { getNotificationList, markNotificationRead } from '@/services/api';
+import type { NotificationItem } from '@/services/api';
 import CfNavBar from '@/components/CfNavBar.vue';
 
 interface PlanNotification {
@@ -92,51 +93,79 @@ interface SystemAnnouncement {
   date: string;
 }
 
-// ── 演示数据（后续对接 GET /v1/notifications 后替换） ──
 const planNotifications = ref<PlanNotification[]>([]);
 const systemAnnouncements = ref<SystemAnnouncement[]>([]);
 const refreshing = ref(false);
 
 const unreadPlanCount = computed(() => planNotifications.value.filter(p => p.unread).length);
 
-function loadDemoData() {
-  // 演示数据：和后续接口结构一致，方便替换
-  planNotifications.value = [
-    {
-      id: 'pn-001',
-      title: '你有1个新方案待查看',
-      desc: '脱口秀标准版 T3 60min',
-      date: '2026-07-07',
-      unread: true,
-      related_id: 'demand-001',
-    },
-  ];
-  systemAnnouncements.value = [
-    {
-      id: 'sa-001',
-      title: '喜剧工厂上线AI经纪人功能',
-      desc: '智能匹配 + 三档方案推荐，提交需求更省心',
-      date: '2026-07-06',
-    },
-  ];
+// 通知类型 → 需求通知分组
+const PLAN_TYPES = new Set(['demand_status', 'plan_confirmed', 'quoted', 'demand_quoted']);
+// 通知类型 → 系统公告分组
+const SYSTEM_TYPES = new Set(['system', 'system_announcement']);
+
+function formatDate(iso: string): string {
+  return iso.slice(0, 10);
 }
 
-// TODO(Phase 3): 对接真实接口 GET /v1/notifications，按 type 分组为 需求通知 / 系统公告
+// 将 API 返回的 NotificationItem 映射为前端展示结构
+function mapToPlan(item: NotificationItem): PlanNotification {
+  return {
+    id: item.id,
+    title: item.title,
+    desc: item.content,
+    date: formatDate(item.created_at),
+    unread: !item.is_read,
+    related_id: item.related_id,
+  };
+}
+
+function mapToAnnouncement(item: NotificationItem): SystemAnnouncement {
+  return {
+    id: item.id,
+    title: item.title,
+    desc: item.content,
+    date: formatDate(item.created_at),
+  };
+}
+
 async function fetchNotifications() {
-  // 开发阶段使用演示数据；接口就绪后改为：
-  // const res = await getNotificationList({ page: 1, pageSize: 20 });
-  // if (res.ok) { 分组映射... }
-  const res = await getNotificationList({ page: 1, pageSize: 20 }).catch(() => null);
-  // 当前仍以演示数据呈现，保证页面可用
-  loadDemoData();
-  if (res && res.ok) {
-    // 接口已返回时，可选：用真实数据覆盖演示数据（这里保留演示以贴近附件截图）
+  try {
+    const res = await getNotificationList({ page: 1, pageSize: 20 });
+    if (res.ok && res.data) {
+      const plans: PlanNotification[] = [];
+      const announcements: SystemAnnouncement[] = [];
+
+      for (const item of res.data) {
+        if (PLAN_TYPES.has(item.type)) {
+          plans.push(mapToPlan(item));
+        } else if (SYSTEM_TYPES.has(item.type)) {
+          announcements.push(mapToAnnouncement(item));
+        } else {
+          // 未识别的类型：统一归为系统公告
+          announcements.push(mapToAnnouncement(item));
+        }
+      }
+
+      planNotifications.value = plans;
+      systemAnnouncements.value = announcements;
+    } else {
+      planNotifications.value = [];
+      systemAnnouncements.value = [];
+    }
+  } catch {
+    planNotifications.value = [];
+    systemAnnouncements.value = [];
   }
   refreshing.value = false;
 }
 
-function onPlanClick(item: PlanNotification) {
-  item.unread = false;
+async function onPlanClick(item: PlanNotification) {
+  // 标记已读
+  if (item.unread) {
+    item.unread = false;
+    markNotificationRead(item.id).catch(() => {});
+  }
   if (item.related_id) {
     uni.navigateTo({ url: `/pages/request/detail?id=${item.related_id}` });
   }
@@ -156,7 +185,7 @@ function onRefresh() {
 }
 
 onMounted(() => {
-  loadDemoData();
+  fetchNotifications();
 });
 </script>
 
