@@ -362,7 +362,7 @@ function goCaseDetail(item: any) { uni.navigateTo({ url: `/pages/case/detail` })
 }
 .agent-dot {
   width: 8rpx; height: 8rpx; border-radius: 50%;
-  background: $green;
+  background: $color-success;
   animation: dot-breathe 2s ease-in-out infinite;
 }
 @keyframes dot-breathe {
