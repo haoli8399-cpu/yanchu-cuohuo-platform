@@ -53,7 +53,31 @@
         <text class="user-page__menu-arrow">></text>
       </view>
     </view>
+  
+    <!-- 最近订单 -->
+    <view class="orders-section">
+      <view class="section-title-bar">
+        <text class="section-title">最近订单</text>
+        <text class="section-link" @click="goOrders">查看全部 →</text>
+      </view>
+      <view class="order-tabs">
+        <text class="order-tab" :class="{ active: orderTab === 'all' }" @click="orderTab = 'all'">全部</text>
+        <text class="order-tab" :class="{ active: orderTab === 'pending' }" @click="orderTab = 'pending'">进行中</text>
+        <text class="order-tab" :class="{ active: orderTab === 'done' }" @click="orderTab = 'done'">已完成</text>
+      </view>
+      <view class="order-card" v-for="o in recentOrders" :key="o.id" @click="goOrderDetail(o.id)">
+        <view class="order-card-header">
+          <text class="order-name">{{ o.name }}</text>
+          <text class="order-status" :class="'status-' + o.statusColor">{{ o.status }}</text>
+        </view>
+        <text class="order-meta">{{ o.date }} · {{ o.sku }}</text>
+        <view class="order-card-footer">
+          <text class="order-amount">{{ o.amount }}</text>
+        </view>
+      </view>
+    </view>
   </view>
+</template></view>
 </template>
 
 <script setup lang="ts">
@@ -189,3 +213,24 @@ function handleMenuTap(item: typeof menuGroup1[0]) {
   font-family: 'JetBrains Mono', monospace;
 }
 .user-stat-label { font-size: 22rpx; color: $color-text-secondary; margin-top: 4rpx; }
+
+.orders-section { margin-top: 32rpx; padding: 0 4rpx; }
+.section-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16rpx; }
+.section-link { font-size: $text-xs; color: $color-primary; }
+.order-tabs { display: flex; gap: 16rpx; margin-bottom: 16rpx; }
+.order-tab { font-size: $text-sm; color: $color-text-secondary; padding: 4rpx 0; }
+.order-tab.active { color: $color-primary; font-weight: 600; border-bottom: 4rpx solid $color-primary; }
+.order-card {
+  padding: 20rpx 24rpx; background: $color-bg-card;
+  border-radius: $radius-md; border: 2rpx solid $color-border; margin-bottom: 12rpx;
+}
+.order-card:active { opacity: 0.8; }
+.order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6rpx; }
+.order-name { font-size: $text-base; font-weight: 600; color: $color-text-primary; }
+.order-status { font-size: $text-xs; font-weight: 600; padding: 4rpx 12rpx; border-radius: $radius-full; }
+.status-purple { background: $color-primary-subtle; color: $color-primary; }
+.status-green { background: #f0fdf4; color: $color-success; }
+.status-orange { background: #fffbeb; color: #f59e0b; }
+.order-meta { font-size: $text-xs; color: $color-text-secondary; }
+.order-card-footer { margin-top: 8rpx; }
+.order-amount { font-size: $text-lg; font-weight: 800; color: $color-primary; font-family: 'JetBrains Mono', monospace; }

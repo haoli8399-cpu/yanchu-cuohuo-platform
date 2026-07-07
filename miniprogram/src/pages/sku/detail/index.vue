@@ -73,6 +73,17 @@
       <button class="btn btn-primary" style="flex: 1;" @tap="handleBook">立即预约</button>
     </view>
   </view>
+
+    <!-- 底部操作栏 -->
+    <view class="detail-bottom-bar">
+      <view class="bottom-btn outline-btn" @click="onGetQuote">
+        <text>获取报价</text>
+      </view>
+      <view class="bottom-btn primary-btn" @click="onContactAgent">
+        <text>联系小演</text>
+      </view>
+    </view>
+  </view>
 </template>
 
 <script setup lang="ts">
@@ -222,3 +233,21 @@ function handleBook() {
 .tier-duration { font-size: 22rpx; color: $color-text-secondary; }
 .tier-price { font-family: 'JetBrains Mono', monospace; font-size: 28rpx; font-weight: 700; color: $color-primary; }
 .tier-badge { font-size: 20rpx; font-weight: 700; padding: 2rpx 10rpx; border-radius: 9999px; background: $color-primary; color: #fff; margin-left: 8rpx; }
+
+.detail-bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; gap: 16rpx;
+  padding: 20rpx 32rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: $color-bg-card;
+  border-top: 2rpx solid $color-border;
+  z-index: 100;
+}
+.bottom-btn {
+  flex: 1; height: 80rpx; line-height: 80rpx;
+  text-align: center; border-radius: $radius-full;
+  font-size: $text-base; font-weight: 600;
+}
+.outline-btn { border: 2rpx solid $color-primary; color: $color-primary; background: $color-bg-card; }
+.primary-btn { background: $color-primary; color: $color-text-inverse; }
+.bottom-btn:active { opacity: 0.8; }
