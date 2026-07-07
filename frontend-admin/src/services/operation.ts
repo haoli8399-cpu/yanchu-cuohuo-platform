@@ -23,7 +23,7 @@ export async function getPendingTasks(
   if (params.urgency) query.set('urgency', params.urgency);
 
   return apiClient.get<PaginatedResponse<PendingTask>>(
-    `/operations/pending-tasks?${query.toString()}`,
+    `/admin/pending-tasks?${query.toString()}`,
   );
 }
 
@@ -31,5 +31,5 @@ export async function getPendingTasks(
 export async function getSupplyDemandMetrics(): Promise<
   ApiResponse<SupplyDemandMetrics>
 > {
-  return apiClient.get<SupplyDemandMetrics>('/operations/metrics');
+  return apiClient.get<SupplyDemandMetrics>('/admin/dashboard');
 }
