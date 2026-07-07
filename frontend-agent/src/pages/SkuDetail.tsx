@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spin, Result, Button, Card, Tag, Descriptions, Typography, Space, message } from 'antd';
-import { ClockCircleOutlined, TeamOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { Spin, Result, Button, Card, Tag, Descriptions, Typography, message } from 'antd';
+import { ClockCircleOutlined, TeamOutlined } from '@ant-design/icons';
 import { getSkuDetail, submitDemand } from '../services/apiClient';
 import { useAuth } from '../services/auth';
 

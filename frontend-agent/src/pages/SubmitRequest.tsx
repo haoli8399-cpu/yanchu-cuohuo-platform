@@ -16,7 +16,11 @@ export default function SubmitRequest() {
   const nav = useNavigate();
 
   useEffect(() => {
-    if (skuId) getSkuDetail(skuId).then(d => { setSkuName(d.name); form.setFieldsValue({ source: 'sku', sku_id: skuId }); }).catch(() => {});
+    if (skuId) getSkuDetail(skuId).then(d => {
+      const sku = d as { name: string };
+      setSkuName(sku.name);
+      form.setFieldsValue({ source: 'sku', sku_id: skuId });
+    }).catch(() => {});
   }, [skuId]);
 
   const handleSubmit = async (values: any) => {

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getDemandList } from '../services/apiClient';
 import { ShoppingCartOutlined, DollarOutlined, CheckCircleOutlined } from '@ant-design/icons';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const STATUS_MAP: Record<string, { color: string; label: string }> = {
   pending_ai: { color: 'blue', label: 'AI生成中' },
@@ -31,7 +31,7 @@ export default function RequestHistory() {
   const load = async () => {
     setLoading(true); setError('');
     try {
-      const data = await getDemandList({ pageSize: 50 });
+      const data = await getDemandList({ pageSize: 50 }) as { items?: any[] };
       setDemands(data.items || []);
     } catch { setError('加载失败'); }
     setLoading(false);

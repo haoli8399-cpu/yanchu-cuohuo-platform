@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, Row, Col, Tag, Select, Spin, Empty, Result, Button, Typography } from 'antd';
-import { SearchOutlined, EnvironmentOutlined, ClockCircleOutlined, TeamOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, TeamOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { getSkuList } from '../services/apiClient';
 
@@ -24,7 +24,7 @@ export default function SkuList() {
     try {
       const params: Record<string, string | number> = { pageSize: 50 };
       if (line) params.business_line = line;
-      const data = await getSkuList(params);
+      const data = await getSkuList(params) as { items?: any[] };
       setSkus(data.items || []);
     } catch { setError('加载失败'); }
     setLoading(false);

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spin, Result, Button, Card, Tag, Descriptions, Steps, Typography, message, Row, Col } from 'antd';
-import { CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Spin, Result, Button, Card, Tag, Descriptions, Steps, Typography } from 'antd';
 import { getDemandDetail } from '../services/apiClient';
 
 const { Title, Text, Paragraph } = Typography;
