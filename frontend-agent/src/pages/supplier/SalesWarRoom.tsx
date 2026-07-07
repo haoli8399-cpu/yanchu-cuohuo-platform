@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Card, Typography, Tag, Button, Space } from 'antd';
-import { BulbOutlined } from '@ant-design/icons';
+import { Card, Typography, Tag, Button, Space, Tooltip } from 'antd';
+import { BulbOutlined, CopyOutlined, ClockCircleOutlined } from '@ant-design/icons';
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -21,17 +21,36 @@ const QUEUE = {
 };
 
 const PLANS = [
-  { id: 'A', name: '省钱版', price: '¥4,500', tier: 'T4', dur: '45min', ppl: 2, margin: '27%', recommend: false },
-  { id: 'B', name: '主推版', price: '¥6,000', tier: 'T3', dur: '60min', ppl: 2, margin: '33%', recommend: true },
-  { id: 'C', name: '升级版', price: '¥9,000', tier: 'T2', dur: '90min', ppl: 3, margin: '39%', recommend: false },
+  {
+    id: 'A', name: '省钱版', price: '¥4,500', tier: 'T4', dur: '45min', ppl: 2,
+    margin: '27%', recommend: false,
+    reason: '预算有限性价比之选，适合预算<¥5K的客户',
+  },
+  {
+    id: 'B', name: '主推版', price: '¥6,000', tier: 'T3', dur: '60min', ppl: 2,
+    margin: '33%', recommend: true,
+    reason: 'T3级艺人档期充足（3人可选）·300人年会60min最佳配置·同类均价¥5,800',
+  },
+  {
+    id: 'C', name: '升级版', price: '¥9,000', tier: 'T2', dur: '90min', ppl: 3,
+    margin: '39%', recommend: false,
+    reason: '高预算客户首选，含互动环节，可升级T1艺人',
+  },
 ];
 
 export default function SalesWarRoom() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selected, setSelected] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyScript = () => {
+    navigator.clipboard.writeText('王经理好，上次聊的脱口秀方案，这周您这边方便确认一下吗？如果时间不合适，我们也可以调整。');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <div style={{ display: 'flex', gap: 0, height: 'calc(100vh - 108px)' }}>
+    <div style={{ display: 'flex', gap: 0, height: 'calc(100vh - 108px)', position: 'relative' }}>
       {/* Left: Queue */}
       <div style={{
         width: 240, flexShrink: 0,
@@ -85,7 +104,7 @@ export default function SalesWarRoom() {
         <Card size="small" style={{ marginBottom: 8, background: '#f9fafb' }} styles={{ body: { padding: '10px 14px' } }}>
           <Text type="secondary" style={{ fontSize: 10, fontWeight: 600, display: 'block', marginBottom: 4 }}>活动信息</Text>
           <Paragraph style={{ fontSize: 12, marginBottom: 0 }}>
-            年会 · 300 人 · 10月20日 · 预算 ¥1-2万<br />
+            年会 · 300 人 · <Text style={{ color: '#ef4444', fontWeight: 600 }}>日期未填 ⚠</Text> · 预算 ¥1-2万<br />
             演出类型：脱口秀 <Tag color="green" style={{ fontSize: 10, fontWeight: 600 }}>匹配度 94%</Tag>
           </Paragraph>
         </Card>
@@ -139,8 +158,11 @@ export default function SalesWarRoom() {
             <Text type="secondary" style={{ fontSize: 10, display: 'block' }}>
               {plan.tier} · {plan.dur} · {plan.ppl}人
             </Text>
-            <Text style={{ color: '#16a34a', fontSize: 10, fontWeight: 600, display: 'block', marginBottom: 6 }}>
+            <Text style={{ color: '#16a34a', fontSize: 10, fontWeight: 600, display: 'block', marginBottom: 4 }}>
               毛利率 {plan.margin} {plan.recommend ? '✓' : ''}
+            </Text>
+            <Text style={{ color: '#6b7280', fontSize: 9, display: 'block', marginBottom: 6, lineHeight: 1.5 }}>
+              {plan.reason}
             </Text>
             <Button
               type="primary"
@@ -154,16 +176,37 @@ export default function SalesWarRoom() {
         ))}
       </div>
 
-      {/* Bottom: Follow-up */}
+      {/* Bottom: Follow-up with AI script copy */}
       <div style={{
         position: 'absolute', bottom: 0, left: 252, right: 312,
         padding: '8px 16px', borderTop: '1px solid #e5e7eb',
-        background: '#fff', fontSize: 12, color: '#6b7280',
-        display: 'flex', gap: 16, alignItems: 'center',
+        background: '#fff', display: 'flex', alignItems: 'center', gap: 12,
+        fontSize: 12,
       }}>
-        <span>💬 跟进记录</span>
-        <span style={{ color: '#7c3aed', fontWeight: 600 }}>◇ 小演建议 · 王经理好，上次聊的脱口秀方案...</span>
-        <span>⏰ 2h 提醒</span>
+        <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>💬 跟进记录</span>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <span style={{
+            color: '#7c3aed', fontWeight: 600, fontSize: 11, overflow: 'hidden',
+            textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            🤖 小演建议 · 王经理好，上次聊的脱口秀方案，这周您这边方便确认吗？
+          </span>
+        </div>
+        <Space size={4}>
+          <Tooltip title={copied ? '已复制' : '复制话术'}>
+            <Button
+              size="small"
+              icon={<CopyOutlined />}
+              onClick={handleCopyScript}
+              style={{ fontSize: 11, color: copied ? '#16a34a' : '#7c3aed', borderColor: '#ddd6fe' }}
+            >
+              {copied ? '已复制' : '复制话术'}
+            </Button>
+          </Tooltip>
+          <Button size="small" icon={<ClockCircleOutlined />} style={{ fontSize: 11 }}>
+            2h 提醒
+          </Button>
+        </Space>
       </div>
     </div>
   );
