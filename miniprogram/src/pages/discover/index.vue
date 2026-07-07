@@ -1,7 +1,7 @@
 <template>
   <view class="discover-page">
     <scroll-view scroll-y class="page-scroll" :show-scrollbar="false">
-      <!-- 品牌栏 -->
+      <!-- ===== 品牌栏 ===== -->
       <view class="brand-bar">
         <view class="brand-left">
           <view class="brand-cube" />
@@ -14,7 +14,7 @@
         </view>
       </view>
 
-      <!-- Hero 引导区 -->
+      <!-- ===== 需求输入区 ===== -->
       <view class="hero-section">
         <view class="hero-ai-hint">
           <view class="ai-mini-cube">AI</view>
@@ -24,7 +24,6 @@
         <view class="hero-subtitle">小演自动匹配演出方案、算出报价、盯到成单</view>
       </view>
 
-      <!-- 核心：输入栏（固定） -->
       <view class="input-bar">
         <view class="voice-btn" @click="goVoice">
           <text>🎤</text>
@@ -41,13 +40,12 @@
         </view>
       </view>
 
-      <!-- 粘贴入口（次级） -->
       <view class="paste-link" @click="goPaste">
         <text>📱 粘贴微信聊天记录自动识别</text>
         <text class="paste-arrow">→</text>
       </view>
 
-      <!-- 活动类型标签 -->
+      <!-- ===== 活动类型标签 ===== -->
       <view class="tag-row">
         <view
           v-for="tag in activityTags"
@@ -60,30 +58,134 @@
         </view>
       </view>
 
-      <!-- AI 最近方案 -->
-      <view class="recent-section">
+      <!-- ===== 区块1: AI最近生成方案 ===== -->
+      <view class="section-block">
         <view class="section-header" @click="goAllPlans">
-          <text class="section-title">◇ AI 最近方案</text>
-          <van-icon name="arrow" size="24rpx" color="#9ca3af" />
+          <view class="section-header-left">
+            <text class="section-icon">◇</text>
+            <view>
+              <text class="section-title">AI 最近为你生成</text>
+              <text class="section-meta">个性化推荐</text>
+            </view>
+          </view>
+          <view class="section-arrow">查看全部 →</view>
         </view>
         <view
           v-for="plan in recentPlans"
           :key="plan.id"
           class="plan-card"
-          :style="{ borderLeftColor: plan.accent || 'var(--color-primary)' }"
+          :style="{ borderLeftColor: plan.color || 'var(--color-primary)' }"
           @click="goPlan(plan.id)"
         >
           <view class="plan-info">
             <text class="plan-name">{{ plan.name }}</text>
             <text class="plan-meta">{{ plan.meta }}</text>
+            <view class="plan-tags">
+              <text class="plan-tag primary" v-if="plan.matchTag">{{ plan.matchTag }}</text>
+              <text class="plan-tag subtle" v-if="plan.note">{{ plan.note }}</text>
+            </view>
           </view>
           <text class="plan-price">{{ plan.price }}</text>
         </view>
       </view>
 
-      <!-- 历史需求 -->
-      <view class="history-link" @click="goHistory">
-        <text>📋 查看历史需求</text>
+      <!-- ===== 区块2: 我的历史需求 ===== -->
+      <view class="section-block">
+        <view class="section-header" @click="goHistory">
+          <view class="section-header-left">
+            <text class="section-icon">📋</text>
+            <view>
+              <text class="section-title">我的历史需求</text>
+              <text class="section-meta">任务延续</text>
+            </view>
+          </view>
+          <view class="section-arrow">查看全部 →</view>
+        </view>
+        <view
+          v-for="(item, idx) in historyDemands"
+          :key="idx"
+          class="history-card"
+          @click="goDemandDetail(item)"
+        >
+          <view class="history-icon" :class="item.statusClass">
+            <text>{{ item.icon }}</text>
+          </view>
+          <view class="history-info">
+            <text class="history-name">{{ item.name }}</text>
+            <text class="history-meta">{{ item.meta }}</text>
+          </view>
+          <view class="history-status" :class="item.statusClass">
+            <text>{{ item.statusLabel }}</text>
+          </view>
+        </view>
+        <view class="history-empty" v-if="historyDemands.length === 0">
+          <text class="history-empty-text">暂无历史需求，现在去提一个？</text>
+        </view>
+      </view>
+
+      <!-- ===== 区块3: 案例参考 ===== -->
+      <view class="section-block">
+        <view class="section-header" @click="goAllCases">
+          <view class="section-header-left">
+            <text class="section-icon">🏆</text>
+            <view>
+              <text class="section-title">真实成交案例</text>
+              <text class="section-meta">参考借鉴</text>
+            </view>
+          </view>
+          <view class="section-arrow">更多 →</view>
+        </view>
+        <view
+          v-for="(item, idx) in caseStudies"
+          :key="idx"
+          class="case-card"
+          @click="goCaseDetail(item)"
+        >
+          <view class="case-cover" :style="{ background: item.coverColor }">
+            <text>{{ item.coverIcon }}</text>
+          </view>
+          <view class="case-body">
+            <text class="case-title">{{ item.title }}</text>
+            <text class="case-desc">{{ item.desc }}</text>
+            <view class="case-footer">
+              <text class="case-source-tag" :class="item.sourceClass">{{ item.sourceLabel }}</text>
+              <text class="case-amount">{{ item.amount }}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- ===== 区块4: 平台甄选 ===== -->
+      <view class="section-block">
+        <view class="section-header" @click="goCurated">
+          <view class="section-header-left">
+            <text class="section-icon">✦</text>
+            <view>
+              <text class="section-title">平台甄选</text>
+              <text class="section-meta">高质量方案推荐</text>
+            </view>
+          </view>
+          <view class="section-arrow">查看全部 →</view>
+        </view>
+        <view class="curated-grid">
+          <view
+            v-for="(item, idx) in curatedPlans"
+            :key="idx"
+            class="curated-card"
+            @click="goPlan(item.id)"
+          >
+            <view class="curated-cover" :style="{ background: item.coverColor }">
+              <text>{{ item.coverIcon }}</text>
+            </view>
+            <view class="curated-body">
+              <text class="curated-name">{{ item.name }}</text>
+              <view class="curated-tags">
+                <text class="curated-tag" :class="item.sourceClass">{{ item.sourceLabel }}</text>
+              </view>
+              <text class="curated-price">{{ item.price }}</text>
+            </view>
+          </view>
+        </view>
       </view>
 
       <view class="bottom-space" />
@@ -108,8 +210,74 @@ const activityTags = [
 ];
 
 const recentPlans = [
-  { id: 'talkshow-standard', name: '脱口秀标准版', meta: 'T3·60min·匹配 94% · 自营', price: '¥6,000', accent: 'var(--color-primary)' },
-  { id: 'magic-comedy', name: '魔术喜剧', meta: 'T4·45min·匹配 87% · 经纪合作', price: '¥3,800', accent: '#f59e0b' },
+  {
+    id: 'talkshow-corp', name: 'XX科技年会 · 脱口秀 T3 60min',
+    meta: '匹配 94% · 最近生成', matchTag: '高匹配', note: '',
+    price: '¥6,000', color: 'var(--color-primary)',
+  },
+  {
+    id: 'magic-estate', name: 'XX地产开盘 · 魔术喜剧 T4 45min',
+    meta: '匹配 87% · 可调整艺人级别', matchTag: '可调整', note: '',
+    price: '¥3,800', color: '#f59e0b',
+  },
+  {
+    id: 'improv-bank', name: '某银行答谢 · 即兴喜剧 60min',
+    meta: '匹配 82% · 需确认人数', matchTag: '待补信息', note: '',
+    price: '¥4,500', color: '#a78bfa',
+  },
+];
+
+const historyDemands = [
+  {
+    name: 'XX公司年会 · 脱口秀', meta: '10月20日 · 300人',
+    icon: '⏳', statusClass: 'amber', statusLabel: '报价中',
+  },
+  {
+    name: 'XX地产开盘 · 魔术', meta: '等待客户确认方案',
+    icon: '◇', statusClass: 'primary', statusLabel: '待确认',
+  },
+  {
+    name: 'XX酒店年会 · 脱口秀', meta: '已完成 · 客户评价 5.0',
+    icon: '✓', statusClass: 'green', statusLabel: '已成交',
+  },
+];
+
+const caseStudies = [
+  {
+    title: '腾讯年会 · 脱口秀专场',
+    desc: 'T2 级艺人 · 300 人 · 60 分钟 · 含互动环节',
+    coverIcon: '🎭', coverColor: 'var(--color-primary-subtle)',
+    sourceLabel: '自营', sourceClass: 'self', amount: '¥9,000',
+  },
+  {
+    title: '万科开盘暖场 · 即兴喜剧',
+    desc: 'T3 级艺人 · 200 人 · 45 分钟',
+    coverIcon: '🎪', coverColor: '#fef2f2',
+    sourceLabel: '经纪公司', sourceClass: 'third', amount: '¥4,500',
+  },
+];
+
+const curatedPlans = [
+  {
+    id: 'talk-flagship', name: '脱口秀旗舰版 90min',
+    coverIcon: '🎭', coverColor: 'var(--color-primary-subtle)',
+    sourceLabel: '自营', sourceClass: 'self', price: '¥9,000',
+  },
+  {
+    id: 'magic-standard', name: '魔术喜剧 45min',
+    coverIcon: '🎩', coverColor: '#fef2f2',
+    sourceLabel: '经纪合作', sourceClass: 'third', price: '¥3,800',
+  },
+  {
+    id: 'improv-standard', name: '即兴喜剧 60min',
+    coverIcon: '🎪', coverColor: '#fffbeb',
+    sourceLabel: '自营', sourceClass: 'self', price: '¥4,500',
+  },
+  {
+    id: 'family-comedy', name: '亲子喜剧 45min',
+    coverIcon: '🎨', coverColor: '#ecfdf5',
+    sourceLabel: '独立艺人', sourceClass: 'indie', price: '¥3,500',
+  },
 ];
 
 onMounted(() => {
@@ -129,36 +297,27 @@ function onSend() {
   goSubmit('input');
 }
 
-function goPaste() {
-  goSubmit('paste');
-}
+function goPaste() { goSubmit('paste'); }
 
 function goVoice() {
   uni.setStorageSync('submitEntryMode', 'voice');
   uni.switchTab({ url: '/pages/request/submit' });
 }
 
-function goHistory() {
-  uni.navigateTo({ url: '/pages/request/list' });
-}
+function goHistory() { uni.navigateTo({ url: '/pages/request/list' }); }
+function goAllPlans() { uni.switchTab({ url: '/pages/sku/list' }); }
+function goAllCases() { uni.navigateTo({ url: '/pages/case/detail' }); }
+function goCurated() { uni.switchTab({ url: '/pages/sku/list' }); }
 
 function onTagSelect(value: string) {
   selectedTag.value = value;
-  if (value === 'all') {
-    uni.switchTab({ url: '/pages/sku/list' });
-  } else {
-    uni.setStorageSync('skuActivityFilter', value);
-    uni.switchTab({ url: '/pages/sku/list' });
-  }
-}
-
-function goAllPlans() {
+  uni.setStorageSync('skuActivityFilter', value);
   uni.switchTab({ url: '/pages/sku/list' });
 }
 
-function goPlan(id: string) {
-  uni.navigateTo({ url: `/pages/sku/detail?id=${id}` });
-}
+function goPlan(id: string) { uni.navigateTo({ url: `/pages/sku/detail?id=${id}` }); }
+function goDemandDetail(item: any) { uni.navigateTo({ url: `/pages/request/detail` }); }
+function goCaseDetail(item: any) { uni.navigateTo({ url: `/pages/case/detail` }); }
 </script>
 
 <style lang="scss" scoped>
@@ -184,39 +343,25 @@ function goPlan(id: string) {
   gap: 10rpx;
 }
 .brand-cube {
-  width: 32rpx;
-  height: 32rpx;
+  width: 32rpx; height: 32rpx;
   border-radius: 6rpx;
   background: $color-primary;
 }
 .brand-name {
-  font-size: $text-xl;
-  font-weight: 700;
-  color: $color-text-primary;
+  font-size: $text-xl; font-weight: 700; color: $color-text-primary;
 }
 .brand-tagline {
-  font-size: $text-xs;
-  color: $color-text-tertiary;
-  padding-left: 8rpx;
-  border-left: 2rpx solid $color-border;
-  font-weight: 400;
+  font-size: $text-xs; color: $color-text-tertiary;
+  padding-left: 8rpx; border-left: 2rpx solid $color-border; font-weight: 400;
 }
 .agent-badge {
-  display: flex;
-  align-items: center;
-  gap: 6rpx;
-  height: 48rpx;
-  padding: 0 18rpx;
-  border-radius: $radius-full;
-  background: $color-primary-subtle;
-  color: $color-primary;
-  font-size: $text-sm;
-  font-weight: 600;
+  display: flex; align-items: center; gap: 6rpx;
+  height: 48rpx; padding: 0 18rpx;
+  border-radius: $radius-full; background: $color-primary-subtle;
+  color: $color-primary; font-size: $text-sm; font-weight: 600;
 }
 .agent-dot {
-  width: 8rpx;
-  height: 8rpx;
-  border-radius: 50%;
+  width: 8rpx; height: 8rpx; border-radius: 50%;
   background: $green;
   animation: dot-breathe 2s ease-in-out infinite;
 }
@@ -227,205 +372,199 @@ function goPlan(id: string) {
 
 /* ===== Hero ===== */
 .hero-section {
-  padding: 32rpx 32rpx 0;
-  text-align: center;
+  padding: 28rpx 32rpx 0; text-align: center;
 }
 .hero-ai-hint {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6rpx;
-  margin-bottom: 12rpx;
+  display: flex; align-items: center; justify-content: center; gap: 6rpx; margin-bottom: 10rpx;
 }
 .ai-mini-cube {
-  width: 28rpx;
-  height: 28rpx;
-  border-radius: 4rpx;
-  background: $color-primary;
-  color: #fff;
-  font-size: 16rpx;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 28rpx; height: 28rpx; border-radius: 4rpx;
+  background: $color-primary; color: #fff;
+  font-size: 16rpx; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
 }
-.hero-ai-text {
-  font-size: $text-sm;
-  color: $color-primary;
-  font-weight: 600;
-}
+.hero-ai-text { font-size: $text-sm; color: $color-primary; font-weight: 600; }
 .hero-title {
-  display: block;
-  font-size: 48rpx;
-  font-weight: 800;
-  line-height: 1.2;
-  color: $color-text-primary;
-  margin-bottom: 8rpx;
+  display: block; font-size: 48rpx; font-weight: 800; line-height: 1.2;
+  color: $color-text-primary; margin-bottom: 8rpx;
 }
 .hero-subtitle {
-  display: block;
-  font-size: $text-base;
-  color: $color-text-secondary;
-  line-height: 1.5;
-  margin-bottom: 28rpx;
+  display: block; font-size: $text-base; color: $color-text-secondary;
+  line-height: 1.5; margin-bottom: 24rpx;
 }
 
 /* ===== Input Bar ===== */
 .input-bar {
-  margin: 0 32rpx;
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  background: $color-bg-card;
-  border: 2rpx solid $color-border;
-  border-radius: $radius-full;
-  padding: 6rpx;
-  box-shadow: $shadow-sm;
+  margin: 0 32rpx; display: flex; align-items: center; gap: 8rpx;
+  background: $color-bg-card; border: 2rpx solid $color-border;
+  border-radius: $radius-full; padding: 6rpx; box-shadow: $shadow-sm;
 }
 .voice-btn {
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 50%;
-  background: $color-primary-subtle;
-  border: 2rpx solid $color-primary;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28rpx;
-  flex-shrink: 0;
+  width: 60rpx; height: 60rpx; border-radius: 50%;
+  background: $color-primary-subtle; border: 2rpx solid $color-primary;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28rpx; flex-shrink: 0;
 }
 .voice-btn:active { opacity: 0.7; }
-
 .input-field {
-  flex: 1;
-  height: 60rpx;
-  padding: 0 12rpx;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-size: $text-base;
-  color: $color-text-primary;
-  font-family: $font-family-base;
+  flex: 1; height: 60rpx; padding: 0 12rpx;
+  background: transparent; border: none; outline: none;
+  font-size: $text-base; color: $color-text-primary;
 }
-
 .send-btn {
-  height: 56rpx;
-  padding: 0 28rpx;
-  background: $color-primary;
-  color: $color-text-inverse;
+  height: 56rpx; padding: 0 28rpx;
+  background: $color-primary; color: $color-text-inverse;
   border-radius: $radius-full;
-  font-size: $text-base;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  font-size: $text-base; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .send-btn:active { opacity: 0.85; }
 
 /* ===== Paste Link ===== */
 .paste-link {
-  text-align: center;
-  padding: 12rpx 0 4rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4rpx;
-  font-size: $text-sm;
-  color: $color-primary;
-  font-weight: 600;
+  text-align: center; padding: 12rpx 0 4rpx;
+  display: flex; align-items: center; justify-content: center; gap: 4rpx;
+  font-size: $text-sm; color: $color-primary; font-weight: 600;
 }
-.paste-arrow {
-  font-size: $text-xs;
-  color: $color-primary-light;
-}
+.paste-arrow { font-size: $text-xs; color: $color-primary-light; }
 
 /* ===== Tag Row ===== */
 .tag-row {
-  display: flex;
-  gap: 8rpx;
-  padding: 16rpx 32rpx;
-  flex-wrap: wrap;
+  display: flex; gap: 8rpx; padding: 16rpx 32rpx; flex-wrap: wrap;
 }
 .tag-item {
-  padding: 10rpx 24rpx;
-  border-radius: $radius-full;
-  font-size: $text-sm;
-  font-weight: 500;
-  color: $color-text-secondary;
-  background: $color-bg-input;
-  border: 2rpx solid transparent;
+  padding: 10rpx 24rpx; border-radius: $radius-full;
+  font-size: $text-sm; font-weight: 500;
+  color: $color-text-secondary; background: $color-bg-input;
 }
 .tag-item.active {
-  background: $color-primary-subtle;
-  color: $color-primary;
-  font-weight: 600;
-  border-color: transparent;
+  background: $color-primary-subtle; color: $color-primary; font-weight: 600;
 }
 .tag-item:active { opacity: 0.7; }
 
-/* ===== Recent Section ===== */
-.recent-section {
+/* ===== Section Block ===== */
+.section-block {
   padding: 16rpx 32rpx 0;
 }
 .section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16rpx;
-}
-.section-title {
-  font-size: $text-lg;
-  font-weight: 800;
-  color: $color-text-primary;
-}
-.plan-card {
-  min-height: 120rpx;
-  padding: 22rpx 24rpx;
+  display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 14rpx;
-  border-radius: $radius-md;
-  background: $color-bg-card;
-  border-left: 6rpx solid $color-primary;
-  box-shadow: $shadow-sm;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20rpx;
+}
+.section-header-left {
+  display: flex; align-items: center; gap: 8rpx;
+}
+.section-icon { font-size: 24rpx; }
+.section-title {
+  display: block; font-size: $text-lg; font-weight: 800; color: $color-text-primary; line-height: 1.3;
+}
+.section-meta {
+  display: block; font-size: $text-xs; color: $color-text-tertiary; font-weight: 400;
+}
+.section-arrow {
+  font-size: $text-xs; color: $color-text-tertiary; font-weight: 500;
+}
+
+/* ===== Plan Card ===== */
+.plan-card {
+  min-height: 112rpx; padding: 20rpx 22rpx; margin-bottom: 12rpx;
+  border-radius: $radius-md; background: $color-bg-card;
+  border-left: 6rpx solid $color-primary; box-shadow: $shadow-sm;
+  display: flex; align-items: center; justify-content: space-between; gap: 16rpx;
 }
 .plan-card:active { opacity: 0.85; }
-.plan-info {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
+.plan-info { min-width: 0; display: flex; flex-direction: column; gap: 6rpx; }
+.plan-name { font-size: $text-md; font-weight: 700; color: $color-text-primary; }
+.plan-meta { font-size: $text-sm; color: $color-text-secondary; }
+.plan-tags { display: flex; gap: 6rpx; flex-wrap: wrap; }
+.plan-tag {
+  padding: 2rpx 12rpx; border-radius: $radius-full; font-size: $text-xs; font-weight: 600;
 }
-.plan-name {
-  font-size: $text-md;
-  font-weight: 700;
-  color: $color-text-primary;
-}
-.plan-meta {
-  font-size: $text-sm;
-  color: $color-text-secondary;
-}
+.plan-tag.primary { background: $color-primary-subtle; color: $color-primary; }
+.plan-tag.subtle { background: $color-bg-input; color: $color-text-secondary; }
 .plan-price {
-  flex-shrink: 0;
-  color: $color-primary;
-  font-size: $text-xl;
-  font-weight: 800;
+  flex-shrink: 0; color: $color-primary;
+  font-size: $text-xl; font-weight: 800;
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* ===== History Link ===== */
-.history-link {
-  text-align: center;
-  padding: 20rpx 0;
-  font-size: $text-sm;
-  color: $color-text-tertiary;
+/* ===== History Card ===== */
+.history-card {
+  display: flex; align-items: center; gap: 12rpx;
+  padding: 16rpx 18rpx; margin-bottom: 8rpx;
+  border-radius: $radius-md; background: $color-bg-card;
+  border: 2rpx solid $color-border;
 }
-.history-link:active { opacity: 0.6; }
+.history-card:active { opacity: 0.8; }
+.history-icon {
+  width: 40rpx; height: 40rpx; border-radius: 10rpx;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20rpx; flex-shrink: 0;
+}
+.history-icon.primary { background: $color-primary-subtle; color: $color-primary; }
+.history-icon.amber { background: #fffbeb; color: #f59e0b; }
+.history-icon.green { background: #f0fdf4; color: #16a34a; }
+.history-info { flex: 1; min-width: 0; }
+.history-name { display: block; font-size: $text-sm; font-weight: 600; color: $color-text-primary; }
+.history-meta { display: block; font-size: $text-xs; color: $color-text-tertiary; margin-top: 2rpx; }
+.history-status {
+  font-size: $text-xs; font-weight: 600; padding: 4rpx 14rpx; border-radius: $radius-full; flex-shrink: 0;
+}
+.history-status.primary { background: $color-primary-subtle; color: $color-primary; }
+.history-status.amber { background: #fffbeb; color: #f59e0b; }
+.history-status.green { background: #f0fdf4; color: #16a34a; }
+.history-empty {
+  padding: 24rpx 0; text-align: center;
+}
+.history-empty-text { font-size: $text-sm; color: $color-text-tertiary; }
 
-.bottom-space {
-  height: 160rpx;
+/* ===== Case Card ===== */
+.case-card {
+  border-radius: $radius-md; background: $color-bg-card;
+  border: 2rpx solid $color-border; overflow: hidden; margin-bottom: 12rpx;
 }
+.case-card:active { opacity: 0.85; }
+.case-cover {
+  height: 120rpx; display: flex; align-items: center; justify-content: center; font-size: 40rpx;
+}
+.case-body { padding: 14rpx 16rpx; }
+.case-title { display: block; font-size: $text-md; font-weight: 700; color: $color-text-primary; margin-bottom: 4rpx; }
+.case-desc { display: block; font-size: $text-xs; color: $color-text-secondary; line-height: 1.5; margin-bottom: 8rpx; }
+.case-footer { display: flex; align-items: center; justify-content: space-between; }
+.case-source-tag {
+  font-size: $text-xs; font-weight: 600; padding: 2rpx 12rpx; border-radius: $radius-full;
+}
+.case-source-tag.self { background: $color-primary-subtle; color: $color-primary; }
+.case-source-tag.third { background: $color-bg-input; color: $color-text-secondary; }
+.case-amount {
+  color: $color-primary; font-size: $text-lg; font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ===== Curated Card ===== */
+.curated-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12rpx;
+}
+.curated-card {
+  border-radius: $radius-md; background: $color-bg-card;
+  border: 2rpx solid $color-border; overflow: hidden;
+}
+.curated-card:active { opacity: 0.85; }
+.curated-cover {
+  height: 100rpx; display: flex; align-items: center; justify-content: center; font-size: 32rpx;
+}
+.curated-body { padding: 10rpx 12rpx; }
+.curated-name { display: block; font-size: $text-sm; font-weight: 700; color: $color-text-primary; margin-bottom: 4rpx; }
+.curated-tags { margin-bottom: 4rpx; }
+.curated-tag {
+  display: inline-block; font-size: $text-xs; font-weight: 600; padding: 1rpx 10rpx; border-radius: $radius-full;
+}
+.curated-tag.self { background: $color-primary-subtle; color: $color-primary; }
+.curated-tag.third { background: $color-bg-input; color: $color-text-secondary; }
+.curated-tag.indie { background: #ecfdf5; color: #059669; }
+.curated-price {
+  color: $color-primary; font-size: $text-md; font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.bottom-space { height: 160rpx; }
 </style>
