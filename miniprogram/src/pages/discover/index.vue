@@ -289,7 +289,7 @@ function goSubmit(mode: 'input' | 'paste' | 'voice') {
   if (mode === 'input' && inputText.value.trim()) {
     uni.setStorageSync('submitPresetText', inputText.value.trim());
   }
-  uni.switchTab({ url: '/pages/request/submit' });
+  uni.navigateTo({ url: '/pages/request/submit/index' });
 }
 
 function onSend() {
@@ -301,23 +301,27 @@ function goPaste() { goSubmit('paste'); }
 
 function goVoice() {
   uni.setStorageSync('submitEntryMode', 'voice');
-  uni.switchTab({ url: '/pages/request/submit' });
+  uni.navigateTo({ url: '/pages/request/submit/index' });
 }
 
-function goHistory() { uni.navigateTo({ url: '/pages/request/list' }); }
-function goAllPlans() { uni.switchTab({ url: '/pages/sku/list' }); }
-function goAllCases() { uni.navigateTo({ url: '/pages/case/detail' }); }
-function goCurated() { uni.switchTab({ url: '/pages/sku/list' }); }
+function goHistory() { uni.switchTab({ url: '/pages/request/list/index' }); }
+function goAllPlans() { uni.switchTab({ url: '/pages/sku/list/index' }); }
+function goAllCases() {
+  uni.showToast({ title: '案例详情开发中', icon: 'none' });
+}
+function goCurated() { uni.switchTab({ url: '/pages/sku/list/index' }); }
 
 function onTagSelect(value: string) {
   selectedTag.value = value;
   uni.setStorageSync('skuActivityFilter', value);
-  uni.switchTab({ url: '/pages/sku/list' });
+  uni.switchTab({ url: '/pages/sku/list/index' });
 }
 
-function goPlan(id: string) { uni.navigateTo({ url: `/pages/sku/detail?id=${id}` }); }
-function goDemandDetail(item: any) { uni.navigateTo({ url: `/pages/request/detail` }); }
-function goCaseDetail(item: any) { uni.navigateTo({ url: `/pages/case/detail` }); }
+function goPlan(id: string) { uni.navigateTo({ url: `/pages/sku/detail/index?id=${id}` }); }
+function goDemandDetail(item: any) { uni.navigateTo({ url: `/pages/request/detail/index` }); }
+function goCaseDetail(item: any) {
+  uni.showToast({ title: '案例详情开发中', icon: 'none' });
+}
 </script>
 
 <style lang="scss" scoped>
