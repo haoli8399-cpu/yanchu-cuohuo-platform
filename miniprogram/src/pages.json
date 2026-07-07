@@ -144,8 +144,8 @@
       {
         "pagePath": "pages/message/index",
         "text": "消息",
-        "iconPath": "static/tab/user.png",
-        "selectedIconPath": "static/tab/user-active.png"
+        "iconPath": "static/tab/message.png",
+        "selectedIconPath": "static/tab/message-active.png"
       },
       {
         "pagePath": "pages/user/index",
