@@ -29,27 +29,30 @@ export default async function companyRoutes(app: FastifyInstance) {
   });
 
   app.get('/:id', { preHandler: [authMiddleware] }, async (req, reply) => {
-    const r = await query('SELECT * FROM company_profiles WHERE id=$1', [req.params.id]);
+    const { id } = req.params as { id: string };
+    const r = await query('SELECT * FROM company_profiles WHERE id=$1', [id]);
     if (r.rows.length===0) return reply.status(404).send(errorResponse(2002,'公司不存在'));
     return reply.send(successResponse(r.rows[0]));
   });
 
   app.post('/:id/certify', { preHandler: [authMiddleware, requireRole('agent'), validate({ body: certifyBody })] },
     async (req, reply) => {
+      const { id } = req.params as { id: string };
       const b = req.body as z.infer<typeof certifyBody>;
       await query(
         `UPDATE company_profiles SET full_name=$1, credit_code=$2, business_license_url=$3, legal_person_name=$4, legal_person_id_url=$5, bank_name=$6, bank_account=$7, status='pending_cert' WHERE id=$8`,
-        [b.full_name,b.credit_code,b.business_license_url,b.legal_person_name,b.legal_person_id_url,b.bank_name,b.bank_account,req.params.id]
+        [b.full_name,b.credit_code,b.business_license_url,b.legal_person_name,b.legal_person_id_url,b.bank_name,b.bank_account,id]
       );
       return reply.send(successResponse({status:'pending_cert'},'认证资料已提交'));
     });
 
   app.patch('/:id/verify', { preHandler: [authMiddleware, requireRole('admin'), validate({ body: verifyBody })] },
     async (req, reply) => {
+      const { id } = req.params as { id: string };
       const { action, reason } = req.body as z.infer<typeof verifyBody>;
       const s = action==='approve'?'certified':'registered';
-      await query(`UPDATE company_profiles SET status=$1 WHERE id=$2`,[s,req.params.id]);
-      await query(`INSERT INTO operation_logs (operator_id, module, action, target_type, target_id, detail) VALUES ($1,'company',$2,'company',$3,$4)`,[req.user?.sub,action,req.params.id,JSON.stringify({reason})]);
+      await query(`UPDATE company_profiles SET status=$1 WHERE id=$2`,[s,id]);
+      await query(`INSERT INTO operation_logs (operator_id, module, action, target_type, target_id, detail) VALUES ($1,'company',$2,'company',$3,$4)`,[req.user?.sub,action,id,JSON.stringify({reason})]);
       return reply.send(successResponse({status:s}, action==='approve'?'已通过':'已驳回'));
     });
 

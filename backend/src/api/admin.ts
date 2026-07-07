@@ -6,7 +6,7 @@ import { successResponse, errorResponse } from '../utils/response.js';
 
 export default async function adminRoutes(app: FastifyInstance) {
   app.get('/dashboard', { preHandler: [authMiddleware, requireRole('admin')] }, async (_req, reply) => {
-    const [[demands],[assignments],[settlements],[revenue],[performers],[companies]] = await Promise.all(
+    const [demands, assignments, settlements, revenue, performers, companies] = await Promise.all(
       ['SELECT COUNT(*) FROM demands WHERE status NOT IN ($1,$2,$3)', // pending
        'SELECT COUNT(*) FROM assignments WHERE status=$1',
        'SELECT COUNT(*) FROM settlements WHERE status=$1',
@@ -191,7 +191,7 @@ export default async function adminRoutes(app: FastifyInstance) {
   // POST /v1/admin/mark-timeout - 超时自动标记 (P-27)
   // 查询超时的 demand，标记 urgency=urgent
   // ==========================================================
-  app.post('/mark-timeout', { preHandler: [authMiddleware, requireRole('admin')] }, async (req, reply) => {
+  app.post('/mark-timeout', { preHandler: [authMiddleware, requireRole('admin')] }, async (_req, reply) => {
     // 定义各状态超时阈值（小时）
     const timeoutConfig: Record<string, number> = {
       pending_ai: 2,           // AI 生成超时 2h
