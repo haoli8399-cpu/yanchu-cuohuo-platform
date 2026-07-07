@@ -23,6 +23,7 @@
     {"path": "pages/credit/index", "style": {"navigationBarTitleText": "信誉分"}},
     {"path": "pages/case/detail", "style": {"navigationBarTitleText": "案例详情"}},
     {"path": "pages/notification/index", "style": {"navigationBarTitleText": "通知中心"}},
+    {"path": "pages/message/index", "style": {"navigationBarTitleText": "消息"}},
     {"path": "pages/search/index", "style": {"navigationBarTitleText": "搜索"}}
   ],
   "globalStyle": {

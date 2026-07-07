@@ -79,6 +79,13 @@
             <text class="user-page__menu-arrow">&#8250;</text>
           </view>
         </view>
+        <view class="user-page__menu-item" @click="navigateTo('/pages/message/index')" hover-class="user-page__menu-item--active">
+          <view class="user-page__menu-icon" style="background: #eef2ff;">
+            <van-icon name="comment-o" size="32rpx" color="#6366f1" />
+          </view>
+          <text class="user-page__menu-text">消息中心</text>
+          <text class="user-page__menu-arrow">&#8250;</text>
+        </view>
         <view class="user-page__menu-item user-page__menu-item--last" @click="navigateTo('/pages/user/invoice/index')" hover-class="user-page__menu-item--active">
           <view class="user-page__menu-icon" style="background: #fffbeb;">
             <van-icon name="bill-o" size="32rpx" color="#f59e0b" />

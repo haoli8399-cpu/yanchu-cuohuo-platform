@@ -28,8 +28,8 @@
     </view>
 
     <!-- 搜索结果 -->
-    <scroll-view v-if="searched" scroll-y class="results-scroll">
-      <view v-if="loading" class="loading-section">
+    <scroll-view v-if="searched" scroll-y class="results-scroll" @scrolltolower="onLoadMore">
+      <view v-if="loading && results.length === 0" class="loading-section">
         <van-loading type="spinner" size="48rpx" />
         <text class="loading-text">搜索中...</text>
       </view>
@@ -58,6 +58,13 @@
               </view>
             </view>
           </view>
+
+          <!-- 加载更多 / 没有更多 -->
+          <view v-if="loadingMore" class="loading-more">
+            <van-loading size="28rpx" />
+            <text class="loading-more-text">加载中...</text>
+          </view>
+          <view v-else-if="!hasMore && results.length > 0" class="no-more">没有更多了</view>
         </view>
 
         <view v-else-if="!loading" class="empty-section">
@@ -84,9 +91,14 @@ import { formatPrice } from '@/utils/format';
 const keyword = ref('');
 const searched = ref(false);
 const loading = ref(false);
+const loadingMore = ref(false);
 const results = ref<SKUProduct[]>([]);
 const total = ref(0);
 const hotKeywords = ref<HotKeyword[]>([]);
+// 分页
+const page = ref(1);
+const pageSize = 20;
+const hasMore = ref(true);
 
 onMounted(async () => {
   try {
@@ -109,16 +121,40 @@ function onHotSearch(kw: string) {
 async function doSearch(kw: string) {
   searched.value = true;
   loading.value = true;
+  page.value = 1;
+  hasMore.value = true;
   try {
-    const res = await getSKUList({ keyword: kw });
+    const res = await getSKUList({ keyword: kw, page: page.value, pageSize });
     if (res.ok) {
-      results.value = res.data || [];
-      total.value = res.total || results.value.length;
+      const list = res.data || [];
+      results.value = list;
+      total.value = res.total || list.length;
+      hasMore.value = list.length >= pageSize && results.value.length < total.value;
     }
   } catch (e) {
     console.error('搜索失败:', e);
   } finally {
     loading.value = false;
+  }
+}
+
+// 下拉（滚动到底）加载更多
+async function onLoadMore() {
+  if (loading.value || loadingMore.value || !hasMore.value) return;
+  loadingMore.value = true;
+  page.value += 1;
+  try {
+    const res = await getSKUList({ keyword: keyword.value.trim(), page: page.value, pageSize });
+    if (res.ok) {
+      const list = res.data || [];
+      results.value = results.value.concat(list);
+      hasMore.value = list.length >= pageSize && results.value.length < (res.total || 0);
+    }
+  } catch (e) {
+    console.error('加载更多失败:', e);
+    page.value -= 1; // 失败回退页码
+  } finally {
+    loadingMore.value = false;
   }
 }
 
@@ -270,5 +306,21 @@ function goBack() {
   padding-top: 160rpx;
   .empty-text { font-size: 28rpx; color: var(--color-text-secondary); margin-top: 24rpx; }
   .empty-hint { font-size: 24rpx; color: var(--color-text-tertiary); margin-top: 8rpx; }
+}
+
+// 加载更多 / 没有更多
+.loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 28rpx 0;
+  .loading-more-text { font-size: 24rpx; color: var(--color-text-tertiary); }
+}
+.no-more {
+  text-align: center;
+  padding: 28rpx 0;
+  font-size: 24rpx;
+  color: var(--color-text-tertiary);
 }
 </style>
