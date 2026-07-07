@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.js';
 import { query } from '../utils/db.js';
 import { successResponse } from '../utils/response.js';
-import { scoreOpportunity, recommendPlan, generateFollowUp } from '../services/ai/deepseek.js';
+import { chat, scoreOpportunity, recommendPlan, generateFollowUp } from '../services/ai/deepseek.js';
 
 const scoreBody = z.object({
   opportunity_id: z.string().uuid(),
@@ -18,6 +18,13 @@ const recommendBody = z.object({
   audience_count: z.number().optional(),
   budget: z.number().optional(),
   opportunity_id: z.string().uuid().optional(),
+});
+
+const askBody = z.object({
+  conversation: z.array(z.object({
+    role: z.enum(['user', 'ai']),
+    content: z.string(),
+  })).min(1),
 });
 
 const followUpBody = z.object({
@@ -36,6 +43,49 @@ const defaultFollowUp = {
   suggestedAction: 'manual_check',
 };
 
+const defaultPlans = {
+  budget: { tier: 'T4', duration: 45, price: 4800, reason: '省钱版' },
+  recommended: { tier: 'T3', duration: 60, price: 6000, reason: '主推版' },
+  upgrade: { tier: 'T2', duration: 90, price: 9000, reason: '升级版' },
+};
+
+function parseJsonObject(raw: string) {
+  const cleaned = raw.trim().replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  if (start < 0 || end < start) throw new Error('AI response is not JSON');
+  return JSON.parse(cleaned.slice(start, end + 1));
+}
+
+function fallbackAsk(conversation: Array<{ role: 'user' | 'ai'; content: string }>) {
+  const text = conversation.map(x => x.content).join('\n');
+  if (!/(\d{2,5}\s*人|人数|观众|参加)/.test(text)) {
+    return {
+      action: 'ask',
+      field: 'audience_count',
+      question: '请问预计多少人参加？',
+      options: ['50-100人', '100-300人', '300-500人', '500人以上'],
+    };
+  }
+  if (!/(预算|费用|价格|报价|钱|元|块|万|千)/.test(text)) {
+    return {
+      action: 'ask',
+      field: 'budget',
+      question: '预算大概多少？',
+      options: ['5千以内', '5千-1万', '1万-2万', '2万以上'],
+    };
+  }
+  if (!/(日期|时间|\d{1,2}\s*月\s*\d{1,2}\s*日|\d{4}[-/年.]\d{1,2}[-/月.]\d{1,2})/.test(text)) {
+    return {
+      action: 'ask',
+      field: 'event_date',
+      question: '活动日期是哪天？',
+      options: [],
+    };
+  }
+  return { action: 'recommend', plans: defaultPlans };
+}
+
 export default async function aiRoutes(app: FastifyInstance) {
   // POST /v1/ai/score-opportunity — AI 商机评分
   app.post('/ai/score-opportunity', { preHandler: [authMiddleware] }, async (req, reply) => {
@@ -48,8 +98,13 @@ export default async function aiRoutes(app: FastifyInstance) {
 
     // 获取商机和关联需求信息
     const opp = await query(
-      `SELECT o.*, d.company_name, d.performance_type, d.activity_type, d.audience_count, d.budget, d.city, d.description
-       FROM opportunities o LEFT JOIN demands d ON o.demand_id = d.id WHERE o.id = $1`,
+      `SELECT o.*, COALESCE(u.name, '') as company_name, d.comedy_style as performance_type,
+        d.event_type as activity_type, d.audience_count, d.budget, d.city,
+        d.special_requirements as description
+       FROM opportunities o
+       LEFT JOIN demands d ON o.demand_id = d.id
+       LEFT JOIN users u ON d.client_id = u.id
+       WHERE o.id = $1`,
       [body.opportunity_id]
     );
 
@@ -83,6 +138,52 @@ export default async function aiRoutes(app: FastifyInstance) {
     }
   });
 
+  // POST /v1/ai/ask — AI 多轮追问或直接推荐
+  app.post('/ai/ask', { preHandler: [authMiddleware] }, async (req, reply) => {
+    const body = askBody.parse(req.body);
+    const conversation = body.conversation as Array<{ role: 'user' | 'ai'; content: string }>;
+    const systemPrompt = `
+你是「喜剧工厂」演出撮合平台的需求追问助手。
+目标：判断活动公司提交演出需求时，是否已经具备生成三档演出方案所需信息。
+
+必需字段：
+- performance_type：演出类型，例如脱口秀、即兴喜剧、漫才、新喜剧
+- activity_type：活动类型，例如年会、团建、品牌活动、客户答谢
+- audience_count：预计参与人数
+- budget：预算范围或金额
+- event_date：活动日期
+
+只返回 JSON，不要输出解释。
+如果还缺关键信息，返回：
+{"action":"ask","field":"budget","question":"预算大概多少？","options":["5千以内","5千-1万","1万-2万","2万以上"]}
+field 只能是 performance_type、activity_type、audience_count、budget、event_date 之一。
+如果信息足够生成方案，返回：
+{"action":"recommend","plans":{"budget":{"tier":"T4","duration":45,"price":4800,"reason":"省钱版"},"recommended":{"tier":"T3","duration":60,"price":6000,"reason":"主推版"},"upgrade":{"tier":"T2","duration":90,"price":9000,"reason":"升级版"}}}
+`.trim();
+
+    try {
+      const content = await chat([
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: JSON.stringify({ conversation }) },
+      ], 700);
+      const parsed = parseJsonObject(content);
+      if (parsed?.action === 'ask' && parsed.field && parsed.question) {
+        return reply.send({
+          action: 'ask',
+          field: parsed.field,
+          question: parsed.question,
+          options: Array.isArray(parsed.options) ? parsed.options : [],
+        });
+      }
+      if (parsed?.action === 'recommend' && parsed.plans) {
+        return reply.send({ action: 'recommend', plans: parsed.plans });
+      }
+      return reply.send(fallbackAsk(conversation));
+    } catch {
+      return reply.send(fallbackAsk(conversation));
+    }
+  });
+
   // POST /v1/ai/recommend-plan — AI 推荐方案（三档）
   app.post('/ai/recommend-plan', { preHandler: [authMiddleware] }, async (req, reply) => {
     const body = recommendBody.parse(req.body);
@@ -96,9 +197,7 @@ export default async function aiRoutes(app: FastifyInstance) {
       return reply.send(successResponse(result, '方案推荐完成'));
     } catch {
       return reply.send(successResponse({
-        budget: { tier: 'T4', duration: 45, price: 4800, reason: '省钱版' },
-        recommended: { tier: 'T3', duration: 60, price: 6000, reason: '主推版' },
-        upgrade: { tier: 'T2', duration: 90, price: 9000, reason: '升级版' },
+        ...defaultPlans,
       }, '使用默认方案'));
     }
   });
@@ -113,8 +212,11 @@ export default async function aiRoutes(app: FastifyInstance) {
     const body = parsed.data;
 
     const opp = await query(
-      `SELECT o.*, d.company_name, d.performance_type
-       FROM opportunities o LEFT JOIN demands d ON o.demand_id = d.id WHERE o.id = $1`,
+      `SELECT o.*, COALESCE(u.name, '') as company_name, d.comedy_style as performance_type
+       FROM opportunities o
+       LEFT JOIN demands d ON o.demand_id = d.id
+       LEFT JOIN users u ON d.client_id = u.id
+       WHERE o.id = $1`,
       [body.opportunity_id]
     );
 

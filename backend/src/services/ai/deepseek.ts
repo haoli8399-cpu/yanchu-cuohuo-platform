@@ -1,7 +1,7 @@
 const KEY=process.env.DEEPSEEK_API_KEY||"";
 const BASE="https://api.deepseek.com/v1";
 type ChatResponse = { choices?: Array<{ message?: { content?: string } }> };
-async function chat(m,t=512){
+export async function chat(m,t=512){
  let r=await fetch(BASE+"/chat/completions",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+KEY},body:JSON.stringify({model:"deepseek-chat",messages:m,max_tokens:t,temperature:0.7})});
  if(!r.ok)throw Error("DS"+r.status);
  let j=await r.json() as ChatResponse;return j.choices?.[0]?.message?.content||"";

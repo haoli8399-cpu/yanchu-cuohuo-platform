@@ -405,10 +405,11 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, nextTick } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import { getDemandList, getSKUDetail, calculatePrice, recommendPlan } from '@/services/api';
+import { getDemandList, getSKUDetail, calculatePrice, askAI } from '@/services/api';
 import { submitDemand } from '@/services/api';
 import { formatPrice } from '@/utils/format';
-import type { TierInfo, AIPlanOption } from '@/types';
+import type { TierInfo, AIPlanOption, AIRecommendResult } from '@/types';
+import type { AIAskConversationItem, AIAskResponse } from '@/services/api';
 
 const scrollInto = ref('');
 const submitting = ref(false);
@@ -416,7 +417,8 @@ const submitMode = ref<'sku' | 'ai'>('sku');
 // ── AI 对话消息类型 (Phase 2) ──
 interface QuickReply { label: string; value: string }
 interface ExtractRow { key: string; label: string; value: string; ok: boolean }
-interface FallbackField { key: string; label: string; options: QuickReply[] }
+type CollectedKey = 'event_type' | 'biz_type' | 'audience_count' | 'budget_label' | 'event_date';
+interface FallbackField { key: CollectedKey; label: string; options: QuickReply[] }
 interface AIMessage {
   id: string;
   role: 'user' | 'ai';
@@ -752,29 +754,13 @@ async function processInput(text: string) {
   await continueFlow();
 }
 
-// 多轮追问主流程：缺失必填报字段 → 追问；齐全或达上限 → 推荐/兜底
+// 多轮追问主流程：由后端 AI 判断继续追问或直接推荐
 async function continueFlow() {
-  const missing = nextMissingQuestion();
-  if (askedCount.value < 3 && missing) {
-    askQuestion(missing);
-    return;
-  }
-  if (allRequiredCollected()) {
-    await doRecommend();
-  } else {
-    showFallback();
-  }
+  await askQuestion();
 }
 
-function askQuestion(q: FollowupQuestion) {
-  askedCount.value++;
-  aiPhase.value = 'chat';
-  pushAI(q.label, 'question', {
-    progress: q.progress,
-    fieldKey: q.key,
-    quickReplies: q.dateTrigger ? [] : q.options,
-    dateTrigger: q.dateTrigger,
-  });
+async function askQuestion(_missing?: FollowupQuestion | string[] | null) {
+  await requestAIAsk();
 }
 
 async function onQuickReply(msg: AIMessage, q: QuickReply) {
@@ -782,7 +768,7 @@ async function onQuickReply(msg: AIMessage, q: QuickReply) {
   if (!key) return;
   pushUser(q.label);
   (collected as any)[key] = q.value;
-  await continueFlow();
+  await requestAIAsk();
 }
 
 function openDatePicker() {
@@ -795,23 +781,14 @@ function confirmDatePicker() {
   if (!tempDate.value) return;
   collected.event_date = tempDate.value;
   pushUser('日期：' + tempDate.value);
-  continueFlow();
+  requestAIAsk();
 }
 
 async function doRecommend() {
   aiLoading.value = true;
   aiError.value = '';
   try {
-    const prompt = buildRecommendPrompt();
-    const res = await recommendPlan({ prompt });
-    if (res.ok && res.data) {
-      const plans: AIPlanOption[] = [res.data.budget, res.data.recommended, res.data.upgrade];
-      pushAI('收到，根据你提供的信息，为你推荐以下三档方案：', 'text');
-      pushAI('', 'plans', { plans });
-      aiPhase.value = 'done';
-    } else {
-      aiError.value = res.error || 'AI 服务暂不可用，请切换到「选方案提交」Tab';
-    }
+    await requestAIAsk(false);
   } catch (e) {
     aiError.value = 'AI 服务暂不可用，请切换到「选方案提交」Tab';
   } finally {
@@ -835,6 +812,8 @@ function onFallbackPick(key: string, value: string) {
   (collected as any)[key] = value;
 }
 async function onFallbackSubmit() {
+  const summary = buildRecommendPrompt();
+  if (summary) pushUser('补充信息：' + summary);
   await doRecommend();   // 用已有信息直接匹配
 }
 
@@ -856,13 +835,90 @@ async function onExtractConfirm() {
 }
 function onExtractMore() {
   aiPhase.value = 'chat';
-  const missing = nextMissingQuestion();
-  if (missing) askQuestion(missing);
+  askQuestion();
 }
 function onExtractFill(row: ExtractRow) {
   aiPhase.value = 'chat';
   const q = FOLLOWUP_QUESTIONS.find(x => x.key === row.key);
   if (q) askQuestion(q);
+}
+
+function buildAIConversation(): AIAskConversationItem[] {
+  return aiMessages.value
+    .filter(msg => msg.text && msg.kind !== 'plans' && msg.kind !== 'fallback' && msg.kind !== 'extract')
+    .map(msg => ({
+      role: msg.role,
+      content: msg.text,
+    }));
+}
+
+function toCollectedKey(field: string): CollectedKey {
+  const map: Record<string, CollectedKey> = {
+    performance_type: 'event_type',
+    activity_type: 'biz_type',
+    audience_count: 'audience_count',
+    budget: 'budget_label',
+    event_date: 'event_date',
+  };
+  return map[field] || 'budget_label';
+}
+
+function questionProgress(fieldKey: CollectedKey): string {
+  if (fieldKey === 'audience_count') return '①/③';
+  if (fieldKey === 'budget_label') return '②/③';
+  if (fieldKey === 'event_date') return '③/③';
+  return `${Math.min(askedCount.value + 1, 3)}/③`;
+}
+
+function toQuickReplies(options: string[] = []): QuickReply[] {
+  return options.map(label => ({ label, value: label }));
+}
+
+function showAIPlans(plans: AIRecommendResult) {
+  const list: AIPlanOption[] = [plans.budget, plans.recommended, plans.upgrade];
+  pushAI('收到，根据你提供的信息，为你推荐以下三档方案：', 'text');
+  pushAI('', 'plans', { plans: list });
+  aiPhase.value = 'done';
+}
+
+function handleAskResult(data: AIAskResponse) {
+  if (data.action === 'recommend') {
+    showAIPlans(data.plans);
+    return;
+  }
+
+  if (askedCount.value >= 3) {
+    showFallback();
+    return;
+  }
+
+  const fieldKey = toCollectedKey(data.field);
+  const quickReplies = toQuickReplies(data.options);
+  askedCount.value++;
+  aiPhase.value = 'chat';
+  pushAI(data.question, 'question', {
+    progress: questionProgress(fieldKey),
+    fieldKey,
+    quickReplies,
+    dateTrigger: fieldKey === 'event_date' && quickReplies.length === 0,
+  });
+}
+
+async function requestAIAsk(manageLoading = true) {
+  if (manageLoading) aiLoading.value = true;
+  aiError.value = '';
+  try {
+    const res = await askAI({ conversation: buildAIConversation() });
+    if (res.ok && res.data) {
+      handleAskResult(res.data);
+    } else {
+      aiError.value = res.error || 'AI 服务暂不可用，请切换到「选方案提交」Tab';
+    }
+  } catch {
+    aiError.value = 'AI 服务暂不可用，请切换到「选方案提交」Tab';
+  } finally {
+    if (manageLoading) aiLoading.value = false;
+  }
 }
 
 // ── 消息辅助 ──

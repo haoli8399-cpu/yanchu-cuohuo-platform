@@ -57,7 +57,8 @@
     "list": [
       { "pagePath": "pages/discover/index", "text": "首页", "iconPath": "static/tab-home.png", "selectedIconPath": "static/tab-home.png" },
       { "pagePath": "pages/sku/list", "text": "找方案", "iconPath": "static/tab-sku.png", "selectedIconPath": "static/tab-sku.png" },
-      { "pagePath": "pages/request/list", "text": "需求", "iconPath": "static/tab-request.png", "selectedIconPath": "static/tab-request.png" },
+      { "pagePath": "pages/request/submit", "text": "提需求", "iconPath": "static/tab-request.png", "selectedIconPath": "static/tab-request.png" },
+      { "pagePath": "pages/message/index", "text": "消息", "iconPath": "static/tab-user.png", "selectedIconPath": "static/tab-user.png" },
       { "pagePath": "pages/user/index", "text": "我的", "iconPath": "static/tab-user.png", "selectedIconPath": "static/tab-user.png" }
     ]
   }

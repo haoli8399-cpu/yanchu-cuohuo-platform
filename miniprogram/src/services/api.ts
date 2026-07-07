@@ -14,7 +14,7 @@ import type {
 } from '@/types';
 
 // ── 配置 ──
-const API_BASE = 'https://api.yanchu-platform.com/v1';
+const API_BASE = 'http://119.28.134.67:9090/v1';
 const USE_MOCK = true; // 开发阶段使用 mock
 
 // ── 统一请求封装 ──
@@ -877,10 +877,89 @@ export async function getCasesBySKU(skuId: string): Promise<ApiResponse<CaseDeta
 
 // ── Phase 2: AI 推荐方案 ──
 // 后端返回格式：{ code:0, data:{ budget:{...}, recommended:{...}, upgrade:{...} } }
-export async function recommendPlan(data: { prompt: string }): Promise<ApiResponse<AIRecommendResult>> {
+export interface AIAskConversationItem {
+  role: 'user' | 'ai';
+  content: string;
+}
+
+export type AIAskResponse =
+  | { action: 'ask'; field: string; question: string; options: string[] }
+  | { action: 'recommend'; plans: AIRecommendResult };
+
+function tierLabel(tier: string): string {
+  return MOCK_TIER_INFO.find(x => x.tier === tier)?.label || tier;
+}
+
+function toCents(price: unknown): number {
+  const n = Number(price || 0);
+  if (!Number.isFinite(n)) return 0;
+  return n < 100000 ? Math.round(n * 100) : Math.round(n);
+}
+
+function normalizeBackendPlan(level: 'budget' | 'recommended' | 'upgrade', raw: any): AIPlanOption {
+  const sku = level === 'budget' ? MOCK_SKUS[2] : level === 'upgrade' ? MOCK_SKUS[3] : MOCK_SKUS[0];
+  const labels = { budget: '省钱方案', recommended: '主推方案', upgrade: '升级方案' };
+  const tier = raw?.tier || (level === 'budget' ? 'T4' : level === 'upgrade' ? 'T2' : 'T3');
+  return {
+    level,
+    level_label: labels[level],
+    sku_id: raw?.sku_id || sku.id,
+    sku_title: raw?.sku_title || sku.title,
+    tier,
+    tier_label: raw?.tier_label || tierLabel(tier),
+    duration: Number(raw?.duration || 60),
+    price: toCents(raw?.price),
+    reason: raw?.reason || labels[level],
+  };
+}
+
+function normalizeRecommendResult(raw: any): AIRecommendResult {
+  return {
+    budget: normalizeBackendPlan('budget', raw?.budget),
+    recommended: normalizeBackendPlan('recommended', raw?.recommended),
+    upgrade: normalizeBackendPlan('upgrade', raw?.upgrade),
+  };
+}
+
+export async function askAI(data: { conversation: AIAskConversationItem[] }): Promise<ApiResponse<AIAskResponse>> {
+  try {
+    const raw: any = await request('/ai/ask', {
+      method: 'POST',
+      data: data as unknown as Record<string, unknown>,
+    });
+    const payload = raw?.action ? raw : raw?.data;
+    if (payload?.action === 'ask') {
+      return {
+        ok: true,
+        data: {
+          action: 'ask',
+          field: String(payload.field || ''),
+          question: String(payload.question || '请补充更多信息'),
+          options: Array.isArray(payload.options) ? payload.options.map(String) : [],
+        },
+      };
+    }
+    if (payload?.action === 'recommend' && payload.plans) {
+      return {
+        ok: true,
+        data: { action: 'recommend', plans: normalizeRecommendResult(payload.plans) },
+      };
+    }
+    return { ok: false, error: raw?.message || raw?.error || 'AI 服务暂不可用，请切换到「选方案提交」Tab' };
+  } catch {
+    return { ok: false, error: 'AI 服务暂不可用，请切换到「选方案提交」Tab' };
+  }
+}
+
+export async function recommendPlan(data: {
+  performance_type?: string;
+  activity_type?: string;
+  audience_count?: number;
+  budget?: number;
+}): Promise<ApiResponse<AIRecommendResult>> {
   if (USE_MOCK) {
     // 开发阶段：返回三档演示方案，保证本地可走通 AI 推荐 → 配置 → 提交 闭环
-    return { ok: true, data: buildMockAIRecommend(data.prompt) };
+    return { ok: true, data: buildMockAIRecommend(buildRecommendPrompt(data)) };
   }
   try {
     const raw: any = await request('/ai/recommend-plan', { method: 'POST', data });
@@ -892,6 +971,20 @@ export async function recommendPlan(data: { prompt: string }): Promise<ApiRespon
     // 网络异常或后端不可达：降级提示
     return { ok: false, error: 'AI 服务暂不可用，请切换到「选方案提交」Tab' };
   }
+}
+
+function buildRecommendPrompt(data: {
+  performance_type?: string;
+  activity_type?: string;
+  audience_count?: number;
+  budget?: number;
+}): string {
+  return [
+    data.activity_type,
+    data.performance_type,
+    data.audience_count ? `人数${data.audience_count}` : '',
+    data.budget ? `预算${data.budget}` : '',
+  ].filter(Boolean).join('，');
 }
 
 // 根据 prompt 生成三档 mock 推荐方案（省钱 / 主推 / 升级）

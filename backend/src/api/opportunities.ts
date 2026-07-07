@@ -24,6 +24,18 @@ const listQuery = z.object({
 });
 
 export default async function opportunityRoutes(app: FastifyInstance) {
+  const demandSelect = `
+    d.id as demand_id,
+    COALESCE(u.name, '') as company_name,
+    d.comedy_style as performance_type,
+    d.event_type as activity_type,
+    d.budget,
+    d.event_date,
+    d.city,
+    d.audience_count,
+    d.special_requirements as description
+  `;
+
   // GET /v1/opportunities — 商机列表
   app.get('/opportunities', { preHandler: [authMiddleware] }, async (req, reply) => {
     const q = listQuery.parse(req.query);
@@ -35,7 +47,7 @@ export default async function opportunityRoutes(app: FastifyInstance) {
     if (q.priority) { conditions.push(`o.priority = $${i++}`); params.push(q.priority); }
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const [items, count] = await Promise.all([
-      query(`SELECT o.*, d.id as demand_id, d.company_name, d.performance_type, d.budget, d.event_date FROM opportunities o LEFT JOIN demands d ON o.demand_id = d.id ${where} ORDER BY o.created_at DESC LIMIT $${i++} OFFSET $${i++}`, [...params, q.pageSize, offset]),
+      query(`SELECT o.*, ${demandSelect} FROM opportunities o LEFT JOIN demands d ON o.demand_id = d.id LEFT JOIN users u ON d.client_id = u.id ${where} ORDER BY o.created_at DESC LIMIT $${i++} OFFSET $${i++}`, [...params, q.pageSize, offset]),
       query(`SELECT COUNT(*) FROM opportunities o ${where}`, params),
     ]);
     return reply.send(paginatedResponse(items.rows, Number(count.rows[0].count), q.page, q.pageSize));
@@ -44,7 +56,7 @@ export default async function opportunityRoutes(app: FastifyInstance) {
   // GET /v1/opportunities/:id — 商机详情
   app.get('/opportunities/:id', { preHandler: [authMiddleware] }, async (req, reply) => {
     const { id } = req.params as { id: string };
-    const res = await query(`SELECT o.*, d.company_name, d.performance_type, d.budget, d.event_date, d.activity_type, d.city, d.audience_count, d.description FROM opportunities o LEFT JOIN demands d ON o.demand_id = d.id WHERE o.id = $1`, [id]);
+    const res = await query(`SELECT o.*, ${demandSelect} FROM opportunities o LEFT JOIN demands d ON o.demand_id = d.id LEFT JOIN users u ON d.client_id = u.id WHERE o.id = $1`, [id]);
     if (res.rows.length === 0) return reply.status(404).send(errorResponse(9901, '商机不存在'));
     return reply.send(successResponse(res.rows[0]));
   });
