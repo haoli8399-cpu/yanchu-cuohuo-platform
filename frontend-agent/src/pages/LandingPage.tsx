@@ -45,7 +45,7 @@ export default function LandingPage() {
             size="large"
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
-            placeholder="商演找演立方"
+            placeholder="例如：周五晚公司年会有200人，想找1小时脱口秀暖场"
             enterButton={<Button type="primary" size="large">生成报价方案</Button>}
             style={{ maxWidth: 600, margin: '0 auto 20px' }}
           />

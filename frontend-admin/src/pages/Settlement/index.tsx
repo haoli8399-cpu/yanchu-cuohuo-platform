@@ -356,7 +356,7 @@ const SettlementPage: React.FC = () => {
               </div>
             </div>
             <p style={{ marginTop: 12, color: '#999', fontSize: 13 }}>
-              结算后，后仰将按此金额向演员打款（线下操作）。
+              结算后，平台将按此金额向演员打款（线下操作）。
             </p>
           </div>
         )}
