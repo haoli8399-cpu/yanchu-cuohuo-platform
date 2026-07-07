@@ -171,13 +171,19 @@ interface ClientRow {
 // 辅助函数
 // ============================================================
 
+function dateOnly(value: unknown): string {
+  if (!value) return '';
+  if (value instanceof Date) return value.toISOString().split('T')[0];
+  return String(value).split('T')[0];
+}
+
 /** 将数据库行映射为 DemandListItem */
 function toDemandListItem(row: DemandRow & Partial<ClientRow>): DemandListItem {
   return {
     id: row.id,
     title: row.title || '未命名需求',
     event_type: row.event_type,
-    event_date: row.event_date ? row.event_date.split('T')[0] : '',
+    event_date: dateOnly(row.event_date),
     city: row.city,
     budget: row.budget ? Number(row.budget) : 0,
     status: row.status as DemandStatus,
@@ -203,7 +209,7 @@ function toDemandDetail(
     sku_id: row.sku_id || undefined,
     title: row.title || '',
     event_type: row.event_type,
-    event_date: row.event_date ? row.event_date.split('T')[0] : '',
+    event_date: dateOnly(row.event_date),
     event_time: row.event_time || undefined,
     city: row.city,
     address: row.address,
