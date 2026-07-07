@@ -121,6 +121,104 @@ await app.register(aiRoutes, { prefix: '/v1' });
 await app.register(aiFeedbackRoutes, { prefix: '/v1' });
 
 // ============================================================
+// 已注册路由列表（PRD V3.3.2 12.3）
+// ============================================================
+// GET    /v1/health
+// GET    /v1/skus
+// GET    /v1/skus/:id
+// POST   /v1/skus
+// PUT    /v1/skus/:id
+// PATCH  /v1/skus/:id/status
+// POST   /v1/demands
+// GET    /v1/demands
+// GET    /v1/demands/:id
+// PUT    /v1/demands/:id
+// PATCH  /v1/demands/:id/withdraw
+// POST   /v1/demands/:id/ai-plan
+// POST   /v1/demands/:id/alternatives
+// GET    /v1/demands/:id/alternatives
+// PATCH  /v1/demands/:id/alternatives/:alt_id/select
+// GET    /v1/demands/:id/export
+// PATCH  /v1/demands/:id/history
+// PATCH  /v1/orders/:demand_id/status
+// GET    /v1/orders/:demand_id/timeline
+// POST   /v1/orders/:demand_id/refund
+// PUT    /v1/contracts/:demand_id
+// GET    /v1/contracts/:demand_id
+// POST   /v1/payments
+// GET    /v1/payments
+// GET    /v1/performers
+// GET    /v1/performers/:id
+// POST   /v1/performers
+// PUT    /v1/performers/:id
+// GET    /v1/performers/:id/tier-history
+// PUT    /v1/performers/:id/tier
+// GET    /v1/performers/:id/tier-suggestion
+// GET    /v1/performers/:id/credit
+// GET    /v1/performers/:id/credit-logs
+// POST   /v1/performers/import
+// GET    /v1/price-configs
+// PUT    /v1/price-configs/:id
+// GET    /v1/settlements
+// PATCH  /v1/settlements/:id/mark-settled
+// GET    /v1/settlements/export
+// POST   /v1/assignments
+// GET    /v1/assignments
+// PATCH  /v1/assignments/:id/respond
+// POST   /v1/assignments/:id/checkin
+// GET    /v1/assignments/calendar
+// POST   /v1/auth/phone-code
+// POST   /v1/auth/phone
+// POST   /v1/auth/wechat-miniprogram
+// POST   /v1/auth/wechat-web
+// GET    /v1/reviews
+// POST   /v1/reviews
+// DELETE /v1/reviews/:id
+// GET    /v1/reviews/stats/:sku_id
+// POST   /v1/companies/verify
+// GET    /v1/companies/verification-status
+// PATCH  /v1/companies/:id/approve
+// PATCH  /v1/companies/:id/reject
+// GET    /v1/companies
+// GET    /v1/companies/:id
+// POST   /v1/companies/:id/certify
+// PATCH  /v1/companies/:id/verify
+// GET    /v1/companies/:id/stats
+// GET    /v1/admin/dashboard
+// GET    /v1/admin/operation-logs
+// GET    /v1/admin/search
+// POST   /v1/admin/undo
+// POST   /v1/admin/mark-timeout
+// GET    /v1/notifications
+// PATCH  /v1/notifications/:id/read
+// POST   /v1/notifications
+// GET    /v1/cases
+// GET    /v1/cases/:id
+// POST   /v1/cases
+// PUT    /v1/cases/:id
+// DELETE /v1/cases/:id
+// GET    /v1/ai-templates
+// GET    /v1/ai-templates/:id
+// POST   /v1/ai-templates
+// PUT    /v1/ai-templates/:id
+// DELETE /v1/ai-templates/:id
+// POST   /v1/pricing/calculate
+// GET    /v1/opportunities
+// GET    /v1/opportunities/:id
+// POST   /v1/opportunities
+// PATCH  /v1/opportunities/:id/status
+// POST   /v1/quotes
+// GET    /v1/opportunities/:id/quotes
+// PATCH  /v1/quotes/:id/status
+// GET    /v1/quotes/:id
+// POST   /v1/follow-ups
+// GET    /v1/opportunities/:id/follow-ups
+// POST   /v1/ai/score-opportunity
+// POST   /v1/ai/recommend-plan
+// POST   /v1/ai/generate-follow-up
+// POST   /v1/ai/feedback
+
+// ============================================================
 // 启动服务器
 // ============================================================
 async function start(): Promise<void> {

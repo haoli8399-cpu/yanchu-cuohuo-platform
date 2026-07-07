@@ -5,7 +5,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.js';
 import { query } from '../utils/db.js';
-import { successResponse, errorResponse } from '../utils/response.js';
+import { successResponse } from '../utils/response.js';
 import { scoreOpportunity, recommendPlan, generateFollowUp } from '../services/ai/deepseek.js';
 
 const scoreBody = z.object({
@@ -26,10 +26,25 @@ const followUpBody = z.object({
   context: z.string().optional(),
 });
 
+const defaultScore = {
+  score: 50, priority: 'medium', reasoning: '商机不存在',
+  riskTags: [],
+};
+
+const defaultFollowUp = {
+  script: '商机不存在，建议先确认商机信息后再跟进客户。',
+  suggestedAction: 'manual_check',
+};
+
 export default async function aiRoutes(app: FastifyInstance) {
   // POST /v1/ai/score-opportunity — AI 商机评分
   app.post('/ai/score-opportunity', { preHandler: [authMiddleware] }, async (req, reply) => {
-    const body = scoreBody.parse(req.body);
+    const parsed = scoreBody.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.send(successResponse(defaultScore, '使用默认评分'));
+    }
+
+    const body = parsed.data;
 
     // 获取商机和关联需求信息
     const opp = await query(
@@ -39,7 +54,7 @@ export default async function aiRoutes(app: FastifyInstance) {
     );
 
     if (opp.rows.length === 0) {
-      return reply.status(404).send(errorResponse(9901, '商机不存在'));
+      return reply.send(successResponse(defaultScore, '使用默认评分'));
     }
 
     const d = opp.rows[0];
@@ -90,7 +105,12 @@ export default async function aiRoutes(app: FastifyInstance) {
 
   // POST /v1/ai/generate-follow-up — AI 生成跟进话术
   app.post('/ai/generate-follow-up', { preHandler: [authMiddleware] }, async (req, reply) => {
-    const body = followUpBody.parse(req.body);
+    const parsed = followUpBody.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.send(successResponse(defaultFollowUp, '使用默认话术'));
+    }
+
+    const body = parsed.data;
 
     const opp = await query(
       `SELECT o.*, d.company_name, d.performance_type
@@ -99,7 +119,7 @@ export default async function aiRoutes(app: FastifyInstance) {
     );
 
     if (opp.rows.length === 0) {
-      return reply.status(404).send(errorResponse(9901, '商机不存在'));
+      return reply.send(successResponse(defaultFollowUp, '使用默认话术'));
     }
 
     const d = opp.rows[0];

@@ -219,21 +219,95 @@
       <view style="height: 160rpx;"></view>
     </scroll-view>
 
-    <!-- AI 描述需求提交（Phase 2 对接后端推荐接口） -->
+    <!-- AI 描述需求提交（Phase 2：多轮追问 + 信息提取 + 兜底表单） -->
     <view v-else class="ai-chat-page">
-      <scroll-view scroll-y class="ai-chat-scroll">
-        <!-- 欢迎语 -->
-        <view class="ai-message ai">
-          <view class="ai-avatar">🤖</view>
+      <scroll-view scroll-y class="ai-chat-scroll" :scroll-into-view="aiScrollInto">
+        <!-- 多轮对话消息 -->
+        <view
+          v-for="msg in aiMessages"
+          :key="msg.id"
+          :id="'msg-' + msg.id"
+          class="ai-message"
+          :class="msg.role"
+        >
+          <view v-if="msg.role === 'ai'" class="ai-avatar">🤖</view>
           <view class="ai-bubble">
-            <text class="ai-bubble-text">你好！请描述你的演出需求，例如：「年会想搞个脱口秀，300人，预算1万内」，AI 帮你配三档方案。</text>
-          </view>
-        </view>
+            <text class="ai-bubble-text" v-if="msg.text">{{ msg.text }}</text>
 
-        <!-- 用户需求气泡 -->
-        <view v-if="aiPrompt" class="ai-message user">
-          <view class="ai-bubble">
-            <text class="ai-bubble-text">{{ aiPrompt }}</text>
+            <!-- 追问进度 -->
+            <view v-if="msg.kind === 'question' && msg.progress" class="ai-progress">
+              <text>追问进度 {{ msg.progress }}</text>
+            </view>
+
+            <!-- 快捷回复 -->
+            <view v-if="msg.quickReplies && msg.quickReplies.length" class="ai-quick-replies">
+              <view
+                v-for="(q, qi) in msg.quickReplies"
+                :key="qi"
+                class="ai-quick-reply"
+                @click="onQuickReply(msg, q)"
+              >{{ q.label }}</view>
+            </view>
+
+            <!-- 日期选择触发 -->
+            <view v-if="msg.kind === 'question' && msg.dateTrigger" class="ai-date-trigger" @click="openDatePicker">
+              📅 选择活动日期
+            </view>
+
+            <!-- 三档推荐方案 -->
+            <view v-if="msg.kind === 'plans' && msg.plans" class="ai-plans-inline">
+              <view
+                v-for="plan in msg.plans"
+                :key="plan.level"
+                class="ai-plan-card"
+                :class="plan.level"
+                @click="selectAIPlan(plan)"
+              >
+                <view class="ai-plan-head">
+                  <text class="ai-plan-badge">{{ plan.level_label }}</text>
+                  <text class="ai-plan-title">{{ plan.sku_title }}</text>
+                </view>
+                <view class="ai-plan-meta">
+                  <text class="ai-plan-meta-item">级别：{{ plan.tier_label }}</text>
+                  <text class="ai-plan-meta-item">时长：{{ plan.duration }}分钟</text>
+                </view>
+                <view class="ai-plan-price">¥{{ formatPrice(plan.price / 100) }}</view>
+                <text class="ai-plan-reason">{{ plan.reason }}</text>
+                <view class="ai-plan-cta">点击调整并下单 ›</view>
+              </view>
+            </view>
+
+            <!-- 信息提取预览 (Task B) -->
+            <view v-if="msg.kind === 'extract' && msg.extract" class="ai-extract">
+              <view v-for="row in msg.extract" :key="row.key" class="extract-row">
+                <text class="extract-label">{{ row.label }}</text>
+                <text class="extract-value" :class="{ missing: !row.ok }">
+                  {{ row.ok ? row.value + ' ✅' : '未识别 ⚠️' }}
+                </text>
+                <text v-if="!row.ok && isRequired(row.key)" class="extract-fill" @click="onExtractFill(row)">[请补充]</text>
+              </view>
+              <view class="extract-actions">
+                <button class="extract-confirm" @click="onExtractConfirm">确认</button>
+                <button class="extract-more" @click="onExtractMore">补充信息</button>
+              </view>
+            </view>
+
+            <!-- 兜底最小化表单 (Task C) -->
+            <view v-if="msg.kind === 'fallback' && msg.fallbackFields" class="ai-fallback">
+              <view v-for="f in msg.fallbackFields" :key="f.key" class="fallback-field">
+                <text class="fallback-label">{{ f.label }}</text>
+                <view class="fallback-options">
+                  <view
+                    v-for="(o, oi) in f.options"
+                    :key="oi"
+                    class="fallback-option"
+                    :class="{ active: collected[f.key] === o.value }"
+                    @click="onFallbackPick(f.key, o.value)"
+                  >{{ o.label }}</view>
+                </view>
+              </view>
+              <button class="fallback-submit" @click="onFallbackSubmit">生成推荐</button>
+            </view>
           </view>
         </view>
 
@@ -241,29 +315,6 @@
         <view v-if="aiLoading" class="ai-loading">
           <van-loading size="32rpx" color="#7c3aed" />
           <text class="ai-loading-text">AI 正在分析需求并生成方案...</text>
-        </view>
-
-        <!-- 三档推荐方案卡片 -->
-        <view v-if="aiPlans.length" class="ai-plans">
-          <view
-            v-for="plan in aiPlans"
-            :key="plan.level"
-            class="ai-plan-card"
-            :class="plan.level"
-            @click="selectAIPlan(plan)"
-          >
-            <view class="ai-plan-head">
-              <text class="ai-plan-badge">{{ plan.level_label }}</text>
-              <text class="ai-plan-title">{{ plan.sku_title }}</text>
-            </view>
-            <view class="ai-plan-meta">
-              <text class="ai-plan-meta-item">级别：{{ plan.tier_label }}</text>
-              <text class="ai-plan-meta-item">时长：{{ plan.duration }}分钟</text>
-            </view>
-            <view class="ai-plan-price">¥{{ formatPrice(plan.price / 100) }}</view>
-            <text class="ai-plan-reason">{{ plan.reason }}</text>
-            <view class="ai-plan-cta">点击调整并下单 ›</view>
-          </view>
         </view>
 
         <!-- 降级提示 -->
@@ -275,7 +326,18 @@
         <view style="height: 160rpx;"></view>
       </scroll-view>
 
-      <view class="ai-chat-input-bar">
+      <!-- 粘贴聊天记录模式 -->
+      <view v-if="pasteMode" class="ai-paste-bar">
+        <textarea class="ai-paste-area" v-model="pasteText" placeholder="粘贴微信聊天记录，AI 自动识别演出类型/人数/预算/日期..." placeholder-style="color:#c4c4cc" />
+        <view class="ai-paste-actions">
+          <button class="ai-paste-cancel" @click="cancelPaste">取消</button>
+          <button class="ai-paste-confirm" @click="handlePaste">识别</button>
+        </view>
+      </view>
+
+      <!-- 输入栏 -->
+      <view v-else class="ai-chat-input-bar">
+        <button class="ai-paste-toggle" @click="enterPasteMode">📋</button>
         <input
           class="ai-chat-input"
           v-model="aiPrompt"
@@ -323,11 +385,25 @@
         </view>
       </view>
     </van-popup>
+
+    <!-- AI 日期追问选择器 -->
+    <van-popup :show="showDatePicker" position="bottom" round @close="showDatePicker = false">
+      <view class="picker-wrap">
+        <view class="picker-header">
+          <text class="picker-cancel" @click="showDatePicker = false">取消</text>
+          <text class="picker-title">选择活动日期</text>
+          <text class="picker-confirm" @click="confirmDatePicker">确定</text>
+        </view>
+        <picker mode="date" :value="tempDate" @change="onDatePick" class="date-picker-native">
+          <view class="date-pick-trigger">{{ tempDate || '点击选择日期' }}</view>
+        </picker>
+      </view>
+    </van-popup>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, nextTick } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { getDemandList, getSKUDetail, calculatePrice, recommendPlan } from '@/services/api';
 import { submitDemand } from '@/services/api';
@@ -337,11 +413,100 @@ import type { TierInfo, AIPlanOption } from '@/types';
 const scrollInto = ref('');
 const submitting = ref(false);
 const submitMode = ref<'sku' | 'ai'>('sku');
+// ── AI 对话消息类型 (Phase 2) ──
+interface QuickReply { label: string; value: string }
+interface ExtractRow { key: string; label: string; value: string; ok: boolean }
+interface FallbackField { key: string; label: string; options: QuickReply[] }
+interface AIMessage {
+  id: string;
+  role: 'user' | 'ai';
+  text: string;
+  kind?: 'text' | 'question' | 'plans' | 'extract' | 'fallback';
+  progress?: string;
+  quickReplies?: QuickReply[];
+  dateTrigger?: boolean;
+  fieldKey?: string;
+  plans?: AIPlanOption[];
+  extract?: ExtractRow[];
+  fallbackFields?: FallbackField[];
+}
+interface FollowupQuestion {
+  key: 'audience_count' | 'budget_label' | 'event_date';
+  label: string;
+  progress: string;
+  options: QuickReply[];
+  dateTrigger?: boolean;
+}
+
+// ── AI 多轮追问状态 (Phase 2) ──
 const aiPrompt = ref('');
-const aiPlans = ref<AIPlanOption[]>([]);   // AI 三档推荐方案
+const aiInputFocus = ref(false);           // AI 模式聚焦输入框
 const aiLoading = ref(false);              // AI 生成中
 const aiError = ref('');                   // AI 降级提示
-const aiInputFocus = ref(false);           // AI 模式聚焦输入框
+const aiMessages = ref<AIMessage[]>([]);   // 多轮对话消息列表
+const aiPhase = ref<'chat' | 'extract' | 'fallback' | 'done'>('chat');
+const askedCount = ref(0);                 // 已追问轮数（上限 3）
+const aiScrollInto = ref('');              // 滚动锚点
+const pasteMode = ref(false);              // 粘贴聊天记录模式
+const pasteText = ref('');
+const tempDate = ref('');
+
+// 已收集的关键信息（展示用标签）
+const collected = reactive({
+  event_type: '',
+  biz_type: '',
+  audience_count: '',
+  budget_label: '',
+  event_date: '',
+});
+
+// 必填字段追问顺序：人数 → 预算 → 日期
+const FOLLOWUP_QUESTIONS: FollowupQuestion[] = [
+  {
+    key: 'audience_count',
+    label: '① 多少人参加？（用于匹配合适阵容）',
+    progress: '①/③',
+    options: [
+      { label: '50-100人', value: '50-100人' },
+      { label: '100-300人', value: '100-300人' },
+      { label: '300-500人', value: '300-500人' },
+      { label: '500人以上', value: '500人以上' },
+    ],
+  },
+  {
+    key: 'budget_label',
+    label: '② 预算范围大概多少？',
+    progress: '②/③',
+    options: [
+      { label: '5千以内', value: '5千以内' },
+      { label: '5千-1万', value: '5千-1万' },
+      { label: '1万-2万', value: '1万-2万' },
+      { label: '2万以上', value: '2万以上' },
+    ],
+  },
+  {
+    key: 'event_date',
+    label: '③ 活动日期是哪天？',
+    progress: '③/③',
+    options: [],
+    dateTrigger: true,
+  },
+];
+
+function uid() { return 'm' + Math.random().toString(36).slice(2, 9); }
+function pad2(n: number | string) { return Number(n) < 10 ? '0' + Number(n) : '' + Number(n); }
+function isRequired(key: string) {
+  return ['audience_count', 'budget_label', 'event_date'].includes(key);
+}
+function allRequiredCollected() {
+  return ['audience_count', 'budget_label', 'event_date'].every(k => (collected as any)[k]);
+}
+function nextMissingQuestion(): FollowupQuestion | null {
+  for (const q of FOLLOWUP_QUESTIONS) {
+    if (!(collected as any)[q.key]) return q;
+  }
+  return null;
+}
 
 // 表单数据
 const form = reactive({
@@ -576,15 +741,75 @@ async function onAISend() {
     uni.showToast({ title: '请输入你的需求', icon: 'none' });
     return;
   }
+  aiPrompt.value = '';
+  await processInput(text);
+}
+
+async function processInput(text: string) {
+  pushUser(text);
+  extractInto(text);
+  aiError.value = '';
+  await continueFlow();
+}
+
+// 多轮追问主流程：缺失必填报字段 → 追问；齐全或达上限 → 推荐/兜底
+async function continueFlow() {
+  const missing = nextMissingQuestion();
+  if (askedCount.value < 3 && missing) {
+    askQuestion(missing);
+    return;
+  }
+  if (allRequiredCollected()) {
+    await doRecommend();
+  } else {
+    showFallback();
+  }
+}
+
+function askQuestion(q: FollowupQuestion) {
+  askedCount.value++;
+  aiPhase.value = 'chat';
+  pushAI(q.label, 'question', {
+    progress: q.progress,
+    fieldKey: q.key,
+    quickReplies: q.dateTrigger ? [] : q.options,
+    dateTrigger: q.dateTrigger,
+  });
+}
+
+async function onQuickReply(msg: AIMessage, q: QuickReply) {
+  const key = msg.fieldKey;
+  if (!key) return;
+  pushUser(q.label);
+  (collected as any)[key] = q.value;
+  await continueFlow();
+}
+
+function openDatePicker() {
+  tempDate.value = collected.event_date || formatToday();
+  showDatePicker.value = true;
+}
+function onDatePick(e: any) { tempDate.value = e.detail.value; }
+function confirmDatePicker() {
+  showDatePicker.value = false;
+  if (!tempDate.value) return;
+  collected.event_date = tempDate.value;
+  pushUser('日期：' + tempDate.value);
+  continueFlow();
+}
+
+async function doRecommend() {
   aiLoading.value = true;
   aiError.value = '';
-  aiPlans.value = [];
   try {
-    const res = await recommendPlan({ prompt: text });
+    const prompt = buildRecommendPrompt();
+    const res = await recommendPlan({ prompt });
     if (res.ok && res.data) {
-      aiPlans.value = [res.data.budget, res.data.recommended, res.data.upgrade];
+      const plans: AIPlanOption[] = [res.data.budget, res.data.recommended, res.data.upgrade];
+      pushAI('收到，根据你提供的信息，为你推荐以下三档方案：', 'text');
+      pushAI('', 'plans', { plans });
+      aiPhase.value = 'done';
     } else {
-      // 接口不可用：降级提示，引导用户切换 Tab
       aiError.value = res.error || 'AI 服务暂不可用，请切换到「选方案提交」Tab';
     }
   } catch (e) {
@@ -592,6 +817,166 @@ async function onAISend() {
   } finally {
     aiLoading.value = false;
   }
+}
+
+// 任务 C：3 轮后仍有必填缺失 → 最小化兜底表单
+function showFallback() {
+  aiPhase.value = 'fallback';
+  const fields: FallbackField[] = FOLLOWUP_QUESTIONS
+    .filter(q => !(collected as any)[q.key])
+    .map(q => ({
+      key: q.key,
+      label: q.label.replace(/^[①②③]\s*/, ''),
+      options: q.options,
+    }));
+  pushAI('我还需要以下信息（必填）：', 'fallback', { fallbackFields: fields });
+}
+function onFallbackPick(key: string, value: string) {
+  (collected as any)[key] = value;
+}
+async function onFallbackSubmit() {
+  await doRecommend();   // 用已有信息直接匹配
+}
+
+// 任务 B：粘贴聊天记录 → 信息提取预览
+function enterPasteMode() { pasteMode.value = true; pasteText.value = ''; }
+function cancelPaste() { pasteMode.value = false; pasteText.value = ''; }
+async function handlePaste() {
+  const text = pasteText.value.trim();
+  if (!text) { uni.showToast({ title: '请先粘贴聊天记录', icon: 'none' }); return; }
+  pasteMode.value = false;
+  pushUser('（已粘贴微信聊天记录）');
+  extractInto(text);
+  aiPhase.value = 'extract';
+  pushAI('AI 已识别以下信息，请确认：', 'extract', { extract: buildExtractRows() });
+}
+async function onExtractConfirm() {
+  aiPhase.value = 'chat';
+  await continueFlow();
+}
+function onExtractMore() {
+  aiPhase.value = 'chat';
+  const missing = nextMissingQuestion();
+  if (missing) askQuestion(missing);
+}
+function onExtractFill(row: ExtractRow) {
+  aiPhase.value = 'chat';
+  const q = FOLLOWUP_QUESTIONS.find(x => x.key === row.key);
+  if (q) askQuestion(q);
+}
+
+// ── 消息辅助 ──
+function pushUser(text: string) {
+  aiMessages.value.push({ id: uid(), role: 'user', text });
+  scrollToBottom();
+}
+function pushAI(text: string, kind: AIMessage['kind'] = 'text', extra: Partial<AIMessage> = {}) {
+  aiMessages.value.push({ id: uid(), role: 'ai', text, kind, ...extra });
+  scrollToBottom();
+}
+function scrollToBottom() {
+  nextTick(() => {
+    const last = aiMessages.value[aiMessages.value.length - 1];
+    if (last) aiScrollInto.value = 'msg-' + last.id;
+  });
+}
+
+// ── 信息提取 ──
+function buildExtractRows(): ExtractRow[] {
+  const defs: { key: keyof typeof collected; label: string }[] = [
+    { key: 'event_type', label: '演出类型' },
+    { key: 'biz_type', label: '活动类型' },
+    { key: 'audience_count', label: '人数' },
+    { key: 'budget_label', label: '预算' },
+    { key: 'event_date', label: '日期' },
+  ];
+  return defs.map(d => {
+    const v = (collected as any)[d.key] || '';
+    return { key: d.key, label: d.label, value: v, ok: !!v };
+  });
+}
+
+function extractInto(text: string) {
+  const t = text || '';
+  const et = extractEventType(t); if (et) collected.event_type = et;
+  const bt = extractBizType(t); if (bt) collected.biz_type = bt;
+  const au = extractAudience(t); if (au) collected.audience_count = au;
+  const bd = extractBudget(t); if (bd) collected.budget_label = bd;
+  const dt = extractDate(t); if (dt) collected.event_date = dt;
+}
+function extractEventType(t: string): string {
+  if (/脱口秀/.test(t)) return '脱口秀';
+  if (/即兴/.test(t)) return '即兴喜剧';
+  if (/漫才/.test(t)) return '漫才';
+  if (/新喜剧|实验喜剧|sketch/i.test(t)) return '新喜剧';
+  if (/魔术/.test(t)) return '魔术喜剧';
+  if (/亲子/.test(t)) return '亲子喜剧';
+  return '';
+}
+function extractBizType(t: string): string {
+  if (/年会/.test(t)) return '企业年会';
+  if (/团建/.test(t)) return '团队建设';
+  if (/婚礼|婚庆|结婚/.test(t)) return '婚礼演出';
+  if (/品牌|发布会|答谢|冠名/.test(t)) return '品牌活动';
+  return '';
+}
+function extractAudience(t: string): string {
+  const m = t.match(/(\d{1,4})\s*[-~到至]\s*(\d{1,4})\s*人/);
+  if (m) return `${m[1]}-${m[2]}人`;
+  const s = t.match(/(\d{2,5})\s*人/);
+  if (s) {
+    const n = Number(s[1]);
+    if (n < 50) return '50人以下';
+    if (n <= 100) return '50-100人';
+    if (n <= 300) return '100-300人';
+    if (n <= 500) return '300-500人';
+    return '500人以上';
+  }
+  return '';
+}
+function extractBudget(t: string): string {
+  if (/两万以上|2\s*万以上|2万\+|20000|2万以[上外]/.test(t)) return '2万以上';
+  if (/1\s*万\s*[-~到至]\s*2\s*万|1-2万|10000-?20000/.test(t)) return '1万-2万';
+  if (/5\s*千\s*[-~到至]\s*1\s*万|5千-?1万|5000-?10000/.test(t)) return '5千-1万';
+  if (/5\s*千以内|5千以下|不到5千|5000以内|低于5千/.test(t)) return '5千以内';
+  const wan = t.match(/(\d+(?:\.\d+)?)\s*万/);
+  if (wan) {
+    const v = Number(wan[1]);
+    if (v >= 2) return '2万以上';
+    if (v >= 1) return '1万-2万';
+    if (v >= 0.5) return '5千-1万';
+    return '5千以内';
+  }
+  const qian = t.match(/(\d{3,5})\s*(元|块|￥|¥)/);
+  if (qian) {
+    const v = Number(qian[1]);
+    if (v >= 20000) return '2万以上';
+    if (v >= 10000) return '1万-2万';
+    if (v >= 5000) return '5千-1万';
+    return '5千以内';
+  }
+  return '';
+}
+function extractDate(t: string): string {
+  const m1 = t.match(/(\d{1,2})\s*月\s*(\d{1,2})\s*日?/);
+  if (m1) return `${new Date().getFullYear()}-${pad2(m1[1])}-${pad2(m1[2])}`;
+  const m2 = t.match(/(\d{4})[-/年.](\d{1,2})[-/月.](\d{1,2})/);
+  if (m2) return `${m2[1]}-${pad2(m2[2])}-${pad2(m2[3])}`;
+  return '';
+}
+function formatToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+function buildRecommendPrompt(): string {
+  const parts: string[] = [];
+  if (collected.biz_type) parts.push(collected.biz_type);
+  if (collected.event_type) parts.push(collected.event_type);
+  parts.push('演出');
+  if (collected.audience_count) parts.push('人数' + collected.audience_count);
+  if (collected.budget_label) parts.push('预算' + collected.budget_label);
+  if (collected.event_date) parts.push('日期' + collected.event_date);
+  return parts.join('，');
 }
 
 // 点击 AI 推荐卡片 → 进入「选方案提交」配置器，并预填级别/时长供进一步调整
@@ -607,7 +992,14 @@ async function selectAIPlan(plan: AIPlanOption) {
   uni.showToast({ title: '已载入方案，可调整后提交', icon: 'none' });
 }
 
-onMounted(() => {});
+onMounted(() => {
+  aiMessages.value = [{
+    id: uid(),
+    role: 'ai',
+    kind: 'text',
+    text: '你好！请描述你的演出需求，例如：「年会想搞个脱口秀，300人，预算1万内」，AI 会先确认关键信息再为你配三档方案。也可以点「📋 粘贴记录」识别微信聊天记录。',
+  }];
+});
 </script>
 
 <style lang="scss" scoped>
@@ -1215,5 +1607,170 @@ onMounted(() => {});
     color: $color-primary;
     font-weight: 500;
   }
+}
+
+// ── Phase 2: 多轮追问 / 信息提取 / 兜底表单 ──
+// 放宽 AI 气泡宽度以容纳卡片
+.ai-message.ai .ai-bubble { max-width: 86%; }
+
+// 追问进度
+.ai-progress {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+  display: block;
+}
+
+// 快捷回复
+.ai-quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+.ai-quick-reply {
+  padding: 12rpx 24rpx;
+  background: $color-primary-bg;
+  color: $color-primary;
+  border-radius: $radius-full;
+  font-size: 24rpx;
+  border: 2rpx solid $color-primary-light;
+  &:active { opacity: 0.8; }
+}
+.ai-date-trigger {
+  margin-top: 16rpx;
+  display: inline-block;
+  padding: 14rpx 28rpx;
+  background: $color-primary;
+  color: #fff;
+  border-radius: $radius-md;
+  font-size: 26rpx;
+  &:active { opacity: 0.85; }
+}
+
+// 推荐方案内联
+.ai-plans-inline { margin-top: 12rpx; width: 100%; }
+
+// 信息提取预览
+.ai-extract {
+  margin-top: 12rpx;
+  width: 100%;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: 16rpx;
+}
+.extract-row {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx dashed $color-divider;
+  &:last-of-type { border-bottom: none; }
+  .extract-label { font-size: 24rpx; color: $color-text-secondary; width: 120rpx; flex-shrink: 0; }
+  .extract-value { font-size: 24rpx; color: $color-text-primary; font-weight: 500; flex: 1; }
+  .extract-value.missing { color: $state-warning; }
+  .extract-fill { font-size: 24rpx; color: $color-primary; font-weight: 500; }
+}
+.extract-actions { display: flex; gap: 16rpx; margin-top: 16rpx; }
+.extract-confirm, .extract-more {
+  flex: 1;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
+  border-radius: $radius-full;
+  font-size: 26rpx;
+  border: none;
+}
+.extract-confirm { background: $color-primary; color: #fff; }
+.extract-more { background: $color-primary-bg; color: $color-primary; }
+
+// 兜底最小化表单
+.ai-fallback {
+  margin-top: 12rpx;
+  width: 100%;
+  background: var(--state-warning-bg);
+  border: 1rpx solid #fde68a;
+  border-radius: $radius-md;
+  padding: 20rpx;
+}
+.fallback-field { margin-bottom: 20rpx; &:last-of-type { margin-bottom: 0; } }
+.fallback-label { font-size: 26rpx; color: $color-text-primary; font-weight: 600; display: block; margin-bottom: 12rpx; }
+.fallback-options { display: flex; flex-wrap: wrap; gap: 12rpx; }
+.fallback-option {
+  padding: 12rpx 24rpx;
+  background: #fff;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-full;
+  font-size: 24rpx;
+  color: $color-text-primary;
+  &.active { border-color: $color-primary; background: $color-primary; color: #fff; font-weight: 600; }
+}
+.fallback-submit {
+  margin-top: 8rpx;
+  width: 100%;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  background: $color-primary;
+  color: #fff;
+  border-radius: $radius-full;
+  font-size: 28rpx;
+  border: none;
+}
+
+// 粘贴记录模式
+.ai-paste-bar {
+  background: $color-bg-card;
+  padding: 16rpx 32rpx calc(16rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.06);
+}
+.ai-paste-area {
+  width: 100%;
+  height: 200rpx;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: 20rpx;
+  font-size: 26rpx;
+  color: $color-text-primary;
+  border: 2rpx solid $color-border;
+  box-sizing: border-box;
+}
+.ai-paste-actions { display: flex; gap: 16rpx; margin-top: 16rpx; }
+.ai-paste-cancel, .ai-paste-confirm {
+  flex: 1;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
+  border-radius: $radius-full;
+  font-size: 26rpx;
+  border: none;
+}
+.ai-paste-cancel { background: $color-bg-page; color: $color-text-secondary; }
+.ai-paste-confirm { background: $color-primary; color: #fff; }
+
+// 输入栏粘贴按钮
+.ai-paste-toggle {
+  flex-shrink: 0;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: $radius-full;
+  background: $color-primary-bg;
+  color: $color-primary;
+  font-size: 32rpx;
+  line-height: 72rpx;
+  text-align: center;
+  border: none;
+  padding: 0;
+}
+
+// 日期选择器触发
+.date-picker-native { width: 100%; }
+.date-pick-trigger {
+  margin: 24rpx 0;
+  padding: 28rpx;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  text-align: center;
+  font-size: 30rpx;
+  color: $color-text-primary;
 }
 </style>
