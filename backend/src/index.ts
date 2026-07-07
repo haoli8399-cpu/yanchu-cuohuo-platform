@@ -24,6 +24,8 @@ import notificationRoutes from './api/notifications.js';
 import authRoutes from './api/auth.js';
 import caseRoutes from './api/cases.js';
 import aiTemplateRoutes from './api/ai-templates.js';
+import opportunityRoutes from './api/opportunities.js';
+import quoteRoutes from './api/quotes.js';
 
 // ---- 扩展 @fastify/jwt 类型 ----
 declare module '@fastify/jwt' {
@@ -105,6 +107,8 @@ await app.register(adminRoutes, { prefix: '/v1/admin' });
 await app.register(notificationRoutes, { prefix: '/v1/notifications' });
 await app.register(caseRoutes, { prefix: '/v1/cases' });
 await app.register(aiTemplateRoutes, { prefix: '/v1/ai-templates' });
+await app.register(opportunityRoutes, { prefix: '/v1/opportunities' });
+await app.register(quoteRoutes, { prefix: '/v1/quotes' });
 
 // ============================================================
 // 启动服务器
