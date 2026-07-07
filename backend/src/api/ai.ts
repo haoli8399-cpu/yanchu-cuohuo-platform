@@ -5,8 +5,9 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.js';
 import { query } from '../utils/db.js';
-import { successResponse } from '../utils/response.js';
+import { errorResponse, successResponse } from '../utils/response.js';
 import { chat, scoreOpportunity, recommendPlan, generateFollowUp } from '../services/ai/deepseek.js';
+import { speechToText } from '../services/ai/speech.js';
 
 const scoreBody = z.object({
   opportunity_id: z.string().uuid(),
@@ -238,6 +239,31 @@ field 只能是 performance_type、activity_type、audience_count、budget、eve
         script: '您好，关于之前的演出方案，想了解您的想法和进展。如有需要调整的地方请随时联系我。',
         suggestedAction: 'wechat',
       }, '使用默认话术'));
+    }
+  });
+
+  // POST /v1/ai/speech-to-text — 语音转文字
+  app.post('/ai/speech-to-text', { preHandler: [authMiddleware] }, async (req, reply) => {
+    if (!req.isMultipart()) {
+      return reply.status(400).send(errorResponse(9101, '请使用 multipart/form-data 上传音频文件'));
+    }
+
+    const file = await req.file({
+      limits: {
+        fileSize: 3 * 1024 * 1024,
+      },
+    });
+    if (!file) {
+      return reply.status(400).send(errorResponse(9102, '未收到音频文件'));
+    }
+
+    try {
+      const audioBuffer = await file.toBuffer();
+      const text = await speechToText(audioBuffer, file.filename || 'voice.mp3');
+      return reply.send(successResponse({ text }, '语音识别完成'));
+    } catch (err: any) {
+      const message = err?.message || '语音识别失败';
+      return reply.status(500).send(errorResponse(9103, message));
     }
   });
 }

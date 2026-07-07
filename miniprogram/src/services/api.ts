@@ -987,6 +987,45 @@ function buildRecommendPrompt(data: {
   ].filter(Boolean).join('，');
 }
 
+export async function speechToText(filePath: string): Promise<string> {
+  const token = uni.getStorageSync('token') || '';
+
+  return new Promise((resolve, reject) => {
+    uni.uploadFile({
+      url: `${API_BASE}/ai/speech-to-text`,
+      filePath,
+      name: 'audio',
+      header: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+      success: (res) => {
+        if (res.statusCode === 401) {
+          uni.removeStorageSync('token');
+          uni.removeStorageSync('userInfo');
+          uni.reLaunch({ url: '/pages/login/index' });
+          reject(new Error('登录已过期，请重新登录'));
+          return;
+        }
+
+        let payload: any = {};
+        try {
+          payload = JSON.parse(res.data || '{}');
+        } catch {
+          reject(new Error('语音识别返回格式异常'));
+          return;
+        }
+
+        if (res.statusCode >= 200 && res.statusCode < 300 && payload?.code === 0) {
+          resolve(String(payload.data?.text || ''));
+          return;
+        }
+        reject(new Error(payload?.message || `语音识别失败：HTTP ${res.statusCode}`));
+      },
+      fail: (err) => reject(new Error(err.errMsg || '语音上传失败')),
+    });
+  });
+}
+
 // 根据 prompt 生成三档 mock 推荐方案（省钱 / 主推 / 升级）
 function mockAIPlanPrice(tier: string, duration: number, count: number): number {
   const t = MOCK_TIER_INFO.find(x => x.tier === tier);

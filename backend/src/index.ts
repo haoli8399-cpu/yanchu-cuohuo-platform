@@ -6,6 +6,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fjwt from '@fastify/jwt';
+import multipart from '@fastify/multipart';
 import { registerErrorHandler } from './middleware/error.js';
 import type { JwtPayload } from './types/index.js';
 import skuRoutes from './api/skus.js';
@@ -69,6 +70,13 @@ await app.register(fjwt, {
   secret: JWT_SECRET,
   verify: {
     algorithms: ['HS256'],
+  },
+});
+
+await app.register(multipart, {
+  limits: {
+    fileSize: 3 * 1024 * 1024,
+    files: 1,
   },
 });
 

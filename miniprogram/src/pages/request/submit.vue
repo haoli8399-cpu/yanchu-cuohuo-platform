@@ -338,6 +338,15 @@
       <!-- 输入栏 -->
       <view v-else class="ai-chat-input-bar">
         <button class="ai-paste-toggle" @click="enterPasteMode">📋</button>
+        <view
+          class="voice-btn"
+          :class="{ recording: voiceState === 'recording', uploading: voiceState === 'uploading' }"
+          @touchstart.prevent="onVoiceStart"
+          @touchend.prevent="onVoiceEnd"
+          @touchcancel.prevent="onVoiceCancel"
+        >
+          <text>{{ voiceBtnText }}</text>
+        </view>
         <input
           class="ai-chat-input"
           v-model="aiPrompt"
@@ -405,7 +414,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, nextTick } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import { getDemandList, getSKUDetail, calculatePrice, askAI } from '@/services/api';
+import { getDemandList, getSKUDetail, calculatePrice, askAI, speechToText } from '@/services/api';
 import { submitDemand } from '@/services/api';
 import { formatPrice } from '@/utils/format';
 import type { TierInfo, AIPlanOption, AIRecommendResult } from '@/types';
@@ -452,6 +461,15 @@ const aiScrollInto = ref('');              // 滚动锚点
 const pasteMode = ref(false);              // 粘贴聊天记录模式
 const pasteText = ref('');
 const tempDate = ref('');
+const voiceState = ref<'idle' | 'recording' | 'uploading'>('idle');
+const voiceTempPath = ref('');
+const recorderManager = uni.getRecorderManager();
+
+const voiceBtnText = computed(() => {
+  if (voiceState.value === 'recording') return '松开识别';
+  if (voiceState.value === 'uploading') return '识别中';
+  return '按住说';
+});
 
 // 已收集的关键信息（展示用标签）
 const collected = reactive({
@@ -745,6 +763,52 @@ async function onAISend() {
   }
   aiPrompt.value = '';
   await processInput(text);
+}
+
+function onVoiceStart() {
+  if (voiceState.value !== 'idle') return;
+  voiceTempPath.value = '';
+  voiceState.value = 'recording';
+  aiError.value = '';
+  recorderManager.start({
+    duration: 60000,
+    sampleRate: 16000,
+    numberOfChannels: 1,
+    encodeBitRate: 48000,
+    format: 'mp3',
+  });
+}
+
+function onVoiceEnd() {
+  if (voiceState.value !== 'recording') return;
+  voiceState.value = 'uploading';
+  recorderManager.stop();
+}
+
+function onVoiceCancel() {
+  if (voiceState.value !== 'recording') return;
+  voiceState.value = 'idle';
+  voiceTempPath.value = '';
+  recorderManager.stop();
+}
+
+async function handleVoiceResult(filePath: string) {
+  try {
+    const text = await speechToText(filePath);
+    const normalized = text.trim();
+    if (!normalized) {
+      uni.showToast({ title: '未识别到有效内容', icon: 'none' });
+      return;
+    }
+    aiPrompt.value = normalized;
+    await processInput(normalized);
+  } catch (e: any) {
+    aiError.value = e?.message || '语音识别失败，请改用文字输入';
+    uni.showToast({ title: aiError.value, icon: 'none' });
+  } finally {
+    voiceState.value = 'idle';
+    voiceTempPath.value = '';
+  }
 }
 
 async function processInput(text: string) {
@@ -1055,6 +1119,17 @@ onMounted(() => {
     kind: 'text',
     text: '你好！请描述你的演出需求，例如：「年会想搞个脱口秀，300人，预算1万内」，AI 会先确认关键信息再为你配三档方案。也可以点「📋 粘贴记录」识别微信聊天记录。',
   }];
+
+  recorderManager.onStop((res) => {
+    if (voiceState.value !== 'uploading') return;
+    voiceTempPath.value = res.tempFilePath;
+    handleVoiceResult(res.tempFilePath);
+  });
+  recorderManager.onError((err) => {
+    voiceState.value = 'idle';
+    aiError.value = err.errMsg || '录音失败，请检查麦克风权限';
+    uni.showToast({ title: aiError.value, icon: 'none' });
+  });
 });
 </script>
 
@@ -1542,6 +1617,7 @@ onMounted(() => {
 
 .ai-chat-input {
   flex: 1;
+  min-width: 0;
   height: 72rpx;
   background: $color-bg-page;
   border-radius: $radius-full;
@@ -1816,6 +1892,40 @@ onMounted(() => {
   text-align: center;
   border: none;
   padding: 0;
+}
+
+.voice-btn {
+  flex-shrink: 0;
+  width: 128rpx;
+  height: 72rpx;
+  border-radius: $radius-full;
+  background: $color-bg-page;
+  color: $color-text-secondary;
+  font-size: 24rpx;
+  line-height: 72rpx;
+  text-align: center;
+  border: 2rpx solid $color-border;
+  box-sizing: border-box;
+
+  &.recording {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+  }
+
+  &.uploading {
+    background: $color-primary-bg;
+    color: $color-primary;
+    border-color: $color-primary;
+  }
+
+  text {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 
 // 日期选择器触发
