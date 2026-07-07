@@ -82,7 +82,6 @@
       <view class="bottom-btn primary-btn" @click="onContactAgent">
         <text>联系小演</text>
       </view>
-    </view>
   </view>
 </template>
 
