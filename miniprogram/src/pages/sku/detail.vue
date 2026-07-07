@@ -23,12 +23,19 @@
         <view class="hero-placeholder">
           {{ detail.category_label?.charAt(0) || '🎭' }}
         </view>
+        <view class="hero-content">
+          <text class="hero-title">{{ detail.title }}</text>
+          <text class="hero-meta">{{ currentTier }} · {{ detail.duration_minutes }}分钟 · {{ performerCount }}人</text>
+        </view>
         <view class="hero-gradient"></view>
       </view>
 
       <!-- 基本信息卡片 (浮起) -->
       <view class="info-card">
-        <text class="info-title">{{ detail.title }}</text>
+        <view class="info-title-row">
+          <text class="info-title">{{ detail.title }}</text>
+          <text class="supplier-badge" :class="{ own: supplierInfo.type === 'own' }">{{ supplierInfo.label }}</text>
+        </view>
 
         <!-- Tags Row -->
         <view class="tags-row">
@@ -91,7 +98,15 @@
         <text class="section-title">价格说明</text>
         <view class="price-section">
           <text class="price-amount">¥{{ formatPrice(detail.min_price) }}</text>
-          <text class="price-unit">/场 起</text>
+        </view>
+        <text class="channel-price">活动公司渠道价：¥{{ formatPrice(channelPrice(detail.min_price)) }}</text>
+        <view class="tier-list">
+          <view
+            v-for="tier in priceTiers"
+            :key="tier"
+            class="tier-pill"
+            :class="{ active: tier === currentTier }"
+          >{{ tier }}</view>
         </view>
         <text class="price-note">最终价格根据具体需求确定，含演员差旅费</text>
       </view>
@@ -152,15 +167,15 @@
 
       <!-- 底部 CTA -->
       <view class="bottom-cta">
-        <button class="btn-consult" @click="callPhone">咨询</button>
-        <button class="btn-book" @click="goSubmitDemand">立即预约</button>
+        <button class="btn-consult" @click="goSubmitDemand">获取报价</button>
+        <button class="btn-book" @click="callPhone">联系小演</button>
       </view>
     </template>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { getSKUDetail, getReviews, getReviewStats } from '@/services/api';
 import type { SKUDetail, Review, ReviewStats } from '@/types';
@@ -171,6 +186,28 @@ const skuId = ref('');
 const loading = ref(true);
 const reviews = ref<Review[]>([]);
 const reviewStats = ref<ReviewStats>({ average: 0, total: 0, distribution: [] });
+const priceTiers = ['T1', 'T2', 'T3', 'T4', 'T5'];
+
+const currentTier = computed(() => {
+  const data = detail.value as any;
+  return data?.tier || data?.defaultTier || data?.price_tier || 'T3';
+});
+
+const performerCount = computed(() => {
+  const data = detail.value as any;
+  return data?.cast_size_min || data?.minPerformers || detail.value?.cast?.length || 2;
+});
+
+const supplierInfo = computed(() => {
+  const data = detail.value as any;
+  if (data?.is_self_operated || data?.supplier_type === 'self') return { type: 'own', label: '自营' };
+  if (data?.supplier_name) return { type: 'broker', label: data.supplier_name };
+  return { type: 'broker', label: '星火经纪' };
+});
+
+function channelPrice(price?: number) {
+  return Math.round(Number(price || 0) * 0.7);
+}
 
 onLoad((options: any) => {
   skuId.value = options?.id || '';
@@ -294,6 +331,29 @@ onMounted(() => {
   }
 }
 
+.hero-content {
+  position: absolute;
+  left: 32rpx;
+  right: 32rpx;
+  bottom: 56rpx;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.hero-title {
+  font-size: 44rpx;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.hero-meta {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.88);
+}
+
 // 基本信息卡片 (浮起)
 .info-card {
   position: relative;
@@ -304,13 +364,36 @@ onMounted(() => {
   padding: 32rpx;
   box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
 
-  .info-title {
-    font-size: 40rpx;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    display: block;
-    line-height: 1.3;
-    margin-bottom: 20rpx;
+}
+
+.info-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.info-title {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: block;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.supplier-badge {
+  flex-shrink: 0;
+  border-radius: $radius-full;
+  padding: 6rpx 18rpx;
+  background: #f5f5f7;
+  color: #6b7280;
+  font-size: 22rpx;
+  font-weight: 700;
+  &.own {
+    background: #f5f3ff;
+    color: $color-primary;
   }
 }
 
@@ -453,10 +536,37 @@ onMounted(() => {
     font-size: 56rpx;
     font-weight: 700;
     color: var(--color-primary);
+    font-family: 'JetBrains Mono', monospace;
   }
-  .price-unit {
-    font-size: 28rpx;
-    color: var(--color-text-tertiary);
+}
+.channel-price {
+  display: inline-flex;
+  margin-bottom: 20rpx;
+  padding: 8rpx 16rpx;
+  border-radius: $radius-sm;
+  background: #f5f5f7;
+  color: #6b7280;
+  font-size: 24rpx;
+}
+.tier-list {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+}
+.tier-pill {
+  flex: 1;
+  height: 56rpx;
+  border-radius: $radius-full;
+  background: #f5f5f7;
+  color: $color-text-secondary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 700;
+  &.active {
+    background: $color-primary;
+    color: #ffffff;
   }
 }
 .price-note {

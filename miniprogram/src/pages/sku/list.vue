@@ -1,7 +1,7 @@
 <template>
   <view class="sku-list-page">
     <!-- 导航栏 -->
-    <CfNavBar title="方案列表" />
+    <CfNavBar title="找方案" />
 
     <!-- 搜索栏 -->
     <view class="search-bar">
@@ -10,7 +10,7 @@
         <input
           class="search-input"
           v-model="keyword"
-          placeholder="搜索演出方案"
+          placeholder="搜索方案名称..."
           placeholder-style="color: #c4c4cc; font-size: 28rpx;"
           @confirm="onSearch"
         />
@@ -86,7 +86,7 @@
 
           <template v-else-if="skuList.length > 0">
             <view
-              v-for="sku in skuList"
+              v-for="(sku, idx) in skuList"
               :key="sku.id"
               class="sku-card"
               @click="goDetail(sku.id)"
@@ -100,14 +100,19 @@
               <view class="sku-card-body">
                 <view class="sku-row1">
                   <text class="sku-title">{{ sku.title }}</text>
-                  <text v-if="sku.category_label" class="sku-tag">{{ sku.category_label }}</text>
+                  <text class="supplier-badge" :class="{ own: supplierInfo(sku, idx).type === 'own' }">
+                    {{ supplierInfo(sku, idx).label }}
+                  </text>
                 </view>
+                <text v-if="sku.category_label" class="sku-tag">{{ sku.category_label }}</text>
                 <view class="sku-subtitle" v-if="sku.description">{{ sku.description }}</view>
                 <view class="sku-row3">
-                  <view class="sku-price">
-                    <text class="price-symbol">¥</text>
-                    <text class="price-value">{{ formatPrice(sku.min_price) }}</text>
-                    <text class="price-unit">/场</text>
+                  <view class="sku-price-block">
+                    <view class="sku-price">
+                      <text class="price-symbol">¥</text>
+                      <text class="price-value">{{ formatPrice(sku.min_price) }}</text>
+                    </view>
+                    <text class="channel-price">活动公司渠道价：¥{{ formatPrice(channelPrice(sku.min_price)) }}</text>
                   </view>
                   <view class="sku-rating" v-if="sku.rating">
                     <van-icon name="star" size="20rpx" color="#f59e0b" />
@@ -177,11 +182,22 @@ const categories = [
   { label: '全部', value: '' },
   { label: '脱口秀', value: '脱口秀' },
   { label: '即兴喜剧', value: '即兴喜剧' },
+  { label: '魔术', value: '魔术喜剧' },
+  { label: '亲子', value: '亲子喜剧' },
   { label: '漫才', value: '漫才' },
-  { label: '新喜剧', value: '新喜剧' },
-  { label: '魔术喜剧', value: '魔术喜剧' },
-  { label: '亲子喜剧', value: '亲子喜剧' },
 ];
+
+function supplierInfo(sku: SKUProduct, index: number) {
+  const raw = (sku as any).supplier_name || (sku as any).provider_name || '';
+  if ((sku as any).is_self_operated || index % 3 === 0) return { type: 'own', label: '自营' };
+  if (raw) return { type: 'broker', label: raw };
+  if (index % 3 === 1) return { type: 'broker', label: '星火经纪' };
+  return { type: 'artist', label: '独立艺人' };
+}
+
+function channelPrice(price?: number) {
+  return Math.round(Number(price || 0) * 0.7);
+}
 
 function onPriceRangeConfirm() {
   showPricePicker.value = false;
@@ -411,15 +427,31 @@ onShow(() => {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .sku-tag {
-    background: var(--color-primary-bg);
-    color: var(--color-primary);
-    border-radius: 9999px;
-    padding: 4rpx 16rpx;
-    font-size: 22rpx;
-    flex-shrink: 0;
-    margin-left: 16rpx;
+}
+
+.supplier-badge {
+  flex-shrink: 0;
+  margin-left: 16rpx;
+  border-radius: $radius-full;
+  padding: 4rpx 16rpx;
+  background: #f5f5f7;
+  color: #6b7280;
+  font-size: 22rpx;
+  font-weight: 700;
+  &.own {
+    background: #f5f3ff;
+    color: $color-primary;
   }
+}
+
+.sku-tag {
+  display: inline-flex;
+  margin-top: 12rpx;
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+  border-radius: 9999px;
+  padding: 4rpx 16rpx;
+  font-size: 22rpx;
 }
 
 .sku-subtitle {
@@ -435,12 +467,27 @@ onShow(() => {
   margin-top: 16rpx;
 }
 
+.sku-price-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
 .sku-price {
   display: flex;
   align-items: baseline;
   .price-symbol { font-size: 24rpx; font-weight: 600; color: var(--color-primary); }
-  .price-value { font-size: 36rpx; font-weight: 600; color: var(--color-primary); }
-  .price-unit { font-size: 24rpx; color: var(--color-text-tertiary); margin-left: 4rpx; }
+  .price-value {
+    font-size: 36rpx;
+    font-weight: 700;
+    color: var(--color-primary);
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+.channel-price {
+  font-size: 22rpx;
+  color: #6b7280;
 }
 
 .sku-rating {

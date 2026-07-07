@@ -1,525 +1,305 @@
 <template>
   <view class="discover-page">
-    <!-- ====== Hero 标题区 ====== -->
-    <view class="hero-section">
-      <text class="hero-title">喜剧工厂</text>
-      <text class="hero-subtitle">快速拿到演出方案</text>
-    </view>
-
-    <!-- ====== AI 需求输入框 ====== -->
-    <view class="ai-input-section">
-      <view class="ai-input-header">
-        <van-icon name="chat-o" size="36rpx" color="#7c3aed" />
-        <text class="ai-input-title">说出你的需求，AI帮你配方案</text>
-      </view>
-      <view class="ai-input-card" @click="goAI">
-        <textarea
-          class="ai-textarea"
-          v-model="aiPrompt"
-          placeholder="年会想搞个脱口秀，300人..."
-          placeholder-style="color: #9ca3af;"
-          :auto-height="false"
-          :fixed="true"
-          :disabled="true"
-          :show-confirm-bar="false"
-        />
-        <view class="ai-send-btn" @click.stop="goAI">
-          <van-icon name="send" size="32rpx" color="#ffffff" />
+    <scroll-view scroll-y class="page-scroll" :show-scrollbar="false">
+      <view class="brand-bar">
+        <view class="brand-left">
+          <view class="brand-cube" />
+          <text class="brand-name">演立方</text>
+        </view>
+        <view class="agent-tag">
+          <text>🤖 小演</text>
         </view>
       </view>
-    </view>
 
-    <!-- ====== 活动类型快捷入口 ====== -->
-    <view class="activity-section">
-      <text class="activity-title">你想办什么活动？</text>
-      <scroll-view scroll-x class="activity-scroll" show-scrollbar="false">
-        <view class="activity-list">
-          <view
-            v-for="item in activityTypes"
-            :key="item"
-            class="activity-item"
-            @click="goActivityType(item)"
-          >
-            <text>{{ item }}</text>
+      <view class="hero-panel">
+        <text class="hero-title">客户一句话需求，交给小演</text>
+        <van-button class="paste-btn" type="primary" block @click="goPaste">
+          📱 粘贴客户微信聊天记录
+        </van-button>
+        <text class="hero-subtitle">说一句需求，小演立刻匹配方案与报价</text>
+
+        <view class="quick-actions">
+          <view class="quick-action" @click="goVoice">
+            <text>🎤 语音说需求</text>
+          </view>
+          <view class="quick-action" @click="goForm">
+            <text>✍️ 填写表单</text>
+          </view>
+          <view class="quick-action" @click="goHistory">
+            <text>📋 历史需求</text>
           </view>
         </view>
-      </scroll-view>
-    </view>
+      </view>
 
-    <!-- ====== 搜索条 ====== -->
-    <view class="search-bar" @click="goSearch">
-      <van-icon name="search" size="32rpx" color="#9ca3af" />
-      <text class="search-placeholder">搜索演出方案</text>
-    </view>
-
-    <!-- ====== 快捷入口 4个 ====== -->
-    <view class="entries-grid">
-      <view class="entry-card" @click="goPage('/pages/sku/list')">
-        <view class="entry-icon icon-search">
-          <van-icon name="search" size="40rpx" color="#7c3aed" />
-        </view>
-        <text class="entry-label">选方案</text>
-      </view>
-      <view class="entry-card" @click="goPage('/pages/request/submit')">
-        <view class="entry-icon icon-edit">
-          <van-icon name="edit" size="40rpx" color="#3b82f6" />
-        </view>
-        <text class="entry-label">提需求</text>
-      </view>
-      <view class="entry-card" @click="goPage('/pages/request/list')">
-        <view class="entry-icon icon-list">
-          <van-icon name="records" size="40rpx" color="#22c55e" />
-        </view>
-        <text class="entry-label">看进度</text>
-      </view>
-      <view class="entry-card" @click="callPhone">
-        <view class="entry-icon icon-phone">
-          <van-icon name="phone-o" size="40rpx" color="#f59e0b" />
-        </view>
-        <text class="entry-label">咨询</text>
-      </view>
-    </view>
-
-    <!-- ====== Banner 轮播 ====== -->
-    <view class="banner-wrap">
-      <swiper
-        class="banner-swiper"
-        circular
-        autoplay
-        interval="4000"
-        indicator-dots
-        indicator-color="rgba(255,255,255,0.4)"
-        indicator-active-color="#ffffff"
-      >
-        <swiper-item v-for="banner in banners" :key="banner.id">
-          <view class="banner-item">
-            <image class="banner-img" :src="banner.image" mode="aspectFill" />
-            <view class="banner-overlay">
-              <text class="banner-title">{{ banner.title }}</text>
+      <view class="activity-section">
+        <van-grid :column-num="3" :border="false" gutter="16rpx">
+          <van-grid-item v-for="item in activityTypes" :key="item" use-slot>
+            <view class="activity-pill" @click="goActivity(item)">
+              <text>{{ item }}</text>
             </view>
-          </view>
-        </swiper-item>
-      </swiper>
-    </view>
-
-    <!-- ====== 热门推荐 ====== -->
-    <view class="section">
-      <view class="section-header">
-        <text class="section-title">热门方案</text>
-        <text class="section-more" @click="goPage('/pages/sku/list')">查看全部 ›</text>
+          </van-grid-item>
+        </van-grid>
       </view>
 
-      <view
-        v-for="sku in hotSkus"
-        :key="sku.id"
-        class="rec-card"
-        @click="goSkuDetail(sku.id)"
-      >
-        <image
-          class="rec-cover"
-          :src="sku.cover_url || '/static/images/show-card-1.jpg'"
-          mode="aspectFill"
-        />
-        <view class="rec-info">
-          <text class="rec-title">{{ sku.title }}</text>
-          <text class="rec-desc">{{ sku.category_label || sku.category || '演出' }} | {{ sku.desc || '适合年会/团建' }}</text>
-          <view class="rec-footer">
-            <text class="rec-price">
-              ¥{{ sku.price || '—' }}<text class="rec-price-unit">/场</text>
-            </text>
-            <view class="rec-meta">
-              <text class="rec-rating">{{ sku.rating || '4.9' }}分</text>
-              <view class="rec-tag">
-                <text>{{ sku.category_label || sku.category || '演出' }}</text>
-              </view>
-            </view>
+      <view class="recent-section">
+        <view class="section-title-row">
+          <text class="section-title">◇ AI 最近方案</text>
+          <van-icon name="arrow" size="28rpx" color="#a1a1aa" />
+        </view>
+
+        <view
+          v-for="plan in recentPlans"
+          :key="plan.id"
+          class="plan-card"
+          @click="goPlan(plan.id)"
+        >
+          <view class="plan-main">
+            <text class="plan-name">{{ plan.name }}</text>
+            <text class="plan-meta">{{ plan.meta }}</text>
           </view>
+          <text class="plan-price">{{ plan.price }}</text>
         </view>
       </view>
-    </view>
 
-    <TabBar current="/pages/discover/index" />
+      <view class="bottom-space" />
+    </scroll-view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { getSKUList } from "@/services/api";
-import type { SKUProduct } from "@/types";
+import { onMounted } from 'vue';
 
-const banners = [
-  { id: '1', image: '/static/images/banner-show.jpg', title: '限时特惠 | 企业年会脱口秀专场' },
-  { id: '2', image: '/static/images/banner-show.jpg', title: '新喜剧之夜 | 周末演出推荐' },
+const activityTypes = ['脱口秀', '年会', '团建', '商业活动', '路演', '其他'];
+
+const recentPlans = [
+  { id: 'talkshow-standard', name: '脱口秀标准版', meta: 'T3·60min·匹配 94%', price: '¥6,000' },
+  { id: 'magic-comedy', name: '魔术喜剧', meta: 'T4·45min·匹配 87%', price: '¥3,800' },
 ];
 
-const hotSkus = ref<(SKUProduct & { rating?: string; desc?: string; price?: number })[]>([]);
-const aiPrompt = ref('');
-const activityTypes = ['年会', '团建', '答谢', '商场', '发布会'];
-
-onMounted(async () => {
-  try {
-    const res = await getSKUList();
-    if (res.ok) {
-      hotSkus.value = (res.data || []).slice(0, 4).map((s: any) => ({
-        ...s,
-        rating: s.rating || '4.9',
-        desc: s.desc || s.category || '演出',
-        price: s.min_price,
-      }));
-    }
-  } catch {}
+onMounted(() => {
+  uni.setNavigationBarTitle({ title: '演立方' });
 });
 
-const tabBarPages = ['/pages/discover/index', '/pages/sku/list', '/pages/request/list', '/pages/user/index'];
-
-function goPage(path: string) {
-  if (tabBarPages.includes(path)) {
-    uni.switchTab({ url: path });
-  } else {
-    uni.navigateTo({ url: path });
-  }
+function goSubmit(mode: 'paste' | 'voice' | 'form') {
+  uni.setStorageSync('submitEntryMode', mode);
+  uni.switchTab({ url: '/pages/request/submit' });
 }
 
-function goSkuDetail(id: string) {
-  uni.navigateTo({ url: `/pages/sku/detail?id=${id}` });
+function goPaste() {
+  goSubmit('paste');
 }
 
-function goSearch() {
-  uni.navigateTo({ url: '/pages/search/index' });
+function goVoice() {
+  goSubmit('voice');
 }
 
-function goAI() {
-  // 任务2：仅携带 mode=ai，由提需求页自动切到「描述需求提交」Tab 并聚焦输入框
-  uni.navigateTo({ url: '/pages/request/submit?mode=ai' });
+function goForm() {
+  goSubmit('form');
 }
 
-function goActivityType(type: string) {
-  // 任务3：活动类型跳转方案列表并预筛选。
-  // sku/list 是 tabBar 页，navigateTo 无法传参，改用本地缓存中转 + switchTab。
+function goHistory() {
+  uni.navigateTo({ url: '/pages/request/list' });
+}
+
+function goActivity(type: string) {
   uni.setStorageSync('skuActivityFilter', type);
   uni.switchTab({ url: '/pages/sku/list' });
 }
 
-function callPhone() {
-  uni.makePhoneCall({ phoneNumber: "400-xxx-xxxx", fail: () => {} });
+function goPlan(id: string) {
+  uni.navigateTo({ url: `/pages/sku/detail?id=${id}` });
 }
 </script>
 
 <style lang="scss" scoped>
 .discover-page {
   min-height: 100vh;
-  background: var(--color-bg-page);
-  padding-bottom: 120rpx;
+  background: $color-bg-page;
 }
 
-/* ===== Hero 标题区 ===== */
-.hero-section {
-  margin: 32rpx 32rpx 0;
-  .hero-title {
-    font-size: $text-3xl;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    display: block;
-  }
-  .hero-subtitle {
-    font-size: $text-md;
-    color: var(--color-text-secondary);
-    margin-top: 8rpx;
-    display: block;
-  }
+.page-scroll {
+  height: 100vh;
+  box-sizing: border-box;
 }
 
-/* ===== AI 输入区 ===== */
-.ai-input-section {
-  margin: 24rpx 32rpx 0;
+.brand-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 32rpx 0;
 }
 
-.ai-input-header {
+.brand-left {
   display: flex;
   align-items: center;
   gap: 12rpx;
-  margin-bottom: 16rpx;
-  .ai-input-title {
-    font-size: $text-lg;
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
 }
 
-.ai-input-card {
-  background: var(--color-bg-card);
-  border-radius: var(--radius-lg);
-  padding: 24rpx;
-  box-shadow: var(--shadow-md);
+.brand-cube {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 8rpx;
+  background: $color-primary;
+  box-shadow: 8rpx 8rpx 0 $color-primary-bg;
+}
+
+.brand-name {
+  font-size: $text-xl;
+  line-height: 1;
+  font-weight: 700;
+  color: $color-text-primary;
+}
+
+.agent-tag {
+  height: 56rpx;
+  padding: 0 20rpx;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  border-radius: $radius-full;
+  background: $color-bg-card;
+  color: $color-primary;
+  font-size: $text-sm;
+  font-weight: 600;
+  box-shadow: $shadow-sm;
+}
+
+.hero-panel {
+  margin: 48rpx 32rpx 0;
+  padding: 40rpx 32rpx;
+  min-height: 560rpx;
+  box-sizing: border-box;
+  border-radius: $radius-lg;
+  background: $color-bg-card;
+  box-shadow: $shadow-md;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-title {
+  display: block;
+  font-size: 52rpx;
+  line-height: 1.16;
+  font-weight: 800;
+  color: $color-text-primary;
+  margin-bottom: 40rpx;
+}
+
+.paste-btn {
+  height: 104rpx;
+  line-height: 104rpx;
+  border-radius: $radius-full;
+  background: $color-primary;
+  border-color: $color-primary;
+  color: $color-text-inverse;
+  font-size: $text-lg;
+  font-weight: 700;
+  margin-bottom: 24rpx;
+}
+
+.hero-subtitle {
+  display: block;
+  text-align: center;
+  font-size: $text-base;
+  color: $color-text-secondary;
+  margin-bottom: 40rpx;
+}
+
+.quick-actions {
+  display: flex;
   gap: 16rpx;
-  .ai-textarea {
-    flex: 1;
-    min-height: 120rpx;
-    max-height: 180rpx;
-    font-size: $text-base;
-    color: var(--color-text-primary);
-    line-height: 1.5;
-    background: transparent;
-    border: none;
-    outline: none;
-  }
-  .ai-send-btn {
-    width: 72rpx;
-    height: 72rpx;
-    border-radius: 9999px;
-    background: var(--color-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    &:active { opacity: 0.85; }
-  }
 }
 
-/* ===== 活动类型快捷入口 ===== */
-.activity-section {
-  margin: 24rpx 32rpx 0;
-  .activity-title {
-    font-size: $text-md;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin-bottom: 16rpx;
-    display: block;
-  }
-}
-
-.activity-scroll {
+.quick-action {
+  flex: 1;
+  height: 72rpx;
+  border-radius: $radius-full;
+  border: 2rpx solid $color-primary;
+  background: $color-bg-card;
+  color: $color-primary;
+  font-size: $text-sm;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   white-space: nowrap;
 }
 
-.activity-list {
-  display: inline-flex;
-  gap: 16rpx;
-  padding-right: 32rpx;
+.activity-section {
+  margin: 32rpx 32rpx 0;
 }
 
-.activity-item {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 18rpx 32rpx;
-  border-radius: var(--radius-full);
-  background: var(--color-bg-card);
-  border: 2rpx solid var(--color-border);
+.activity-pill {
+  width: 100%;
+  height: 72rpx;
+  border-radius: $radius-full;
+  background: #f5f5f7;
+  color: $color-text-primary;
   font-size: $text-base;
-  color: var(--color-text-primary);
-  font-weight: 500;
-  &:active {
-    background: var(--color-primary-bg);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-  }
-}
-
-/* ===== 搜索条 ===== */
-.search-bar {
-  margin: 20rpx 32rpx 0;
-  background: #fff;
-  border-radius: 44rpx;
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  padding: 16rpx 28rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-}
-
-.search-placeholder {
-  font-size: 26rpx;
-  color: #9ca3af;
-}
-
-/* ===== Banner ===== */
-.banner-wrap {
-  margin: 20rpx 32rpx 0;
-}
-
-.banner-swiper {
-  width: 100%;
-  height: 320rpx;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.banner-item {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
-}
-
-.banner-img {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-}
-
-.banner-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 40rpx 24rpx 20rpx;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
-}
-
-.banner-title {
-  color: #fff;
-  font-size: 28rpx;
-  font-weight: 500;
-  line-height: 1.3;
-}
-
-/* ===== 快捷入口 4列 ===== */
-.entries-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16rpx;
-  margin: 24rpx 32rpx;
-}
-
-.entry-card {
-  background: #ffffff;
-  border-radius: var(--radius-md);
-  padding: 24rpx 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-
-  &:active { opacity: 0.85; }
-}
-
-.entry-icon {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 9999px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  &.icon-search { background-color: #f5f3ff; }
-  &.icon-edit   { background-color: #eff6ff; }
-  &.icon-list   { background-color: #f0fdf4; }
-  &.icon-phone  { background-color: #fff7ed; }
 }
 
-.entry-label {
-  font-size: 26rpx;
-  font-weight: 500;
-  color: var(--color-text-primary);
+.recent-section {
+  margin: 40rpx 32rpx 0;
 }
 
-/* ===== 热门推荐 ===== */
-.section {
-  margin: 0 32rpx;
-}
-
-.section-header {
+.section-title-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20rpx;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
 }
 
 .section-title {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: var(--color-text-primary);
+  font-size: $text-lg;
+  color: $color-text-primary;
+  font-weight: 800;
 }
 
-.section-more {
-  font-size: 26rpx;
-  color: var(--color-primary);
-}
-
-/* ===== 推荐卡片 ===== */
-.rec-card {
-  background: #ffffff;
-  border-radius: var(--radius-md);
-  padding: 20rpx;
-  display: flex;
-  gap: 20rpx;
+.plan-card {
+  min-height: 128rpx;
+  padding: 24rpx;
   margin-bottom: 16rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-
-  &:active { opacity: 0.85; }
+  border-radius: $radius-md;
+  background: $color-bg-card;
+  border-left: 6rpx solid $color-primary;
+  box-shadow: $shadow-sm;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
 }
 
-.rec-cover {
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-  background-color: #f3f4f6;
-}
-
-.rec-info {
+.plan-main {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  flex: 1;
-  min-width: 0;
+  gap: 10rpx;
 }
 
-.rec-title {
-  font-size: 28rpx;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.plan-name {
+  font-size: $text-md;
+  color: $color-text-primary;
+  font-weight: 700;
 }
 
-.rec-desc {
-  font-size: 22rpx;
-  color: var(--color-text-secondary);
-  margin-top: 4rpx;
+.plan-meta {
+  font-size: $text-sm;
+  color: $color-text-secondary;
 }
 
-.rec-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 8rpx;
+.plan-price {
+  flex-shrink: 0;
+  color: $color-primary;
+  font-size: $text-xl;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
 }
 
-.rec-price {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: var(--color-primary);
-}
-
-.rec-price-unit {
-  font-size: 22rpx;
-  font-weight: 400;
-  color: var(--color-text-tertiary);
-}
-
-.rec-meta {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.rec-rating {
-  font-size: 22rpx;
-  color: #f59e0b;
-}
-
-.rec-tag {
-  font-size: 20rpx;
-  color: var(--color-primary);
-  background: var(--color-primary-bg);
-  border-radius: var(--tag-radius);
-  padding: 4rpx 10rpx;
+.bottom-space {
+  height: 160rpx;
 }
 </style>

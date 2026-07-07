@@ -45,6 +45,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
+import { speechToText } from '@/services/api';
 
 type VoiceState = 'idle' | 'recording' | 'uploading' | 'done';
 
@@ -79,6 +80,19 @@ const emit = defineEmits<{
 }>();
 
 let startY = 0;
+let shouldUpload = false;
+const recorderManager = uni.getRecorderManager();
+
+recorderManager.onStop((res) => {
+  if (!shouldUpload) return;
+  shouldUpload = false;
+  uploadVoice(res.tempFilePath);
+});
+
+recorderManager.onError((err) => {
+  shouldUpload = false;
+  fail(err.errMsg || '录音失败，请检查麦克风权限');
+});
 
 function onPress(e: TouchEvent) {
   if (state.value === 'uploading') return;
@@ -92,8 +106,13 @@ function onPress(e: TouchEvent) {
       onRelease(); // 超时自动停止
     }
   }, 1000);
-  // 触发外部录音开始
-  uni.showToast({ title: '开始录音', icon: 'none', duration: 800 });
+  recorderManager.start({
+    duration: maxDuration * 1000,
+    sampleRate: 16000,
+    numberOfChannels: 1,
+    encodeBitRate: 48000,
+    format: 'mp3',
+  });
 }
 
 function onMove(e: TouchEvent) {
@@ -107,6 +126,8 @@ function onRelease() {
   stopTimer();
 
   if (cancelling.value) {
+    shouldUpload = false;
+    recorderManager.stop();
     state.value = 'idle';
     cancelling.value = false;
     showToast('已取消录音');
@@ -120,12 +141,15 @@ function onRelease() {
   }
 
   state.value = 'uploading';
-  // 触发外部上传逻辑；上传完成后调用 complete(text) 或 fail()
+  shouldUpload = true;
+  recorderManager.stop();
 }
 
 function onCancel() {
   if (state.value !== 'recording') return;
   stopTimer();
+  shouldUpload = false;
+  recorderManager.stop();
   state.value = 'idle';
   cancelling.value = false;
 }
@@ -134,6 +158,19 @@ function stopTimer() {
   if (recordingTimer.value) {
     clearInterval(recordingTimer.value);
     recordingTimer.value = null;
+  }
+}
+
+async function uploadVoice(filePath: string) {
+  try {
+    const text = (await speechToText(filePath)).trim();
+    if (!text) {
+      fail('未识别到有效内容');
+      return;
+    }
+    complete(text);
+  } catch (e: any) {
+    fail(e?.message || '识别失败，请重试');
   }
 }
 
