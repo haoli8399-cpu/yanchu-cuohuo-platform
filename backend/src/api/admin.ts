@@ -6,62 +6,29 @@ import { successResponse, errorResponse } from '../utils/response.js';
 
 export default async function adminRoutes(app: FastifyInstance) {
   app.get('/dashboard', { preHandler: [authMiddleware, requireRole('admin')] }, async (_req, reply) => {
-    const [
-      todayNewDemands,
-      todayNewOpportunities,
-      pendingFollowUps,
-      totalOpportunities,
-      wonOpportunities,
-      avgResponseTime,
-      statusDistribution,
-      dailyTrend,
-    ] = await Promise.all([
-      query("SELECT COUNT(*) FROM demands WHERE (created_at AT TIME ZONE 'Asia/Shanghai')::date = (now() AT TIME ZONE 'Asia/Shanghai')::date"),
-      query("SELECT COUNT(*) FROM opportunities WHERE (created_at AT TIME ZONE 'Asia/Shanghai')::date = (now() AT TIME ZONE 'Asia/Shanghai')::date"),
-      query("SELECT COUNT(*) FROM opportunities WHERE status IN ('quoted','negotiating','pending_client')"),
-      query('SELECT COUNT(*) FROM opportunities'),
-      query("SELECT COUNT(*) FROM opportunities WHERE status = 'won'"),
-      query(
-        `SELECT AVG(EXTRACT(EPOCH FROM (o.created_at - d.created_at)) / 3600) AS hours
-         FROM opportunities o
-         JOIN demands d ON o.demand_id = d.id
-         WHERE o.created_at IS NOT NULL
-           AND d.created_at IS NOT NULL
-           AND o.created_at >= d.created_at`
-      ),
-      query('SELECT o.status, COUNT(*) FROM opportunities o GROUP BY o.status ORDER BY COUNT(*) DESC'),
-      query(
-        `SELECT to_char(days.date, 'YYYY-MM-DD') AS date, COUNT(o.id) AS count
-         FROM generate_series(
-           (now() AT TIME ZONE 'Asia/Shanghai')::date - INTERVAL '6 days',
-           (now() AT TIME ZONE 'Asia/Shanghai')::date,
-           INTERVAL '1 day'
-         ) AS days(date)
-         LEFT JOIN opportunities o ON (o.created_at AT TIME ZONE 'Asia/Shanghai')::date = days.date::date
-         GROUP BY days.date
-         ORDER BY days.date`
-      ),
-    ]);
-
-    const total = Number(totalOpportunities.rows[0]?.count || 0);
-    const won = Number(wonOpportunities.rows[0]?.count || 0);
-    const avgHours = Number(avgResponseTime.rows[0]?.hours || 0);
-
+    const [[demands],[assignments],[settlements],[revenue],[performers],[companies]] = await Promise.all(
+      ['SELECT COUNT(*) FROM demands WHERE status NOT IN ($1,$2,$3)', // pending
+       'SELECT COUNT(*) FROM assignments WHERE status=$1',
+       'SELECT COUNT(*) FROM settlements WHERE status=$1',
+       'SELECT COALESCE(SUM(amount),0) FROM payment_records WHERE received_at>=date_trunc($1,NOW())',
+       'SELECT COUNT(*) FROM performers WHERE status=$1',
+       'SELECT COUNT(*) FROM company_profiles WHERE status=$1'
+      ].map((sql,i) => query(sql, [
+        ...(i===0?['finished','cancelled','settled']:[]),
+        ...(i===1?['pending']:[]),
+        ...(i===2?['pending']:[]),
+        ...(i===3?['month']:[]),
+        ...(i===4?['active']:[]),
+        ...(i===5?['certified']:[])
+      ]))
+    );
     return reply.send(successResponse({
-      todayNewDemands: Number(todayNewDemands.rows[0]?.count || 0),
-      todayNewOpportunities: Number(todayNewOpportunities.rows[0]?.count || 0),
-      pendingFollowUps: Number(pendingFollowUps.rows[0]?.count || 0),
-      totalOpportunities: total,
-      wonRate: total > 0 ? `${Math.round((won / total) * 100)}%` : '0%',
-      avgResponseTime: `${avgHours.toFixed(1)}h`,
-      statusDistribution: statusDistribution.rows.map((row) => ({
-        status: String(row.status),
-        count: Number(row.count),
-      })),
-      dailyTrend: dailyTrend.rows.map((row) => ({
-        date: String(row.date),
-        count: Number(row.count),
-      })),
+      pending_demands: Number(demands.rows[0].count),
+      pending_assignments: Number(assignments.rows[0].count),
+      pending_settlements: Number(settlements.rows[0].count),
+      monthly_revenue: Number(revenue.rows[0].coalesce),
+      active_performers: Number(performers.rows[0].count),
+      active_companies: Number(companies.rows[0].count),
     }));
   });
 
@@ -224,7 +191,7 @@ export default async function adminRoutes(app: FastifyInstance) {
   // POST /v1/admin/mark-timeout - 超时自动标记 (P-27)
   // 查询超时的 demand，标记 urgency=urgent
   // ==========================================================
-  app.post('/mark-timeout', { preHandler: [authMiddleware, requireRole('admin')] }, async (_req, reply) => {
+  app.post('/mark-timeout', { preHandler: [authMiddleware, requireRole('admin')] }, async (req, reply) => {
     // 定义各状态超时阈值（小时）
     const timeoutConfig: Record<string, number> = {
       pending_ai: 2,           // AI 生成超时 2h

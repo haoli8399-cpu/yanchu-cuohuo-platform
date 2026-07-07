@@ -1,0 +1,479 @@
+/* ============================================
+   演立方 YANLI · Design Token System
+   Version: 1.0.0 | 2026-07-07
+   ============================================ */
+
+:root {
+  /* ===== Brand Colors ===== */
+  --brand: #7c3aed;
+  --brand-light: #a78bfa;
+  --brand-dark: #5b21b6;
+  --brand-50: #f5f3ff;
+
+  /* ===== Semantic Colors ===== */
+  --green: #16a34a;
+  --green-50: #f0fdf4;
+  --amber: #f59e0b;
+  --amber-50: #fffbeb;
+  --red: #ef4444;
+  --red-50: #fef2f2;
+  --blue: #3b82f6;
+  --blue-50: #eff6ff;
+
+  /* ===== Neutral ===== */
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-sub: #f9fafb;
+  --surface-hover: #f3f4f6;
+  --border: #e5e7eb;
+  --border-light: #f0f1f3;
+
+  /* ===== Text ===== */
+  --text: #1a1a2e;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --text-quaternary: #d1d5db;
+
+  /* ===== Stage (Dark) ===== */
+  --stage: #0f0f1a;
+
+  /* ===== Shadow ===== */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
+
+  /* ===== Radius ===== */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* ===== Typography ===== */
+  --font-sans: 'Inter', 'PingFang SC', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+  --text-display: 36px;
+  --text-h1: 28px;
+  --text-h2: 24px;
+  --text-h3: 20px;
+  --text-body: 14px;
+  --text-caption: 12px;
+  --text-micro: 10px;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* ===== Spacing (8px grid) ===== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ===== Transition ===== */
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 250ms ease-out;
+  --transition-slow: 350ms ease-out;
+}
+
+/* ============================================
+   Component: Button
+   ============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+.btn--primary {
+  background: var(--brand);
+  color: #fff;
+}
+.btn--primary:hover { background: var(--brand-dark); }
+
+.btn--secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn--secondary:hover { background: var(--surface-hover); border-color: var(--brand-light); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--brand);
+}
+.btn--ghost:hover { background: var(--brand-50); }
+
+.btn--danger {
+  background: var(--red);
+  color: #fff;
+}
+.btn--danger:hover { opacity: 0.9; }
+
+.btn--sm { padding: 5px 14px; font-size: 11px; }
+.btn--lg { padding: 12px 28px; font-size: 14px; }
+
+/* ============================================
+   Component: Tag / Badge
+   ============================================ */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  line-height: 1.4;
+}
+.tag--self { background: var(--brand-50); color: var(--brand); }
+.tag--won { background: var(--green-50); color: var(--green); }
+.tag--pending { background: var(--amber-50); color: var(--amber); }
+.tag--lost { background: var(--red-50); color: var(--red); }
+.tag--third { background: var(--surface-sub); color: var(--text-secondary); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: var(--weight-bold);
+  line-height: 1;
+}
+
+/* ============================================
+   Component: Status Dot / State Badge
+   ============================================ */
+.status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: var(--weight-semibold);
+}
+.status-dot::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot--new::before { background: var(--text-tertiary); }
+.status-dot--qualified::before { background: var(--blue); }
+.status-dot--quoted::before { background: var(--brand); }
+.status-dot--negotiating::before { background: var(--amber); }
+.status-dot--pending::before { background: #ea580c; }
+.status-dot--won::before { background: var(--green); }
+.status-dot--lost::before { background: var(--text-secondary); }
+
+/* ============================================
+   Component: Card
+   ============================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  transition: all var(--transition-fast);
+}
+.card:hover { border-color: var(--brand-50); box-shadow: var(--shadow-sm); }
+.card--accent { border-left: 3px solid var(--brand); }
+.card--stage {
+  background: var(--stage);
+  border-color: rgba(124, 58, 237, 0.15);
+}
+
+/* ============================================
+   Component: Stat Card (KPI)
+   ============================================ */
+.stat-card { }
+.stat-card__label {
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.stat-card__value {
+  font-size: 28px;
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  font-family: var(--font-mono);
+}
+.stat-card__value--brand { color: var(--brand); }
+.stat-card__value--green { color: var(--green); }
+.stat-card__trend {
+  font-size: 11px;
+  font-weight: var(--weight-medium);
+  margin-top: 4px;
+}
+.stat-card__trend--up { color: var(--green); }
+.stat-card__trend--flat { color: var(--text-tertiary); }
+
+/* ============================================
+   Component: Insight Card (小演发现)
+   ============================================ */
+.insight {
+  position: relative;
+  padding-left: 22px;
+}
+.insight__bar {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 2px;
+}
+.insight__badge {
+  font-size: 10px;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.insight__title {
+  font-size: 14px;
+  font-weight: var(--weight-semibold);
+  margin-bottom: 3px;
+}
+.insight__body {
+  font-size: 12px;
+  color: #4B5563;
+  line-height: 1.6;
+}
+.insight__meta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 3px;
+}
+.insight__actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* ============================================
+   Component: Celebration Card (Dark Stage)
+   ============================================ */
+.celebration {
+  background: var(--stage);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(124, 58, 237, 0.15);
+}
+.celebration::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-light), transparent);
+}
+.celebration__check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.celebration__check-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(22, 163, 74, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green);
+  font-size: 16px;
+  font-weight: var(--weight-bold);
+}
+.celebration__label {
+  font-size: 14px;
+  font-weight: var(--weight-semibold);
+  color: rgba(255, 255, 255, 0.85);
+}
+.celebration__title {
+  font-size: 18px;
+  font-weight: var(--weight-bold);
+  color: #fff;
+  margin-bottom: 12px;
+}
+.celebration__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+.celebration__item {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+.celebration__item strong {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: var(--weight-semibold);
+}
+
+/* ============================================
+   Component: AI Bubble (小演)
+   ============================================ */
+.ai-bubble {
+  background: var(--brand-50);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  max-width: 80%;
+}
+.ai-bubble--user {
+  background: var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  max-width: 80%;
+  align-self: flex-end;
+}
+.ai-bubble__name {
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  color: var(--brand);
+  margin-bottom: 3px;
+}
+.ai-bubble__text {
+  font-size: 12px;
+  color: #4B5563;
+  line-height: 1.5;
+}
+
+/* ============================================
+   Component: Data Table
+   ============================================ */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-sub);
+}
+.table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-light);
+}
+.table tr:hover td { background: var(--brand-50); }
+
+/* ============================================
+   Component: Funnel
+   ============================================ */
+.funnel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 20px;
+  background: var(--surface-sub);
+  border-radius: var(--radius-md);
+}
+.funnel__label {
+  font-size: 12px;
+  font-weight: var(--weight-bold);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.funnel__chain {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.funnel__step {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: var(--brand-50);
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  color: var(--brand);
+}
+.funnel__step .num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: var(--weight-bold);
+}
+.funnel__step--won { background: var(--green-50); color: var(--green); }
+.funnel__arrow { color: var(--text-tertiary); font-size: 6px; }
+
+/* ============================================
+   Utility: Price
+   ============================================ */
+.price {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.3px;
+}
+.price--brand { color: var(--brand); }
+.price--green { color: var(--green); }
+
+/* ============================================
+   Layout Helpers
+   ============================================ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border);
+}
+.kpi-grid > * { background: var(--surface); }
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 14px;
+}
+
+.three-col {
+  display: grid;
+  grid-template-columns: 220px 1fr 320px;
+}

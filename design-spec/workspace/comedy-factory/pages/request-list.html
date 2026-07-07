@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求列表</title>
+    <style id="theme-vars">
+/* ============================================
+   Comedy Factory (喜剧工厂) — Brand Design System
+   B2B Performance Marketplace WeChat Mini-Program
+   ============================================ */
+
+:root {
+  /* ——— Brand Primary (Purple System) ——— */
+  --color-primary: #7c3aed;
+  --color-primary-hover: #6d28d9;
+  --color-primary-active: #5b21b6;
+  --color-primary-light: #a78bfa;
+  --color-primary-lighter: #ddd6fe;
+  --color-primary-bg: #f5f3ff;
+  --color-primary-subtle: #ede9fe;
+
+  /* ——— Neutral Scale ——— */
+  --color-bg-page: #f5f5f7;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-input: #f7f7f8;
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* ——— Text ——— */
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+  --color-text-placeholder: #c4c4cc;
+  --color-text-inverse: #ffffff;
+  --color-text-link: #7c3aed;
+
+  /* ——— Border & Divider ——— */
+  --color-border: #e5e7eb;
+  --color-divider: #f0f0f2;
+
+  /* ——— Semantic Status ——— */
+  --state-pending: #f59e0b;
+  --state-pending-bg: #fffbeb;
+  --state-quoted: #3b82f6;
+  --state-quoted-bg: #eff6ff;
+  --state-confirmed: #22c55e;
+  --state-confirmed-bg: #f0fdf4;
+  --state-signed: #7c3aed;
+  --state-signed-bg: #f5f3ff;
+  --state-cancelled: #ef4444;
+  --state-cancelled-bg: #fef2f2;
+  --state-info: #6366f1;
+  --state-info-bg: #eef2ff;
+  --state-success: #22c55e;
+  --state-warning: #f59e0b;
+  --state-error: #ef4444;
+
+  /* ——— Shadow (alpha <= 0.05 for static) ——— */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-float: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  /* ——— Radius (restrained 2/4/8/12/16px scale) ——— */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* ——— Spacing ——— */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-base: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* ——— Typography ——— */
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+
+  --text-xs: 20rpx;
+  --text-sm: 24rpx;
+  --text-base: 28rpx;
+  --text-md: 30rpx;
+  --text-lg: 32rpx;
+  --text-xl: 36rpx;
+  --text-2xl: 40rpx;
+  --text-3xl: 48rpx;
+  --text-4xl: 56rpx;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+
+  /* ——— Weight ——— */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* ——— Tab Bar ——— */
+  --tab-bar-height: 100rpx;
+  --tab-bar-bg: #ffffff;
+  --tab-bar-border: #e5e7eb;
+  --tab-bar-icon-inactive: #9ca3af;
+  --tab-bar-icon-active: #7c3aed;
+  --tab-bar-text-inactive: #9ca3af;
+  --tab-bar-text-active: #7c3aed;
+
+  /* ——— Navigation Bar ——— */
+  --nav-bar-height: 88rpx;
+  --nav-bar-bg: #ffffff;
+  --nav-bar-title-color: #1a1a2e;
+
+  /* ——— Safe Area ——— */
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  --status-bar-height: var(--status-bar-height);
+
+  /* ——— Component Specific ——— */
+  --btn-primary-bg: #7c3aed;
+  --btn-primary-text: #ffffff;
+  --btn-primary-radius: 44rpx;
+  --btn-primary-height: 88rpx;
+  --btn-primary-font-size: 32rpx;
+
+  --btn-ghost-bg: #f5f3ff;
+  --btn-ghost-text: #7c3aed;
+
+  --card-bg: #ffffff;
+  --card-radius: 16rpx;
+  --card-padding: 24rpx;
+  --card-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+
+  --input-bg: #f7f7f8;
+  --input-radius: 12rpx;
+  --input-border: #e5e7eb;
+  --input-height: 80rpx;
+  --input-padding: 0 24rpx;
+  --input-font-size: 28rpx;
+
+  --tag-radius: 8rpx;
+  --tag-padding: 4rpx 12rpx;
+  --tag-font-size: 22rpx;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--color-primary);
+    --color-border: var(--color-border);
+  }
+  @layer base {
+    body { background: var(--color-background); color: var(--color-text-primary); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased" style="font-family: var(--font-sans);">
+  <!-- Mini-program system capsule -->
+  <div class="fixed top-2 right-2 w-[87px] h-8 rounded-md bg-black/[0.04] flex items-center justify-center z-[9999]"><span class="flex items-center justify-center h-full w-1/2" aria-label="More"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></span><span class="w-px h-3 bg-black/10"></span><span class="flex items-center justify-center h-full w-1/2" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg><span style="display:none">×✕</span></span></div>
+  <main>
+
+    <!-- Navigation Bar -->
+    <nav style="
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--nav-bar-bg);
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+    ">
+      <span style="
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--nav-bar-title-color);
+      ">我的需求</span>
+      <button style="
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--color-primary);
+        color: var(--color-text-inverse);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+        line-height: 1;
+      ">+</button>
+    </nav>
+
+    <div class="page-container">
+
+      <!-- Stats Summary Row -->
+      <div style="
+        display: flex;
+        gap: 8px;
+        margin: 12px 16px;
+      ">
+        <!-- Card 1: 全部 -->
+        <div style="
+          flex: 1;
+          background: var(--color-bg-card);
+          border-radius: 12px;
+          padding: 12px 8px;
+          text-align: center;
+          box-shadow: var(--shadow-sm);
+        ">
+          <div style="font-size: 20px; font-weight: 700; color: var(--color-primary);">12</div>
+          <div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px;">全部</div>
+        </div>
+        <!-- Card 2: 进行中 -->
+        <div style="
+          flex: 1;
+          background: var(--color-bg-card);
+          border-radius: 12px;
+          padding: 12px 8px;
+          text-align: center;
+          box-shadow: var(--shadow-sm);
+        ">
+          <div style="font-size: 20px; font-weight: 700; color: var(--state-warning);">5</div>
+          <div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px;">进行中</div>
+        </div>
+        <!-- Card 3: 已签约 -->
+        <div style="
+          flex: 1;
+          background: var(--color-bg-card);
+          border-radius: 12px;
+          padding: 12px 8px;
+          text-align: center;
+          box-shadow: var(--shadow-sm);
+        ">
+          <div style="font-size: 20px; font-weight: 700; color: var(--state-success);">7</div>
+          <div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px;">已签约</div>
+        </div>
+      </div>
+
+      <!-- Status Filter Tabs -->
+      <div class="filter-tabs" style="margin: 12px 16px 8px;">
+        <div style="display: inline-flex; gap: 8px;">
+          <span style="
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 500;
+            background: var(--color-primary);
+            color: var(--color-text-inverse);
+            cursor: pointer;
+          ">全部</span>
+          <span style="
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 500;
+            background: #f0f0f2;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+          ">待报价</span>
+          <span style="
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 500;
+            background: #f0f0f2;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+          ">已报价</span>
+          <span style="
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 500;
+            background: #f0f0f2;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+          ">已确认</span>
+          <span style="
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 500;
+            background: #f0f0f2;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+          ">已签约</span>
+          <span style="
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 500;
+            background: #f0f0f2;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+          ">已取消</span>
+        </div>
+      </div>
+
+      <!-- Request Card List -->
+      <div style="padding: 0 16px 70px; display: flex; flex-direction: column; gap: 12px;">
+
+        <!-- Card 1: 待报价 -->
+        <div style="
+          background: var(--color-bg-card);
+          border-radius: 12px;
+          padding: 16px;
+          box-shadow: var(--shadow-md);
+        ">
+          <!-- Top row: event name + status tag -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <span style="font-size: 15px; font-weight: 500; color: var(--color-text-primary);">2024年会脱口秀演出</span>
+            <span style="
+              display: inline-block;
+              padding: 3px 10px;
+              border-radius: 9999px;
+              font-size: 11px;
+              font-weight: 500;
+              background: var(--state-pending-bg);
+              color: var(--state-pending);
+            ">待报价</span>
+          </div>
+          <!-- Info rows -->
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">演出类型：脱口秀</div>
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">期望时间：2024-12-20</div>
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">预算范围：¥5,000 - ¥10,000</div>
+          <!-- Bottom row -->
+          <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 12px; color: var(--color-text-tertiary);">提交于 2024-11-15</span>
+          </div>
+        </div>
+
+        <!-- Card 2: 已报价 -->
+        <div style="
+          background: var(--color-bg-card);
+          border-radius: 12px;
+          padding: 16px;
+          box-shadow: var(--shadow-md);
+        ">
+          <!-- Top row: event name + status tag + badge -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <span style="font-size: 15px; font-weight: 500; color: var(--color-text-primary);">公司十周年庆典表演</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="
+                display: inline-block;
+                padding: 3px 10px;
+                border-radius: 9999px;
+                font-size: 11px;
+                font-weight: 500;
+                background: var(--state-quoted-bg);
+                color: var(--state-quoted);
+              ">已报价</span>
+              <span style="
+                display: inline-block;
+                padding: 2px 8px;
+                border-radius: 9999px;
+                font-size: 10px;
+                font-weight: 500;
+                background: var(--color-primary-bg);
+                color: var(--color-primary);
+              ">3家报价</span>
+            </div>
+          </div>
+          <!-- Info rows -->
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">演出类型：魔术 + 脱口秀</div>
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">期望时间：2025-01-10</div>
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">预算范围：¥15,000 - ¥30,000</div>
+          <!-- Bottom row -->
+          <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 12px; color: var(--color-text-tertiary);">提交于 2024-11-28</span>
+            <span style="font-size: 13px; color: var(--color-primary); cursor: pointer; font-weight: 500;">查看报价 ></span>
+          </div>
+        </div>
+
+        <!-- Card 3: 已签约 -->
+        <div style="
+          background: var(--color-bg-card);
+          border-radius: 12px;
+          padding: 16px;
+          box-shadow: var(--shadow-md);
+        ">
+          <!-- Top row: event name + status tag -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <span style="font-size: 15px; font-weight: 500; color: var(--color-text-primary);">客户答谢晚宴脱口秀</span>
+            <span style="
+              display: inline-block;
+              padding: 3px 10px;
+              border-radius: 9999px;
+              font-size: 11px;
+              font-weight: 500;
+              background: var(--state-signed-bg);
+              color: var(--state-signed);
+            ">已签约</span>
+          </div>
+          <!-- Info rows -->
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">演出类型：脱口秀</div>
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">期望时间：2024-12-28</div>
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">预算范围：¥8,000 - ¥15,000</div>
+          <!-- Bottom row -->
+          <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 12px; color: var(--color-text-tertiary);">提交于 2024-11-05</span>
+          </div>
+        </div>
+
+        <!-- Card 4: 已取消 (muted) -->
+        <div style="
+          background: var(--color-bg-card);
+          border-radius: 12px;
+          padding: 16px;
+          box-shadow: var(--shadow-md);
+          opacity: 0.55;
+        ">
+          <!-- Top row: event name + status tag -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <span style="font-size: 15px; font-weight: 500; color: var(--color-text-primary);">团队建设即兴喜剧</span>
+            <span style="
+              display: inline-block;
+              padding: 3px 10px;
+              border-radius: 9999px;
+              font-size: 11px;
+              font-weight: 500;
+              background: var(--state-cancelled-bg);
+              color: var(--state-cancelled);
+            ">已取消</span>
+          </div>
+          <!-- Info rows -->
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">演出类型：即兴喜剧</div>
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">期望时间：2024-11-30</div>
+          <div class="card-info-row" style="font-size: 14px; color: var(--color-text-secondary);">预算范围：¥3,000 - ¥6,000</div>
+          <!-- Bottom row -->
+          <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 12px; color: var(--color-text-tertiary);">提交于 2024-10-20</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Tab Bar -->
+      <div style="
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 375px;
+        height: 50px;
+        background: var(--tab-bar-bg);
+        border-top: 1px solid var(--tab-bar-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        z-index: 100;
+        padding-bottom: env(safe-area-inset-bottom);
+      ">
+        <!-- Tab: 发现 -->
+        <a data-dom-id="tab-discover" href="#" style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+          text-decoration: none;
+        ">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--tab-bar-icon-inactive);">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <span style="font-size: 10px; color: var(--tab-bar-text-inactive);">发现</span>
+        </a>
+
+        <!-- Tab: 方案 -->
+        <a data-dom-id="tab-sku" href="#" style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+          text-decoration: none;
+        ">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--tab-bar-icon-inactive);">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <span style="font-size: 10px; color: var(--tab-bar-text-inactive);">方案</span>
+        </a>
+
+        <!-- Tab: 需求 (Active) -->
+        <a href="#" style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+          text-decoration: none;
+        ">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--tab-bar-icon-active);">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span style="font-size: 10px; color: var(--tab-bar-text-active); font-weight: 600;">需求</span>
+        </a>
+
+        <!-- Tab: 我的 -->
+        <a data-dom-id="tab-user" href="#" style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+          text-decoration: none;
+        ">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--tab-bar-icon-inactive);">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span style="font-size: 10px; color: var(--tab-bar-text-inactive);">我的</span>
+        </a>
+      </div>
+
+    </div>
+
+  </main>
+
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+
+      /* Page-level custom styles */
+      .page-container {
+        max-width: 375px;
+        margin: 0 auto;
+        min-height: 100vh;
+        position: relative;
+        background: var(--color-bg-page);
+      }
+
+      /* Status filter tabs scrollable area */
+      .filter-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+      .filter-tabs::-webkit-scrollbar { display: none; }
+      .filter-tabs { -ms-overflow-style: none; scrollbar-width: none; }
+
+      /* Card bottom border separator */
+      .card-info-row + .card-info-row {
+        border-top: 1px solid var(--color-divider);
+        padding-top: 8px;
+        margin-top: 8px;
+      }
+    </style>
+<script>if(typeof lucide!=='undefined')lucide.createIcons();</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 /**
  * 案例管理列表页 (P-23, P1)
  *
- * 功能：案例增删改查，关联SKU
+ * 功能：案例增删改查，草稿→发布，排序
  * 三态处理：loading / empty / error
  *
  * Code Standards:
@@ -9,7 +9,7 @@
  * - UX-2: 三态处理
  * - API-7: 所有 API 调用通过 apiClient
  */
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import {
@@ -22,7 +22,6 @@ import {
   Input,
   Select,
   InputNumber,
-  Slider,
   Result,
   Empty,
 } from 'antd';
@@ -33,7 +32,12 @@ import {
   DeleteOutlined,
   EyeOutlined,
 } from '@ant-design/icons';
-import type { CaseListItem, CaseDetail, CaseUpsertRequest } from '@/types/case';
+import type {
+  CaseListItem,
+  CaseStatus,
+  CaseDetail,
+  CaseUpsertRequest,
+} from '@/types/case';
 import { CaseStatusLabel, CaseStatusColor } from '@/types/case';
 import {
   getCaseList,
@@ -42,16 +46,12 @@ import {
   deleteCase,
   getCaseDetail,
 } from '@/services/case';
-import { getSKUList } from '@/services/sku';
 
 const { TextArea } = Input;
 
 const CaseManagementPage: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [error, setError] = useState<Error | null>(null);
-
-  // SKU 列表（用于 Select）
-  const [skuOptions, setSkuOptions] = useState<{ label: string; value: string }[]>([]);
 
   // 编辑弹窗
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -65,29 +65,12 @@ const CaseManagementPage: React.FC = () => {
   const [detailData, setDetailData] = useState<CaseDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  /** 加载 SKU 选项 */
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await getSKUList({ page: 1, pageSize: 1000 });
-        setSkuOptions(
-          (res.data?.items || []).map((sku) => ({
-            label: sku.name,
-            value: sku.id,
-          })),
-        );
-      } catch {
-        // 静默失败，Select 为空也不影响
-      }
-    })();
-  }, []);
-
   /** 打开新增 */
   const handleCreate = () => {
     setEditMode('create');
     setEditId('');
     form.resetFields();
-    form.setFieldsValue({ status: 'draft', rating: 100, participants: 0 });
+    form.setFieldsValue({ status: 'draft', sort_order: 0 });
     setEditModalOpen(true);
   };
 
@@ -100,16 +83,16 @@ const CaseManagementPage: React.FC = () => {
       setEditId(id);
       form.setFieldsValue({
         title: d.title,
-        sku_id: d.sku_id,
+        event_type: d.event_type,
         event_date: d.event_date,
-        participants: d.participants,
-        actor_tier: d.actor_tier,
-        rating: d.rating,
-        client_name: d.client_name,
+        city: d.city,
+        cover_url: d.cover_url,
         description: d.description,
-        content: d.content,
+        performer_info: d.performer_info,
+        client_info: d.client_info,
+        sort_order: d.sort_order,
         status: d.status,
-        cover_images: d.cover_images?.join('\n'),
+        media_urls: d.media_urls?.join('\n'),
       });
       setEditModalOpen(true);
     } catch {
@@ -139,17 +122,17 @@ const CaseManagementPage: React.FC = () => {
 
       const data: CaseUpsertRequest = {
         title: values.title,
-        sku_id: values.sku_id,
+        event_type: values.event_type,
         event_date: values.event_date,
-        participants: values.participants,
-        actor_tier: values.actor_tier,
-        rating: values.rating,
-        client_name: values.client_name,
+        city: values.city,
+        cover_url: values.cover_url,
         description: values.description,
-        content: values.content || '',
+        performer_info: values.performer_info,
+        client_info: values.client_info,
+        sort_order: values.sort_order || 0,
         status: values.status,
-        cover_images: values.cover_images
-          ? values.cover_images.split('\n').filter(Boolean)
+        media_urls: values.media_urls
+          ? values.media_urls.split('\n').filter(Boolean)
           : undefined,
       };
 
@@ -196,52 +179,33 @@ const CaseManagementPage: React.FC = () => {
     {
       title: '案例标题',
       dataIndex: 'title',
-      width: 180,
+      width: 200,
       fixed: 'left',
       ellipsis: true,
     },
     {
-      title: '关联SKU',
-      dataIndex: 'sku_name',
-      width: 160,
-      search: false,
-      ellipsis: true,
-      render: (_, record) => record.sku_name || record.sku_id || '-',
-    },
-    {
-      title: '活动日期',
-      dataIndex: 'event_date',
+      title: '活动类型',
+      dataIndex: 'event_type',
       width: 120,
       search: false,
-      sorter: true,
     },
     {
-      title: '参与人数',
-      dataIndex: 'participants',
-      width: 90,
-      search: false,
-    },
-    {
-      title: '演员级别',
-      dataIndex: 'actor_tier',
+      title: '城市',
+      dataIndex: 'city',
       width: 100,
       search: false,
     },
     {
-      title: '好评率',
-      dataIndex: 'rating',
-      width: 90,
+      title: '排序',
+      dataIndex: 'sort_order',
+      width: 80,
       search: false,
-      render: (_, record) => (
-        <span style={{ color: record.rating >= 95 ? '#52c41a' : '#faad14' }}>
-          {record.rating}%
-        </span>
-      ),
+      sorter: true,
     },
     {
       title: '状态',
       dataIndex: 'status',
-      width: 80,
+      width: 100,
       filters: true,
       valueEnum: {
         draft: { text: '草稿' },
@@ -359,7 +323,7 @@ const CaseManagementPage: React.FC = () => {
               page,
               pageSize,
               keyword: params.title as string,
-              status: params.status as 'draft' | 'published' | undefined,
+              status: params.status as CaseStatus | undefined,
             });
             return {
               data: res.data.items,
@@ -411,19 +375,21 @@ const CaseManagementPage: React.FC = () => {
           >
             <Input placeholder="案例标题" />
           </Form.Item>
-          <Form.Item
-            name="sku_id"
-            label="关联SKU"
-            rules={[{ required: true, message: '请选择SKU' }]}
-          >
-            <Select
-              placeholder="选择SKU"
-              showSearch
-              optionFilterProp="label"
-              options={skuOptions}
-            />
-          </Form.Item>
           <Space size={16} style={{ width: '100%' }}>
+            <Form.Item
+              name="event_type"
+              label="活动类型"
+              rules={[{ required: true, message: '请输入活动类型' }]}
+            >
+              <Input placeholder="如：年会、发布会" style={{ width: 180 }} />
+            </Form.Item>
+            <Form.Item
+              name="city"
+              label="城市"
+              rules={[{ required: true, message: '请输入城市' }]}
+            >
+              <Input placeholder="城市" style={{ width: 120 }} />
+            </Form.Item>
             <Form.Item
               name="event_date"
               label="活动日期"
@@ -431,45 +397,13 @@ const CaseManagementPage: React.FC = () => {
             >
               <Input placeholder="YYYY-MM-DD" style={{ width: 160 }} />
             </Form.Item>
-            <Form.Item
-              name="participants"
-              label="参与人数"
-              rules={[{ required: true, message: '请输入人数' }]}
-            >
-              <InputNumber min={0} style={{ width: 120 }} />
-            </Form.Item>
-            <Form.Item
-              name="actor_tier"
-              label="演员级别"
-              rules={[{ required: true, message: '请输入演员级别' }]}
-            >
-              <Input placeholder="如：T3/T4" style={{ width: 140 }} />
-            </Form.Item>
           </Space>
           <Form.Item
-            name="rating"
-            label="好评率"
-            rules={[{ required: true, message: '请设置好评率' }]}
+            name="cover_url"
+            label="封面图URL"
+            rules={[{ required: true, message: '请输入封面图URL' }]}
           >
-            <Slider
-              min={0}
-              max={100}
-              marks={{ 0: '0%', 50: '50%', 80: '80%', 95: '95%', 100: '100%' }}
-              tooltip={{ formatter: (v) => `${v}%` }}
-            />
-          </Form.Item>
-          <Form.Item
-            name="client_name"
-            label="客户名称"
-            rules={[{ required: true, message: '请输入客户名称' }]}
-          >
-            <Input placeholder="客户/活动公司名称" />
-          </Form.Item>
-          <Form.Item
-            name="cover_images"
-            label="封面图URL（每行一个）"
-          >
-            <TextArea rows={2} placeholder="https://..." />
+            <Input placeholder="https://..." />
           </Form.Item>
           <Form.Item
             name="description"
@@ -478,22 +412,33 @@ const CaseManagementPage: React.FC = () => {
           >
             <TextArea rows={3} placeholder="案例描述..." />
           </Form.Item>
-          <Form.Item name="content" label="详细内容">
-            <TextArea rows={4} placeholder="案例详细内容..." />
+          <Form.Item name="performer_info" label="演员信息">
+            <Input placeholder="参与演员描述" />
           </Form.Item>
-          <Form.Item
-            name="status"
-            label="状态"
-            rules={[{ required: true }]}
-          >
-            <Select
-              style={{ width: 120 }}
-              options={[
-                { label: '草稿', value: 'draft' },
-                { label: '已发布', value: 'published' },
-              ]}
-            />
+          <Form.Item name="client_info" label="客户信息">
+            <Input placeholder="客户/活动公司描述" />
           </Form.Item>
+          <Form.Item name="media_urls" label="媒体URL（每行一个）">
+            <TextArea rows={2} placeholder="https://..." />
+          </Form.Item>
+          <Space size={16}>
+            <Form.Item name="sort_order" label="排序">
+              <InputNumber min={0} style={{ width: 120 }} />
+            </Form.Item>
+            <Form.Item
+              name="status"
+              label="状态"
+              rules={[{ required: true }]}
+            >
+              <Select
+                style={{ width: 120 }}
+                options={[
+                  { label: '草稿', value: 'draft' },
+                  { label: '已发布', value: 'published' },
+                ]}
+              />
+            </Form.Item>
+          </Space>
         </Form>
       </Modal>
 
@@ -508,62 +453,47 @@ const CaseManagementPage: React.FC = () => {
         {detailLoading ? (
           <div style={{ textAlign: 'center', padding: 60 }}>加载中...</div>
         ) : detailData ? (
-          <div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <tbody>
-                {[
-                  ['标题', detailData.title],
-                  ['关联SKU', detailData.sku_name || detailData.sku_id],
-                  ['活动日期', detailData.event_date],
-                  ['参与人数', String(detailData.participants)],
-                  ['演员级别', detailData.actor_tier],
-                  ['好评率', `${detailData.rating}%`],
-                  ['客户名称', detailData.client_name || '-'],
-                  ['描述', detailData.description || '-'],
-                  ['详细内容', detailData.content || '-'],
-                  [
-                    '状态',
-                    <Tag key="s" color={CaseStatusColor[detailData.status]}>
-                      {CaseStatusLabel[detailData.status]}
-                    </Tag>,
-                  ],
-                  [
-                    '创建时间',
-                    new Date(detailData.created_at).toLocaleString('zh-CN'),
-                  ],
-                  [
-                    '封面图',
-                    detailData.cover_images?.length
-                      ? detailData.cover_images.map((url, i) => (
-                          <div key={i}>
-                            <a href={url} target="_blank" rel="noopener noreferrer">
-                              图片 {i + 1}
-                            </a>
-                          </div>
-                        ))
-                      : '-',
-                  ],
-                ].map(([label, value], i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td
-                      style={{
-                        padding: '10px 16px',
-                        fontWeight: 500,
-                        color: '#666',
-                        width: 120,
-                        verticalAlign: 'top',
-                      }}
-                    >
-                      {label}
-                    </td>
-                    <td style={{ padding: '10px 16px' }}>
-                      {value as React.ReactNode}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <tbody>
+              {[
+                ['标题', detailData.title],
+                ['活动类型', detailData.event_type],
+                ['活动日期', detailData.event_date],
+                ['城市', detailData.city],
+                ['描述', detailData.description],
+                ['演员信息', detailData.performer_info || '-'],
+                ['客户信息', detailData.client_info || '-'],
+                ['排序', String(detailData.sort_order)],
+                [
+                  '状态',
+                  <Tag key="s" color={CaseStatusColor[detailData.status]}>
+                    {CaseStatusLabel[detailData.status]}
+                  </Tag>,
+                ],
+                [
+                  '创建时间',
+                  new Date(detailData.created_at).toLocaleString('zh-CN'),
+                ],
+              ].map(([label, value], i) => (
+                <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                  <td
+                    style={{
+                      padding: '10px 16px',
+                      fontWeight: 500,
+                      color: '#666',
+                      width: 120,
+                      verticalAlign: 'top',
+                    }}
+                  >
+                    {label}
+                  </td>
+                  <td style={{ padding: '10px 16px' }}>
+                    {value as React.ReactNode}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         ) : (
           <Empty />
         )}

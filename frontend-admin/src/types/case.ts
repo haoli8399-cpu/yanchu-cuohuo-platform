@@ -3,7 +3,6 @@
  *
  * P-23: 案例管理 - 增编案例，草稿→发布，排序
  */
-import type { SKU } from './sku';
 
 /** 案例状态 */
 export type CaseStatus = 'draft' | 'published';
@@ -24,12 +23,10 @@ export const CaseStatusColor: Record<CaseStatus, string> = {
 export interface CaseListItem {
   id: string;
   title: string;
-  sku_id: string;
-  sku_name?: string;
-  event_date: string;
-  participants: number;
-  actor_tier: string;
-  rating: number;
+  event_type: string;
+  city: string;
+  cover_url: string;
+  sort_order: number;
   status: CaseStatus;
   created_at: string;
   updated_at: string;
@@ -39,16 +36,15 @@ export interface CaseListItem {
 export interface CaseDetail {
   id: string;
   title: string;
-  sku_id: string;
-  sku_name?: string;
+  event_type: string;
   event_date: string;
-  participants: number;
-  actor_tier: string;
-  rating: number;
-  client_name: string;
-  cover_images: string[];
+  city: string;
+  cover_url: string;
+  media_urls: string[];
   description: string;
-  content: string;
+  performer_info: string;
+  client_info: string;
+  sort_order: number;
   status: CaseStatus;
   created_at: string;
   updated_at: string;
@@ -60,20 +56,19 @@ export interface CaseListParams {
   pageSize: number;
   keyword?: string;
   status?: CaseStatus;
-  sku_id?: string;
 }
 
 /** 创建/更新案例请求 */
 export interface CaseUpsertRequest {
   title: string;
-  sku_id: string;
+  event_type: string;
   event_date: string;
-  participants: number;
-  actor_tier: string;
-  rating: number;
-  client_name: string;
-  cover_images?: string[];
+  city: string;
+  cover_url: string;
+  media_urls?: string[];
   description: string;
-  content: string;
+  performer_info?: string;
+  client_info?: string;
+  sort_order?: number;
   status: CaseStatus;
 }

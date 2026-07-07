@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心（活动公司）</title>
+    <style id="theme-vars">
+/* ============================================
+   Comedy Factory (喜剧工厂) — Brand Design System
+   B2B Performance Marketplace WeChat Mini-Program
+   ============================================ */
+
+:root {
+  /* ——— Brand Primary (Purple System) ——— */
+  --color-primary: #7c3aed;
+  --color-primary-hover: #6d28d9;
+  --color-primary-active: #5b21b6;
+  --color-primary-light: #a78bfa;
+  --color-primary-lighter: #ddd6fe;
+  --color-primary-bg: #f5f3ff;
+  --color-primary-subtle: #ede9fe;
+
+  /* ——— Neutral Scale ——— */
+  --color-bg-page: #f5f5f7;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-input: #f7f7f8;
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* ——— Text ——— */
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+  --color-text-placeholder: #c4c4cc;
+  --color-text-inverse: #ffffff;
+  --color-text-link: #7c3aed;
+
+  /* ——— Border & Divider ——— */
+  --color-border: #e5e7eb;
+  --color-divider: #f0f0f2;
+
+  /* ——— Semantic Status ——— */
+  --state-pending: #f59e0b;
+  --state-pending-bg: #fffbeb;
+  --state-quoted: #3b82f6;
+  --state-quoted-bg: #eff6ff;
+  --state-confirmed: #22c55e;
+  --state-confirmed-bg: #f0fdf4;
+  --state-signed: #7c3aed;
+  --state-signed-bg: #f5f3ff;
+  --state-cancelled: #ef4444;
+  --state-cancelled-bg: #fef2f2;
+  --state-info: #6366f1;
+  --state-info-bg: #eef2ff;
+  --state-success: #22c55e;
+  --state-warning: #f59e0b;
+  --state-error: #ef4444;
+
+  /* ——— Shadow (alpha <= 0.05 for static) ——— */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-float: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  /* ——— Radius (restrained 2/4/8/12/16px scale) ——— */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* ——— Spacing ——— */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-base: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* ——— Typography ——— */
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+
+  --text-xs: 20rpx;
+  --text-sm: 24rpx;
+  --text-base: 28rpx;
+  --text-md: 30rpx;
+  --text-lg: 32rpx;
+  --text-xl: 36rpx;
+  --text-2xl: 40rpx;
+  --text-3xl: 48rpx;
+  --text-4xl: 56rpx;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+
+  /* ——— Weight ——— */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* ——— Tab Bar ——— */
+  --tab-bar-height: 100rpx;
+  --tab-bar-bg: #ffffff;
+  --tab-bar-border: #e5e7eb;
+  --tab-bar-icon-inactive: #9ca3af;
+  --tab-bar-icon-active: #7c3aed;
+  --tab-bar-text-inactive: #9ca3af;
+  --tab-bar-text-active: #7c3aed;
+
+  /* ——— Navigation Bar ——— */
+  --nav-bar-height: 88rpx;
+  --nav-bar-bg: #ffffff;
+  --nav-bar-title-color: #1a1a2e;
+
+  /* ——— Safe Area ——— */
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  --status-bar-height: var(--status-bar-height);
+
+  /* ——— Component Specific ——— */
+  --btn-primary-bg: #7c3aed;
+  --btn-primary-text: #ffffff;
+  --btn-primary-radius: 44rpx;
+  --btn-primary-height: 88rpx;
+  --btn-primary-font-size: 32rpx;
+
+  --btn-ghost-bg: #f5f3ff;
+  --btn-ghost-text: #7c3aed;
+
+  --card-bg: #ffffff;
+  --card-radius: 16rpx;
+  --card-padding: 24rpx;
+  --card-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+
+  --input-bg: #f7f7f8;
+  --input-radius: 12rpx;
+  --input-border: #e5e7eb;
+  --input-height: 80rpx;
+  --input-padding: 0 24rpx;
+  --input-font-size: 28rpx;
+
+  --tag-radius: 8rpx;
+  --tag-padding: 4rpx 12rpx;
+  --tag-font-size: 22rpx;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--color-primary);
+    --color-border: var(--color-border);
+  }
+  @layer base {
+    body { background: var(--color-background); color: var(--color-text-primary); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body>
+  <!-- Mini-program system capsule -->
+  <div class="fixed top-2 right-2 w-[87px] h-8 rounded-md bg-black/[0.04] flex items-center justify-center z-[9999]"><span class="flex items-center justify-center h-full w-1/2" aria-label="More"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></span><span class="w-px h-3 bg-black/10"></span><span class="flex items-center justify-center h-full w-1/2" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg><span style="display:none">×✕</span></span></div>
+
+  <!-- ====== Profile Header Card ====== -->
+  <div class="relative" style="background: linear-gradient(135deg, #7c3aed, #5b21b6); padding: 24px 16px 40px; border-radius: 0 0 24px 24px;">
+    <div class="flex items-center gap-3">
+      <img
+        src="../assets/performer-avatar.jpg"
+        alt="Avatar"
+        class="w-14 h-14 rounded-full object-cover"
+        style="border: 2px solid #ffffff;"
+      >
+      <div class="flex flex-col gap-1.5">
+        <div class="flex items-center gap-2">
+          <span class="text-white text-lg font-semibold">星辰文化传媒</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-white" style="background: rgba(255,255,255,0.2); font-size: 11px;">活动公司</span>
+          <span class="inline-flex items-center rounded-full px-2 py-0.5 font-medium" style="background: #fbbf24; color: #1a1a2e; font-size: 11px;">认证企业</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== Data Overview Card ====== -->
+  <div class="relative mx-4 -mt-6 z-10 mb-3">
+    <div class="bg-white rounded-2xl p-4" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+      <div class="flex items-center">
+        <!-- Column 1: 需求总数 -->
+        <div class="flex-1 flex flex-col items-center">
+          <span class="text-xs" style="color: #9ca3af;">需求总数</span>
+          <span class="text-2xl font-bold mt-1" style="color: #1a1a2e;">12</span>
+        </div>
+        <!-- Separator -->
+        <div class="w-px h-10" style="background: #f0f0f2;"></div>
+        <!-- Column 2: 进行中 -->
+        <div class="flex-1 flex flex-col items-center">
+          <span class="text-xs" style="color: #9ca3af;">进行中</span>
+          <span class="text-2xl font-bold mt-1" style="color: #f59e0b;">5</span>
+        </div>
+        <!-- Separator -->
+        <div class="w-px h-10" style="background: #f0f0f2;"></div>
+        <!-- Column 3: 已签约 -->
+        <div class="flex-1 flex flex-col items-center">
+          <span class="text-xs" style="color: #9ca3af;">已签约</span>
+          <span class="text-2xl font-bold mt-1" style="color: #22c55e;">7</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== Function Menu List (Group 1) ====== -->
+  <div class="mx-4 mb-3">
+    <div class="bg-white rounded-xl overflow-hidden">
+      <!-- 我的需求 -->
+      <div class="flex items-center justify-between px-4 py-3.5 cursor-pointer" style="border-bottom: 1px solid #f0f0f2;">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: #f5f3ff;">
+            <svg class="w-4 h-4" style="color: #7c3aed;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+          </div>
+          <span class="text-sm" style="color: #1a1a2e; font-size: 15px;">我的需求</span>
+        </div>
+        <svg class="w-4 h-4" style="color: #c4c4cc;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+      <!-- 我的收藏 -->
+      <div class="flex items-center justify-between px-4 py-3.5 cursor-pointer" style="border-bottom: 1px solid #f0f0f2;">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: #fef2f2;">
+            <svg class="w-4 h-4" style="color: #ef4444;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+          </div>
+          <span class="text-sm" style="color: #1a1a2e; font-size: 15px;">我的收藏</span>
+        </div>
+        <svg class="w-4 h-4" style="color: #c4c4cc;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+      <!-- 历史订单 -->
+      <div class="flex items-center justify-between px-4 py-3.5 cursor-pointer" style="border-bottom: 1px solid #f0f0f2;">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: #eff6ff;">
+            <svg class="w-4 h-4" style="color: #3b82f6;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="text-sm" style="color: #1a1a2e; font-size: 15px;">历史订单</span>
+        </div>
+        <svg class="w-4 h-4" style="color: #c4c4cc;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+      <!-- 企业信息 -->
+      <div class="flex items-center justify-between px-4 py-3.5 cursor-pointer" style="border-bottom: 1px solid #f0f0f2;">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: #f5f3ff;">
+            <svg class="w-4 h-4" style="color: #7c3aed;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <span class="text-sm" style="color: #1a1a2e; font-size: 15px;">企业信息</span>
+        </div>
+        <svg class="w-4 h-4" style="color: #c4c4cc;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+      <!-- 发票管理 -->
+      <div class="flex items-center justify-between px-4 py-3.5 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: #fffbeb;">
+            <svg class="w-4 h-4" style="color: #f59e0b;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
+            </svg>
+          </div>
+          <span class="text-sm" style="color: #1a1a2e; font-size: 15px;">发票管理</span>
+        </div>
+        <svg class="w-4 h-4" style="color: #c4c4cc;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== Second Menu Group ====== -->
+  <div class="mx-4 mb-3">
+    <div class="bg-white rounded-xl overflow-hidden">
+      <!-- 联系客服 -->
+      <div class="flex items-center justify-between px-4 py-3.5 cursor-pointer" style="border-bottom: 1px solid #f0f0f2;">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: #eef2ff;">
+            <svg class="w-4 h-4" style="color: #6366f1;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+          </div>
+          <span class="text-sm" style="color: #1a1a2e; font-size: 15px;">联系客服</span>
+        </div>
+        <svg class="w-4 h-4" style="color: #c4c4cc;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+      <!-- 意见反馈 -->
+      <div class="flex items-center justify-between px-4 py-3.5 cursor-pointer" style="border-bottom: 1px solid #f0f0f2;">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: #f0fdf4;">
+            <svg class="w-4 h-4" style="color: #22c55e;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+          </div>
+          <span class="text-sm" style="color: #1a1a2e; font-size: 15px;">意见反馈</span>
+        </div>
+        <svg class="w-4 h-4" style="color: #c4c4cc;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+      <!-- 关于我们 -->
+      <div class="flex items-center justify-between px-4 py-3.5 cursor-pointer" style="border-bottom: 1px solid #f0f0f2;">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: #f5f3ff;">
+            <svg class="w-4 h-4" style="color: #7c3aed;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="text-sm" style="color: #1a1a2e; font-size: 15px;">关于我们</span>
+        </div>
+        <svg class="w-4 h-4" style="color: #c4c4cc;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+      <!-- 设置 -->
+      <div class="flex items-center justify-between px-4 py-3.5 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: #f7f7f8;">
+            <svg class="w-4 h-4" style="color: #6b7280;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <span class="text-sm" style="color: #1a1a2e; font-size: 15px;">设置</span>
+        </div>
+        <svg class="w-4 h-4" style="color: #c4c4cc;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content spacer for tab bar -->
+  <div style="height: 70px;"></div>
+
+  <!-- ====== Bottom Tab Bar ====== -->
+  <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full flex items-center justify-around bg-white border-t z-50" style="max-width: 375px; border-color: #e5e7eb; height: 56px; padding-bottom: env(safe-area-inset-bottom);">
+    <!-- 发现 -->
+    <div class="flex flex-col items-center gap-0.5 cursor-pointer" data-dom-id="tab-discover" style="color: #9ca3af;">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <span class="text-xs">发现</span>
+    </div>
+    <!-- 方案 -->
+    <div class="flex flex-col items-center gap-0.5 cursor-pointer" data-dom-id="tab-sku" style="color: #9ca3af;">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+      </svg>
+      <span class="text-xs">方案</span>
+    </div>
+    <!-- 需求 -->
+    <div class="flex flex-col items-center gap-0.5 cursor-pointer" data-dom-id="tab-request" style="color: #9ca3af;">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <span class="text-xs">需求</span>
+    </div>
+    <!-- 我的 (active) -->
+    <div class="flex flex-col items-center gap-0.5 cursor-pointer" data-dom-id="tab-mine" style="color: #7c3aed;">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v2h20v-2c0-3.33-6.67-5-10-5z"/>
+      </svg>
+      <span class="text-xs font-medium">我的</span>
+    </div>
+  </div>
+<script>if(typeof lucide!=='undefined')lucide.createIcons();</script>
+</body>
+</html>

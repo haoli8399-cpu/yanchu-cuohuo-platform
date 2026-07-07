@@ -22,7 +22,6 @@ export async function getCaseList(
   query.set('pageSize', String(params.pageSize));
   if (params.keyword) query.set('keyword', params.keyword);
   if (params.status) query.set('status', params.status);
-  if (params.sku_id) query.set('sku_id', params.sku_id);
 
   return apiClient.get<PaginatedResponse<CaseListItem>>(
     `/cases?${query.toString()}`,
@@ -40,7 +39,7 @@ export async function getCaseDetail(
 export async function createCase(
   data: CaseUpsertRequest,
 ): Promise<ApiResponse<{ id: string }>> {
-  return apiClient.post<{ id: string }>('/cases', data as unknown as Record<string, unknown>);
+  return apiClient.post<{ id: string }>('/cases', data as Record<string, unknown>);
 }
 
 /** 更新案例 */
@@ -48,7 +47,7 @@ export async function updateCase(
   id: string,
   data: Partial<CaseUpsertRequest>,
 ): Promise<ApiResponse<{ id: string }>> {
-  return apiClient.put<{ id: string }>(`/cases/${id}`, data as unknown as Record<string, unknown>);
+  return apiClient.put<{ id: string }>(`/cases/${id}`, data as Record<string, unknown>);
 }
 
 /** 删除案例 */

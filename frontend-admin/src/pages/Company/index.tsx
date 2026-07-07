@@ -388,42 +388,7 @@ const CompanyListPage: React.FC = () => {
         title="活动公司详情"
         open={detailModalOpen}
         onCancel={() => setDetailModalOpen(false)}
-        footer={
-          detailData && detailData.status === 'pending_cert'
-            ? [
-                <Button
-                  key="reject"
-                  danger
-                  icon={<CloseOutlined />}
-                  style={{ minHeight: 44 }}
-                  onClick={() => {
-                    setVerifyCompanyId(detailData.id);
-                    setVerifyCompanyName(detailData.short_name);
-                    setVerifyAction('reject');
-                    setVerifyReason('');
-                    setVerifyModalOpen(true);
-                  }}
-                >
-                  驳回
-                </Button>,
-                <Button
-                  key="approve"
-                  type="primary"
-                  icon={<CheckOutlined />}
-                  style={{ minHeight: 44 }}
-                  onClick={() => {
-                    setVerifyCompanyId(detailData.id);
-                    setVerifyCompanyName(detailData.short_name);
-                    setVerifyAction('approve');
-                    setVerifyReason('');
-                    setVerifyModalOpen(true);
-                  }}
-                >
-                  通过
-                </Button>,
-              ]
-            : null
-        }
+        footer={null}
         width={750}
       >
         {detailLoading ? (
@@ -455,12 +420,6 @@ const CompanyListPage: React.FC = () => {
                   ],
                   ['统一信用代码', detailData.credit_code || '-'],
                   ['法人姓名', detailData.legal_person_name || '-'],
-                  ['营业执照', detailData.business_license_url ? (
-                    <a key="bl" href={detailData.business_license_url} target="_blank" rel="noopener noreferrer">查看营业执照</a>
-                  ) : '-'],
-                  ['法人身份证', detailData.legal_person_id_url ? (
-                    <a key="lp" href={detailData.legal_person_id_url} target="_blank" rel="noopener noreferrer">查看法人身份证</a>
-                  ) : '-'],
                   ['开户行', detailData.bank_name || '-'],
                   ['对公账户', detailData.bank_account || '-'],
                 ].map(([label, value], i) => (

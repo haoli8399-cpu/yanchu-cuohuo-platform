@@ -42,7 +42,7 @@ const listQuerySchema = z.object({
   status: skuStatusSchema.optional().default('active'),
   keyword: z.string().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
-  pageSize: z.coerce.number().int().min(1).max(1000).optional().default(20),
+  pageSize: z.coerce.number().int().min(1).max(100).optional().default(20),
 });
 
 /** GET /v1/skus/:id 路径参数 */

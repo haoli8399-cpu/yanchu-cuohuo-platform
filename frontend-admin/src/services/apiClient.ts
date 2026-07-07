@@ -49,7 +49,13 @@ function getToken(): string | null {
  * 生产环境走环境变量 API_BASE_URL
  */
 function buildURL(path: string): string {
-  return `/v1${path}`;
+  // 开发环境通过 umi proxy 转发
+  if (process.env.NODE_ENV === 'development') {
+    return `/api${path}`;
+  }
+  // 生产环境从环境变量读取
+  const baseURL = process.env.API_BASE_URL || '';
+  return `${baseURL}${path}`;
 }
 
 /**
@@ -124,10 +130,11 @@ async function request<T>(
     // 处理 HTTP 状态码异常
     if (!response.ok) {
       if (response.status === 401) {
-        // Token 过期，清除并跳转登录页
+        // Token 过期，清除并提示重新登录
         localStorage.removeItem('admin_token');
         message.error('登录已过期，请重新登录');
-        window.location.replace('/admin/login');
+        // 跳转登录页（由路由守卫处理）
+        window.location.hash = '#/login';
         throw new Error('未授权，请重新登录');
       }
       if (response.status === 403) {

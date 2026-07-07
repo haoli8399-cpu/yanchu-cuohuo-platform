@@ -36,6 +36,5 @@ export function requirePermission(permission: string) {
     if (!allowed || !allowed.includes(adminRole)) {
       return reply.status(403).send(errorResponse(1005, `权限不足，需要 ${permission}`));
     }
-    return undefined;
   };
 }

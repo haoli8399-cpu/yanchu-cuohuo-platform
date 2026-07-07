@@ -1,0 +1,452 @@
+{
+  "data": [
+    {
+      "id": "page-login",
+      "title": "登录页",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520000000,
+      "canvasData": {
+        "x": 0,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/login.html",
+        "interactions": [
+          {
+            "domId": "btn-wechat-login",
+            "targetPageId": "page-discover",
+            "transitionLabel": "登录成功"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-discover",
+      "title": "发现首页",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520001000,
+      "canvasData": {
+        "x": 420,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/discover.html",
+        "interactions": [
+          {
+            "domId": "cta-sku-list",
+            "targetPageId": "page-sku-list",
+            "transitionLabel": "查看方案"
+          },
+          {
+            "domId": "card-recommend-1",
+            "targetPageId": "page-sku-detail",
+            "transitionLabel": "查看方案详情"
+          },
+          {
+            "domId": "tab-sku",
+            "targetPageId": "page-sku-list",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          },
+          {
+            "domId": "tab-request",
+            "targetPageId": "page-request-list",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          },
+          {
+            "domId": "tab-user",
+            "targetPageId": "page-user-company",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-sku-list",
+      "title": "方案列表",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520002000,
+      "canvasData": {
+        "x": 840,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/sku-list.html",
+        "interactions": [
+          {
+            "domId": "card-sku-1",
+            "targetPageId": "page-sku-detail",
+            "transitionLabel": "查看方案详情"
+          },
+          {
+            "domId": "tab-discover",
+            "targetPageId": "page-discover",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          },
+          {
+            "domId": "tab-request",
+            "targetPageId": "page-request-list",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          },
+          {
+            "domId": "tab-user",
+            "targetPageId": "page-user-company",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-sku-detail",
+      "title": "SKU详情",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520003000,
+      "canvasData": {
+        "x": 1260,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/sku-detail.html",
+        "interactions": [
+          {
+            "domId": "back-sku-list",
+            "targetPageId": "page-sku-list",
+            "hideEdge": true,
+            "transitionLabel": "返回"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-request-list",
+      "title": "需求列表",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520004000,
+      "canvasData": {
+        "x": 0,
+        "y": 944,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/request-list.html",
+        "interactions": [
+          {
+            "domId": "tab-discover",
+            "targetPageId": "page-discover",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          },
+          {
+            "domId": "tab-sku",
+            "targetPageId": "page-sku-list",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          },
+          {
+            "domId": "tab-user",
+            "targetPageId": "page-user-company",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-user-company",
+      "title": "个人中心（活动公司）",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520005000,
+      "canvasData": {
+        "x": 420,
+        "y": 944,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/user-company.html",
+        "interactions": [
+          {
+            "domId": "tab-discover",
+            "targetPageId": "page-discover",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          },
+          {
+            "domId": "tab-sku",
+            "targetPageId": "page-sku-list",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          },
+          {
+            "domId": "tab-request",
+            "targetPageId": "page-request-list",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-assignment-list",
+      "title": "排期列表",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520006000,
+      "canvasData": {
+        "x": 840,
+        "y": 944,
+        "group": 1
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assignment-list.html",
+        "interactions": [
+          {
+            "domId": "tab-settlement",
+            "targetPageId": "page-settlement",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-settlement",
+      "title": "结算记录",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520007000,
+      "canvasData": {
+        "x": 1260,
+        "y": 944,
+        "group": 1
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/settlement.html",
+        "interactions": [
+          {
+            "domId": "tab-assignment",
+            "targetPageId": "page-assignment-list",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-onboarding",
+      "title": "演员入驻",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520008000,
+      "canvasData": {
+        "x": 1680,
+        "y": 944,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/onboarding.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-request-submit",
+      "title": "提交需求",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520020000,
+      "canvasData": {
+        "x": 2100,
+        "y": 944,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/request-submit.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-request-detail",
+      "title": "需求详情",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520021000,
+      "canvasData": {
+        "x": 2520,
+        "y": 944,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/request-detail.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-assignment-detail",
+      "title": "排期详情",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520022000,
+      "canvasData": {
+        "x": 2940,
+        "y": 944,
+        "group": 1
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assignment-detail.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-assignment-calendar",
+      "title": "排期日历",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520023000,
+      "canvasData": {
+        "x": 3360,
+        "y": 944,
+        "group": 1
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/assignment-calendar.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-checkin",
+      "title": "签到打卡",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520024000,
+      "canvasData": {
+        "x": 3780,
+        "y": 944,
+        "group": 1
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/checkin.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-credit",
+      "title": "信誉分",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520025000,
+      "canvasData": {
+        "x": 4200,
+        "y": 944,
+        "group": 1
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/credit.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-user-performer",
+      "title": "个人中心（演员）",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1751520026000,
+      "canvasData": {
+        "x": 4620,
+        "y": 944,
+        "group": 1
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/user-performer.html",
+        "interactions": [
+          {
+            "domId": "tab-assignment",
+            "targetPageId": "page-assignment-list",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          },
+          {
+            "domId": "tab-settlement",
+            "targetPageId": "page-settlement",
+            "hideEdge": true,
+            "transitionLabel": "切换Tab"
+          }
+        ]
+      }
+    },
+    {
+      "id": "image-001",
+      "title": "登录背景",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1751520010000,
+      "canvasData": {
+        "x": 0,
+        "y": 1990
+      },
+      "devMetadata": {
+        "imageSrc": "assets/login-bg.jpg"
+      }
+    },
+    {
+      "id": "image-002",
+      "title": "演出横幅",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1751520011000,
+      "canvasData": {
+        "x": 420,
+        "y": 1990
+      },
+      "devMetadata": {
+        "imageSrc": "assets/banner-show.jpg"
+      }
+    },
+    {
+      "id": "image-003",
+      "title": "演员头像",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1751520012000,
+      "canvasData": {
+        "x": 840,
+        "y": 1990
+      },
+      "devMetadata": {
+        "imageSrc": "assets/performer-avatar.jpg"
+      }
+    },
+    {
+      "id": "image-004",
+      "title": "演出卡片缩略图",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1751520013000,
+      "canvasData": {
+        "x": 1260,
+        "y": 1990
+      },
+      "devMetadata": {
+        "imageSrc": "assets/show-card-1.jpg"
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": true,
+    "deviceType": "mobile",
+    "projectName": "喜剧工厂小程序"
+  }
+}

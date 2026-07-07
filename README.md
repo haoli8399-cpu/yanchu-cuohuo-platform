@@ -1,34 +1,62 @@
-# 喜剧工厂（原演出撮合平台）
+# 演立方 YANLI · AI 商演成交机器
 
-## 这个产品解决什么问题？
+## 项目状态
 
-**活动公司办活动需要演员 → 来这选标准化SKU方案、提交需求 → 平台（后仰团队）匹配演员、出方案、保履约。**
+| 项 | 状态 |
+|:---|:----:|
+| 品牌体系 | ✅ V2.0 定版（演立方 YANLI / 小演 / 副标题 / 占位语） |
+| 设计预览 19 页 | ✅ 全部完成 |
+| Design Token | ✅ CSS Variables 体系定义 |
+| 组件库 CSS | ✅ 原子+复合层（Button/Card/Tag/Status/Table/Funnel/Insight 等）|
+| AI成交日报 React 组件 | ✅ 完整 TSX + CSS |
+| 项目治理文件 | ✅ PROJECT_CONTROL.md + AGENT_RULES.md |
 
-简单说就是企业版的大麦网，但不是卖票的，是帮活动公司找演员的B2B撮合平台。
+## 文件结构
 
-不是招投标（演员不报价竞标），不是C端票务，不是临时找兼职。
+```
+演出撮合平台/
+├── PROJECT_CONTROL.md              # 项目治理（范围/架构/路线图/规则）
+├── AGENT_RULES.md                  # AI Agent 行为规范
+├── docs/
+│   ├── DESIGN_SYSTEM.md            # 设计系统（旧版，需更新）
+│   └── tokens/
+│       └── variables.css           # ★ Design Token 正式文件（品牌色/组件/布局）
+├── supplier-console/               # Phase 1 核心
+│   └── src/pages/DailyReport/
+│       ├── DailyReport.tsx         # ★ AI成交日报 React 组件（生产可用）
+│       └── DailyReport.css         # ★ 配套样式
+├── 演立方设计预览/
+│   └── index.html                  # ★ 19 页完整设计预览
+├── desktop/演立方设计预览/          # 桌面快捷入口
+│   └── index.html
+```
 
----
+## 待执行项（优先级排序）
 
-## 四个子项目分别是什么？
+```
+P0 — 立即
+├── 用组件库拼装 销售作战台 页面（React TSX）
+├── 把 DESIGN_SYSTEM.md 更新为品牌 V2.0 版本
+└── 把组件库打包为 npm 包 / 文档站
 
-| 子项目 | 目录 | 技术栈 | 状态 | 说明 |
-|--------|------|--------|:----:|------|
-| **微信小程序** | `miniprogram/` | uni-app 3 + Vue 3 + TypeScript + Vant Weapp | 🟡 主力，**可改动** | 双角色（活动公司/演员），15个页面 |
-| **活动公司Web端** | `frontend-agent/` | React 19 + Vite + Ant Design | ✅ 已上线，**别动** | 功能同小程序活动公司端，备用入口 |
-| **运营后台Web端** | `frontend-admin/` (在 `~/Documents/演出撮合平台/`) | Umi 4 + React + Ant Design Pro | ✅ 已上线，**别动** | 34项功能全部实现，运营管SKU/演员/订单/价格 |
-| **后端API** | `backend/` (在 `~/Documents/演出撮合平台/`) | TypeScript + Fastify + PostgreSQL + JWT | ✅ 已上线，**别动** | 16组/51端点，全部完成 |
+P1 — 本周
+├── SKU管理 页面
+├── 利润看板 页面
+└── 订单管理 页面
 
-一句话：**只需要管小程序，其他三个不要碰。**
+P2 — 下周
+├── 小程序端 7 页（uni-app + Vue3）
+├── PC Web 端 2 页
+└── Platform-Admin 1 页
 
----
+P3 — 待定
+├── Penpot MCP 后端 API 集成（修复导出问题）
+└── 组件 Storybook 文档站
+```
 
-## 两个角色的核心业务流程是什么？
+## 关键决策记录
 
-### 活动公司（买方）
-浏览SKU方案 → 选中方案"获取报价"或提交需求 → 运营出方案配演员 → 查看确认方案 → 线下付定金 → 等着演出 → 线下付尾款 → 评价演员
-
-### 演员（供给方）
-入驻审核 → 收到排期通知 → 确认/拒绝 → 演出前签到打卡 → 演出完成 → 结算（线下打款）→ 累积信誉分
-
-**关键区别：演员不报价、不竞标。平台（运营）匹配演员，演员只选择接或不接。**
+1. **Penpot MCP 不稳定 → 绕过**：用 HTML 预览替代 Penpot 导出，直接代码生成
+2. **组件库框架**：React + CSS Variables（不锁定 UI 库，可适配 Ant Design 6）
+3. **品牌优先级**：演立方 YANLI 统一品牌 > 组件精细化 > 页面堆量
+4. **开发顺序**：supplier-console（内部成交工具）> 小程序（需求方入口）> PC Web > platform-admin

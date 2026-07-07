@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排期日历</title>
+    <style id="theme-vars">
+/* ============================================
+   Comedy Factory (喜剧工厂) — Brand Design System
+   B2B Performance Marketplace WeChat Mini-Program
+   ============================================ */
+
+:root {
+  /* ——— Brand Primary (Purple System) ——— */
+  --color-primary: #7c3aed;
+  --color-primary-hover: #6d28d9;
+  --color-primary-active: #5b21b6;
+  --color-primary-light: #a78bfa;
+  --color-primary-lighter: #ddd6fe;
+  --color-primary-bg: #f5f3ff;
+  --color-primary-subtle: #ede9fe;
+
+  /* ——— Neutral Scale ——— */
+  --color-bg-page: #f5f5f7;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-input: #f7f7f8;
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* ——— Text ——— */
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+  --color-text-placeholder: #c4c4cc;
+  --color-text-inverse: #ffffff;
+  --color-text-link: #7c3aed;
+
+  /* ——— Border & Divider ——— */
+  --color-border: #e5e7eb;
+  --color-divider: #f0f0f2;
+
+  /* ——— Semantic Status ——— */
+  --state-pending: #f59e0b;
+  --state-pending-bg: #fffbeb;
+  --state-quoted: #3b82f6;
+  --state-quoted-bg: #eff6ff;
+  --state-confirmed: #22c55e;
+  --state-confirmed-bg: #f0fdf4;
+  --state-signed: #7c3aed;
+  --state-signed-bg: #f5f3ff;
+  --state-cancelled: #ef4444;
+  --state-cancelled-bg: #fef2f2;
+  --state-info: #6366f1;
+  --state-info-bg: #eef2ff;
+  --state-success: #22c55e;
+  --state-warning: #f59e0b;
+  --state-error: #ef4444;
+
+  /* ——— Shadow (alpha <= 0.05 for static) ——— */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-float: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  /* ——— Radius (restrained 2/4/8/12/16px scale) ——— */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* ——— Spacing ——— */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-base: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* ——— Typography ——— */
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+
+  --text-xs: 20rpx;
+  --text-sm: 24rpx;
+  --text-base: 28rpx;
+  --text-md: 30rpx;
+  --text-lg: 32rpx;
+  --text-xl: 36rpx;
+  --text-2xl: 40rpx;
+  --text-3xl: 48rpx;
+  --text-4xl: 56rpx;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+
+  /* ——— Weight ——— */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* ——— Tab Bar ——— */
+  --tab-bar-height: 100rpx;
+  --tab-bar-bg: #ffffff;
+  --tab-bar-border: #e5e7eb;
+  --tab-bar-icon-inactive: #9ca3af;
+  --tab-bar-icon-active: #7c3aed;
+  --tab-bar-text-inactive: #9ca3af;
+  --tab-bar-text-active: #7c3aed;
+
+  /* ——— Navigation Bar ——— */
+  --nav-bar-height: 88rpx;
+  --nav-bar-bg: #ffffff;
+  --nav-bar-title-color: #1a1a2e;
+
+  /* ——— Safe Area ——— */
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  --status-bar-height: var(--status-bar-height);
+
+  /* ——— Component Specific ——— */
+  --btn-primary-bg: #7c3aed;
+  --btn-primary-text: #ffffff;
+  --btn-primary-radius: 44rpx;
+  --btn-primary-height: 88rpx;
+  --btn-primary-font-size: 32rpx;
+
+  --btn-ghost-bg: #f5f3ff;
+  --btn-ghost-text: #7c3aed;
+
+  --card-bg: #ffffff;
+  --card-radius: 16rpx;
+  --card-padding: 24rpx;
+  --card-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+
+  --input-bg: #f7f7f8;
+  --input-radius: 12rpx;
+  --input-border: #e5e7eb;
+  --input-height: 80rpx;
+  --input-padding: 0 24rpx;
+  --input-font-size: 28rpx;
+
+  --tag-radius: 8rpx;
+  --tag-padding: 4rpx 12rpx;
+  --tag-font-size: 22rpx;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--color-primary);
+    --color-border: var(--color-border);
+  }
+  @layer base {
+    body { background: var(--color-background); color: var(--color-text-primary); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased" style="background: #f5f5f7; color: #1a1a2e; font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;">
+
+    <main class="pb-6">
+
+      <!-- 1. Navigation Bar (sticky, white bg) -->
+      <div class="sticky top-0 z-50 bg-white" style="height: 48px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 50; background: #ffffff; box-shadow: 0 1px 0 rgba(0,0,0,0.04);">
+        <!-- Back button -->
+        <button class="absolute left-4 flex items-center gap-1" style="color: #1a1a2e;" aria-label="返回">
+          <i data-lucide="chevron-left" style="width: 20px; height: 20px;"></i>
+          <span style="font-size: 15px;">返回</span>
+        </button>
+        <!-- Center title -->
+        <span style="font-size: 17px; font-weight: 600; color: #1a1a2e;">排期日历</span>
+        <!-- Right capsule button -->
+        <button class="absolute right-4 flex items-center justify-center rounded-full bg-gray-100" style="width: 87px; height: 32px;" aria-label="More">
+          <i data-lucide="ellipsis" style="width: 18px; height: 18px; color: #1a1a2e;"></i>
+        </button>
+      </div>
+
+      <!-- 2. Month Selector -->
+      <div class="flex items-center justify-center" style="margin: 12px 16px;">
+        <button class="flex items-center justify-center" style="width: 32px; height: 32px; color: #1a1a2e;" aria-label="上个月">
+          <i data-lucide="chevron-left" style="width: 20px; height: 20px;"></i>
+        </button>
+        <span class="flex-1 text-center" style="font-size: 16px; font-weight: 600; color: #1a1a2e;">2024年12月</span>
+        <button class="flex items-center justify-center" style="width: 32px; height: 32px; color: #1a1a2e;" aria-label="下个月">
+          <i data-lucide="chevron-right" style="width: 20px; height: 20px;"></i>
+        </button>
+      </div>
+
+      <!-- 3. Calendar Grid -->
+      <div style="margin: 0 16px 12px; background: #ffffff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <!-- Weekday headers -->
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 8px;">
+          <div style="font-size: 12px; color: #9ca3af; line-height: 36px;">日</div>
+          <div style="font-size: 12px; color: #9ca3af; line-height: 36px;">一</div>
+          <div style="font-size: 12px; color: #9ca3af; line-height: 36px;">二</div>
+          <div style="font-size: 12px; color: #9ca3af; line-height: 36px;">三</div>
+          <div style="font-size: 12px; color: #9ca3af; line-height: 36px;">四</div>
+          <div style="font-size: 12px; color: #9ca3af; line-height: 36px;">五</div>
+          <div style="font-size: 12px; color: #9ca3af; line-height: 36px;">六</div>
+        </div>
+        <!-- Date rows -->
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;">
+          <!-- Row 1: Nov 25 - Dec 1 -->
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #d1d5db;">25</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #d1d5db;">26</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #d1d5db;">27</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #d1d5db;">28</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #d1d5db;">29</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #d1d5db;">30</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">1</span>
+          </div>
+
+          <!-- Row 2: Dec 2 - Dec 8 -->
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">2</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">3</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">4</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">5</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">6</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">7</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">8</span>
+          </div>
+
+          <!-- Row 3: Dec 9 - Dec 15 -->
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">9</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">10</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">11</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">12</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">13</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">14</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">15</span>
+          </div>
+
+          <!-- Row 4: Dec 16 - Dec 22 -->
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">16</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">17</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">18</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">19</span>
+          </div>
+          <!-- Dec 20: confirmed (green dot) -->
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px; cursor: pointer; background: #f5f3ff; border-radius: 8px;">
+            <span style="font-size: 14px; color: #7c3aed; font-weight: 500;">20</span>
+            <span style="width: 5px; height: 5px; border-radius: 50%; background: #22c55e; margin-top: 1px;"></span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">21</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">22</span>
+          </div>
+
+          <!-- Row 5: Dec 23 - Dec 29 -->
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">23</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">24</span>
+          </div>
+          <!-- Dec 25: pending (orange dot) -->
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px; cursor: pointer;">
+            <span style="font-size: 14px; color: #1a1a2e;">25</span>
+            <span style="width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; margin-top: 1px;"></span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">26</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">27</span>
+          </div>
+          <!-- Dec 28: confirmed (green dot) -->
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px; cursor: pointer;">
+            <span style="font-size: 14px; color: #1a1a2e;">28</span>
+            <span style="width: 5px; height: 5px; border-radius: 50%; background: #22c55e; margin-top: 1px;"></span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">29</span>
+          </div>
+
+          <!-- Row 6: Dec 30 - Jan 5 -->
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">30</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #1a1a2e;">31</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #d1d5db;">1</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #d1d5db;">2</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #d1d5db;">3</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #d1d5db;">4</span>
+          </div>
+          <div class="calendar-cell" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 36px;">
+            <span style="font-size: 14px; color: #d1d5db;">5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Day Detail Section -->
+      <div style="margin: 0 16px 12px;">
+        <!-- Section title -->
+        <div style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">12月20日 排期</div>
+
+        <!-- Schedule card -->
+        <div style="background: #ffffff; border-radius: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 4px solid #22c55e;">
+          <div style="font-size: 15px; font-weight: 500; color: #1a1a2e; margin-bottom: 6px;">星辰文化年会演出</div>
+          <div style="font-size: 13px; color: #6b7280; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+            <i data-lucide="clock" style="width: 14px; height: 14px; color: #9ca3af; flex-shrink: 0;"></i>
+            <span>19:00 - 20:30 | 脱口秀</span>
+          </div>
+          <div style="font-size: 13px; color: #6b7280; display: flex; align-items: center; gap: 4px;">
+            <i data-lucide="map-pin" style="width: 14px; height: 14px; color: #9ca3af; flex-shrink: 0;"></i>
+            <span>北京朝阳区XX会议中心</span>
+          </div>
+          <!-- Status tag -->
+          <div style="margin-top: 10px; display: inline-flex; align-items: center; gap: 4px; background: #f0fdf4; color: #22c55e; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 4px;">
+            <i data-lucide="check-circle" style="width: 13px; height: 13px;"></i>
+            <span>已确认</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Legend -->
+      <div style="margin: 12px 16px; display: flex; align-items: center; gap: 20px;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0;"></span>
+          <span style="font-size: 13px; color: #6b7280;">已确认</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; flex-shrink: 0;"></span>
+          <span style="font-size: 13px; color: #6b7280;">待确认</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; flex-shrink: 0;"></span>
+          <span style="font-size: 13px; color: #6b7280;">已完成</span>
+        </div>
+      </div>
+
+    </main>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKU详情</title>
+    <style id="theme-vars">
+/* ============================================
+   Comedy Factory (喜剧工厂) — Brand Design System
+   B2B Performance Marketplace WeChat Mini-Program
+   ============================================ */
+
+:root {
+  /* ——— Brand Primary (Purple System) ——— */
+  --color-primary: #7c3aed;
+  --color-primary-hover: #6d28d9;
+  --color-primary-active: #5b21b6;
+  --color-primary-light: #a78bfa;
+  --color-primary-lighter: #ddd6fe;
+  --color-primary-bg: #f5f3ff;
+  --color-primary-subtle: #ede9fe;
+
+  /* ——— Neutral Scale ——— */
+  --color-bg-page: #f5f5f7;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-input: #f7f7f8;
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* ——— Text ——— */
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+  --color-text-placeholder: #c4c4cc;
+  --color-text-inverse: #ffffff;
+  --color-text-link: #7c3aed;
+
+  /* ——— Border & Divider ——— */
+  --color-border: #e5e7eb;
+  --color-divider: #f0f0f2;
+
+  /* ——— Semantic Status ——— */
+  --state-pending: #f59e0b;
+  --state-pending-bg: #fffbeb;
+  --state-quoted: #3b82f6;
+  --state-quoted-bg: #eff6ff;
+  --state-confirmed: #22c55e;
+  --state-confirmed-bg: #f0fdf4;
+  --state-signed: #7c3aed;
+  --state-signed-bg: #f5f3ff;
+  --state-cancelled: #ef4444;
+  --state-cancelled-bg: #fef2f2;
+  --state-info: #6366f1;
+  --state-info-bg: #eef2ff;
+  --state-success: #22c55e;
+  --state-warning: #f59e0b;
+  --state-error: #ef4444;
+
+  /* ——— Shadow (alpha <= 0.05 for static) ——— */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-float: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  /* ——— Radius (restrained 2/4/8/12/16px scale) ——— */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* ——— Spacing ——— */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-base: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* ——— Typography ——— */
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+
+  --text-xs: 20rpx;
+  --text-sm: 24rpx;
+  --text-base: 28rpx;
+  --text-md: 30rpx;
+  --text-lg: 32rpx;
+  --text-xl: 36rpx;
+  --text-2xl: 40rpx;
+  --text-3xl: 48rpx;
+  --text-4xl: 56rpx;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+
+  /* ——— Weight ——— */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* ——— Tab Bar ——— */
+  --tab-bar-height: 100rpx;
+  --tab-bar-bg: #ffffff;
+  --tab-bar-border: #e5e7eb;
+  --tab-bar-icon-inactive: #9ca3af;
+  --tab-bar-icon-active: #7c3aed;
+  --tab-bar-text-inactive: #9ca3af;
+  --tab-bar-text-active: #7c3aed;
+
+  /* ——— Navigation Bar ——— */
+  --nav-bar-height: 88rpx;
+  --nav-bar-bg: #ffffff;
+  --nav-bar-title-color: #1a1a2e;
+
+  /* ——— Safe Area ——— */
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  --status-bar-height: var(--status-bar-height);
+
+  /* ——— Component Specific ——— */
+  --btn-primary-bg: #7c3aed;
+  --btn-primary-text: #ffffff;
+  --btn-primary-radius: 44rpx;
+  --btn-primary-height: 88rpx;
+  --btn-primary-font-size: 32rpx;
+
+  --btn-ghost-bg: #f5f3ff;
+  --btn-ghost-text: #7c3aed;
+
+  --card-bg: #ffffff;
+  --card-radius: 16rpx;
+  --card-padding: 24rpx;
+  --card-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+
+  --input-bg: #f7f7f8;
+  --input-radius: 12rpx;
+  --input-border: #e5e7eb;
+  --input-height: 80rpx;
+  --input-padding: 0 24rpx;
+  --input-font-size: 28rpx;
+
+  --tag-radius: 8rpx;
+  --tag-padding: 4rpx 12rpx;
+  --tag-font-size: 22rpx;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--color-primary);
+    --color-border: var(--color-border);
+  }
+  @layer base {
+    body { background: var(--color-background); color: var(--color-text-primary); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body>
+  <!-- Mini-program system capsule -->
+  <div class="fixed top-2 right-2 w-[87px] h-8 rounded-md bg-black/[0.04] flex items-center justify-center z-[9999]"><span class="flex items-center justify-center h-full w-1/2" aria-label="More"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></span><span class="w-px h-3 bg-black/10"></span><span class="flex items-center justify-center h-full w-1/2" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg><span style="display:none">×✕</span></span></div>
+
+  <!-- 1. Navigation Bar (sticky, white bg) -->
+  <nav class="sticky top-0 z-50 bg-white flex items-center justify-between px-4" style="height: 44px;">
+    <a data-dom-id="back-sku-list" href="javascript:void(0)" class="flex items-center gap-1 text-ink-primary" style="font-size: 14px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      <span>返回</span>
+    </a>
+    <span class="absolute left-1/2 -translate-x-1/2" style="font-size: 17px; font-weight: 600; color: #1a1a2e;">方案详情</span>
+    <a data-dom-id="back-discover" href="javascript:void(0)" class="text-ink-secondary">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="18" cy="5" r="3"></circle>
+        <circle cx="6" cy="12" r="3"></circle>
+        <circle cx="18" cy="19" r="3"></circle>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+      </svg>
+    </a>
+  </nav>
+
+  <!-- Scrollable Content Area -->
+  <div style="padding-bottom: 100px;">
+
+    <!-- 2. Hero Image Section -->
+    <div class="relative" style="height: 240px; width: 100%; overflow: hidden;">
+      <img src="../assets/show-card-1.jpg" alt="周末脱口秀之夜" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+      <!-- Gradient overlay at bottom -->
+      <div class="absolute bottom-0 left-0 right-0" style="height: 120px; background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);"></div>
+    </div>
+
+    <!-- 3. Basic Info Card -->
+    <div class="relative" style="margin: -20px 16px 12px; z-index: 1;">
+      <div class="bg-white rounded-card p-4" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+        <!-- Title -->
+        <h1 style="font-size: 20px; font-weight: 600; color: #1a1a2e; margin: 0 0 10px 0; line-height: 1.3;">周末脱口秀之夜</h1>
+
+        <!-- Tags Row -->
+        <div class="flex items-center gap-2 flex-wrap" style="margin-bottom: 10px;">
+          <span class="inline-block" style="font-size: 11px; padding: 3px 10px; border-radius: 9999px; background: #f5f3ff; color: #7c3aed; font-weight: 500;">脱口秀</span>
+          <span class="inline-block" style="font-size: 11px; padding: 3px 10px; border-radius: 9999px; background: #eff6ff; color: #3b82f6; font-weight: 500;">企业年会</span>
+          <span class="inline-block" style="font-size: 11px; padding: 3px 10px; border-radius: 9999px; background: #f3f4f6; color: #6b7280; font-weight: 500;">90分钟</span>
+        </div>
+
+        <!-- Rating Row -->
+        <div class="flex items-center gap-1" style="margin-bottom: 10px;">
+          <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">4.9分</span>
+          <!-- 5 Gold Stars -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span style="font-size: 12px; color: #9ca3af; margin-left: 2px;">126条评价</span>
+        </div>
+
+        <!-- Subtitle -->
+        <p style="font-size: 13px; color: #6b7280; line-height: 1.5; margin: 0;">专业脱口秀演员团队，为企业年会和团建活动量身打造喜剧体验</p>
+      </div>
+    </div>
+
+    <!-- 4. Performer Info Card -->
+    <div class="bg-white" style="margin: 0 16px 12px; border-radius: 12px; padding: 16px;">
+      <h2 style="font-size: 16px; font-weight: 600; color: #1a1a2e; margin: 0 0 14px 0;">演出阵容</h2>
+
+      <!-- Performer 1 -->
+      <div class="flex items-start gap-3" style="margin-bottom: 14px;">
+        <img src="../assets/performer-avatar.jpg" alt="张脱口秀" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2" style="margin-bottom: 4px;">
+            <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">张脱口秀</span>
+            <span class="inline-block" style="font-size: 11px; padding: 2px 8px; border-radius: 9999px; background: #f5f3ff; color: #7c3aed; font-weight: 500;">T3</span>
+          </div>
+          <p style="font-size: 12px; color: #9ca3af; margin: 0;">从业8年 | 500+场演出经验</p>
+        </div>
+      </div>
+
+      <!-- Separator -->
+      <div style="height: 1px; background: #f0f0f2; margin-bottom: 14px;"></div>
+
+      <!-- Performer 2 -->
+      <div class="flex items-start gap-3">
+        <img src="../assets/performer-avatar.jpg" alt="李喜剧人" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2" style="margin-bottom: 4px;">
+            <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">李喜剧人</span>
+            <span class="inline-block" style="font-size: 11px; padding: 2px 8px; border-radius: 9999px; background: #f5f3ff; color: #7c3aed; font-weight: 500;">T3</span>
+          </div>
+          <p style="font-size: 12px; color: #9ca3af; margin: 0;">从业6年 | 300+场演出经验</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Service Details Card -->
+    <div class="bg-white" style="margin: 0 16px 12px; border-radius: 12px; padding: 16px;">
+      <h2 style="font-size: 16px; font-weight: 600; color: #1a1a2e; margin: 0 0 14px 0;">服务详情</h2>
+
+      <!-- Detail Rows -->
+      <div style="font-size: 14px; line-height: 1.5;">
+        <div class="flex" style="margin-bottom: 10px;">
+          <span style="color: #6b7280; flex-shrink: 0;">演出时长：</span>
+          <span style="color: #1a1a2e;">90分钟</span>
+        </div>
+        <div class="flex" style="margin-bottom: 10px;">
+          <span style="color: #6b7280; flex-shrink: 0;">适合场景：</span>
+          <span style="color: #1a1a2e;">企业年会、团建活动、客户答谢</span>
+        </div>
+        <div class="flex" style="margin-bottom: 10px;">
+          <span style="color: #6b7280; flex-shrink: 0;">服务包含：</span>
+          <span style="color: #1a1a2e;">演员2名、音响设备、互动环节</span>
+        </div>
+        <div class="flex">
+          <span style="color: #6b7280; flex-shrink: 0;">业务类型：</span>
+          <span style="color: #1a1a2e;">商演包场</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Pricing Section -->
+    <div class="bg-white" style="margin: 0 16px 12px; border-radius: 12px; padding: 16px;">
+      <h2 style="font-size: 16px; font-weight: 600; color: #1a1a2e; margin: 0 0 12px 0;">价格说明</h2>
+
+      <div class="flex items-baseline gap-1" style="margin-bottom: 8px;">
+        <span style="font-size: 28px; font-weight: 700; color: #7c3aed;">¥8,800</span>
+        <span style="font-size: 14px; color: #9ca3af;">/场 起</span>
+      </div>
+
+      <p style="font-size: 12px; color: #9ca3af; margin: 0; line-height: 1.5;">最终价格根据具体需求确定，含演员差旅费</p>
+    </div>
+
+  </div>
+  <!-- End Scrollable Content -->
+
+  <!-- 7. Fixed Bottom CTA -->
+  <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full bg-white flex items-center gap-3" style="max-width: 375px; padding: 12px 16px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); box-shadow: 0 -2px 8px rgba(0,0,0,0.06); z-index: 50;">
+    <button data-dom-id="cta-consult" class="flex-shrink-0" style="flex: 0 0 auto; width: 80px; height: 44px; border-radius: 9999px; border: 1px solid #7c3aed; background: transparent; color: #7c3aed; font-size: 14px; font-weight: 600; cursor: pointer;">咨询</button>
+    <button data-dom-id="cta-book" style="flex: 1; min-width: 60%; height: 44px; border-radius: 9999px; border: none; background: #7c3aed; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer;">立即预约</button>
+  </div>
+<script>if(typeof lucide!=='undefined')lucide.createIcons();</script>
+</body>
+</html>

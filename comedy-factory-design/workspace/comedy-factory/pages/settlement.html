@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>结算记录</title>
+    <style id="theme-vars">
+/* ============================================
+   Comedy Factory (喜剧工厂) — Brand Design System
+   B2B Performance Marketplace WeChat Mini-Program
+   ============================================ */
+
+:root {
+  /* ——— Brand Primary (Purple System) ——— */
+  --color-primary: #7c3aed;
+  --color-primary-hover: #6d28d9;
+  --color-primary-active: #5b21b6;
+  --color-primary-light: #a78bfa;
+  --color-primary-lighter: #ddd6fe;
+  --color-primary-bg: #f5f3ff;
+  --color-primary-subtle: #ede9fe;
+
+  /* ——— Neutral Scale ——— */
+  --color-bg-page: #f5f5f7;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-input: #f7f7f8;
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* ——— Text ——— */
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+  --color-text-placeholder: #c4c4cc;
+  --color-text-inverse: #ffffff;
+  --color-text-link: #7c3aed;
+
+  /* ——— Border & Divider ——— */
+  --color-border: #e5e7eb;
+  --color-divider: #f0f0f2;
+
+  /* ——— Semantic Status ——— */
+  --state-pending: #f59e0b;
+  --state-pending-bg: #fffbeb;
+  --state-quoted: #3b82f6;
+  --state-quoted-bg: #eff6ff;
+  --state-confirmed: #22c55e;
+  --state-confirmed-bg: #f0fdf4;
+  --state-signed: #7c3aed;
+  --state-signed-bg: #f5f3ff;
+  --state-cancelled: #ef4444;
+  --state-cancelled-bg: #fef2f2;
+  --state-info: #6366f1;
+  --state-info-bg: #eef2ff;
+  --state-success: #22c55e;
+  --state-warning: #f59e0b;
+  --state-error: #ef4444;
+
+  /* ——— Shadow (alpha <= 0.05 for static) ——— */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --shadow-float: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  /* ——— Radius (restrained 2/4/8/12/16px scale) ——— */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* ——— Spacing ——— */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-base: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* ——— Typography ——— */
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+
+  --text-xs: 20rpx;
+  --text-sm: 24rpx;
+  --text-base: 28rpx;
+  --text-md: 30rpx;
+  --text-lg: 32rpx;
+  --text-xl: 36rpx;
+  --text-2xl: 40rpx;
+  --text-3xl: 48rpx;
+  --text-4xl: 56rpx;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+
+  /* ——— Weight ——— */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* ——— Tab Bar ——— */
+  --tab-bar-height: 100rpx;
+  --tab-bar-bg: #ffffff;
+  --tab-bar-border: #e5e7eb;
+  --tab-bar-icon-inactive: #9ca3af;
+  --tab-bar-icon-active: #7c3aed;
+  --tab-bar-text-inactive: #9ca3af;
+  --tab-bar-text-active: #7c3aed;
+
+  /* ——— Navigation Bar ——— */
+  --nav-bar-height: 88rpx;
+  --nav-bar-bg: #ffffff;
+  --nav-bar-title-color: #1a1a2e;
+
+  /* ——— Safe Area ——— */
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  --status-bar-height: var(--status-bar-height);
+
+  /* ——— Component Specific ——— */
+  --btn-primary-bg: #7c3aed;
+  --btn-primary-text: #ffffff;
+  --btn-primary-radius: 44rpx;
+  --btn-primary-height: 88rpx;
+  --btn-primary-font-size: 32rpx;
+
+  --btn-ghost-bg: #f5f3ff;
+  --btn-ghost-text: #7c3aed;
+
+  --card-bg: #ffffff;
+  --card-radius: 16rpx;
+  --card-padding: 24rpx;
+  --card-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+
+  --input-bg: #f7f7f8;
+  --input-radius: 12rpx;
+  --input-border: #e5e7eb;
+  --input-height: 80rpx;
+  --input-padding: 0 24rpx;
+  --input-font-size: 28rpx;
+
+  --tag-radius: 8rpx;
+  --tag-padding: 4rpx 12rpx;
+  --tag-font-size: 22rpx;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--color-primary);
+    --color-border: var(--color-border);
+  }
+  @layer base {
+    body { background: var(--color-background); color: var(--color-text-primary); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body>
+  <!-- Mini-program system capsule -->
+  <div class="fixed top-2 right-2 w-[87px] h-8 rounded-md bg-black/[0.04] flex items-center justify-center z-[9999]"><span class="flex items-center justify-center h-full w-1/2" aria-label="More"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></span><span class="w-px h-3 bg-black/10"></span><span class="flex items-center justify-center h-full w-1/2" aria-label="Close"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg><span style="display:none">×✕</span></span></div>
+  <div class="page-container">
+
+    <!-- Navigation Bar -->
+    <div class="sticky top-0 z-50 bg-white" style="height: 44px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #f0f0f2;">
+      <span class="text-[#1a1a2e]" style="font-size: 17px; font-weight: 600;">结算记录</span>
+    </div>
+
+    <!-- Monthly Summary Card -->
+    <div class="mx-4 mt-3 bg-white rounded-2xl" style="padding: 16px; margin: 12px 16px;">
+      <!-- Header -->
+      <div style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 16px;">2024年12月</div>
+      <!-- Summary Row -->
+      <div class="flex justify-between items-end">
+        <div class="flex-1">
+          <div style="font-size: 13px; color: #9ca3af; margin-bottom: 4px;">总收入</div>
+          <div style="font-size: 22px; font-weight: 700; color: #7c3aed;">¥18,500</div>
+        </div>
+        <div class="flex-1 text-center">
+          <div style="font-size: 13px; color: #9ca3af; margin-bottom: 4px;">已结算</div>
+          <div style="font-size: 16px; font-weight: 600; color: #22c55e;">¥12,000</div>
+        </div>
+        <div class="flex-1 text-right">
+          <div style="font-size: 13px; color: #9ca3af; margin-bottom: 4px;">待结算</div>
+          <div style="font-size: 16px; font-weight: 600; color: #f59e0b;">¥6,500</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Month Selector -->
+    <div class="flex items-center justify-center" style="margin: 8px 16px 12px;">
+      <!-- Left Arrow -->
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer; margin-right: 12px;">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      <!-- Month Text -->
+      <span style="font-size: 15px; color: #1a1a2e; font-weight: 500;">2024年12月</span>
+      <!-- Right Arrow -->
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer; margin-left: 12px;">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+
+    <!-- Settlement List -->
+    <div style="padding: 0 16px 70px; display: flex; flex-direction: column; gap: 12px;">
+
+      <!-- Item 1: 已打款 (blue) -->
+      <div class="bg-white rounded-xl" style="padding: 16px;">
+        <!-- Top Row -->
+        <div class="flex items-center justify-between" style="margin-bottom: 8px;">
+          <div class="flex items-center gap-2">
+            <span style="font-size: 15px; font-weight: 500; color: #1a1a2e;">星辰文化年会</span>
+            <span class="inline-block" style="background: #eff6ff; color: #3b82f6; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 6px;">已打款</span>
+          </div>
+          <span style="font-size: 18px; font-weight: 700; color: #7c3aed;">¥3,500</span>
+        </div>
+        <!-- Info Rows -->
+        <div style="font-size: 13px; color: #6b7280; line-height: 1.8;">演出日期：2024-12-20</div>
+        <div style="font-size: 13px; color: #6b7280; line-height: 1.8;">结算方式：银行转账</div>
+        <!-- Divider -->
+        <div style="height: 1px; background: #f0f0f2; margin: 10px 0;"></div>
+        <!-- Bottom -->
+        <div class="text-right" style="font-size: 12px; color: #9ca3af;">到账日期：2024-12-25</div>
+      </div>
+
+      <!-- Item 2: 已结算 (green) -->
+      <div class="bg-white rounded-xl" style="padding: 16px;">
+        <div class="flex items-center justify-between" style="margin-bottom: 8px;">
+          <div class="flex items-center gap-2">
+            <span style="font-size: 15px; font-weight: 500; color: #1a1a2e;">脱口秀之夜第88期</span>
+            <span class="inline-block" style="background: #f0fdf4; color: #22c55e; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 6px;">已结算</span>
+          </div>
+          <span style="font-size: 18px; font-weight: 700; color: #7c3aed;">¥5,000</span>
+        </div>
+        <div style="font-size: 13px; color: #6b7280; line-height: 1.8;">演出日期：2024-12-15</div>
+        <div style="font-size: 13px; color: #6b7280; line-height: 1.8;">结算方式：线上转账</div>
+        <div style="height: 1px; background: #f0f0f2; margin: 10px 0;"></div>
+        <div class="text-right" style="font-size: 12px; color: #9ca3af;">到账日期：2024-12-18</div>
+      </div>
+
+      <!-- Item 3: 待结算 (orange) -->
+      <div class="bg-white rounded-xl" style="padding: 16px;">
+        <div class="flex items-center justify-between" style="margin-bottom: 8px;">
+          <div class="flex items-center gap-2">
+            <span style="font-size: 15px; font-weight: 500; color: #1a1a2e;">欢乐剧场专场演出</span>
+            <span class="inline-block" style="background: #fffbeb; color: #f59e0b; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 6px;">待结算</span>
+          </div>
+          <span style="font-size: 18px; font-weight: 700; color: #7c3aed;">¥4,200</span>
+        </div>
+        <div style="font-size: 13px; color: #6b7280; line-height: 1.8;">演出日期：2024-12-28</div>
+        <div style="font-size: 13px; color: #6b7280; line-height: 1.8;">结算方式：银行转账</div>
+        <div style="height: 1px; background: #f0f0f2; margin: 10px 0;"></div>
+        <div class="text-right" style="font-size: 12px; color: #9ca3af;">预计到账：2025-01-15</div>
+      </div>
+
+      <!-- Item 4: 已打款 (blue) -->
+      <div class="bg-white rounded-xl" style="padding: 16px;">
+        <div class="flex items-center justify-between" style="margin-bottom: 8px;">
+          <div class="flex items-center gap-2">
+            <span style="font-size: 15px; font-weight: 500; color: #1a1a2e;">企业年终晚会</span>
+            <span class="inline-block" style="background: #eff6ff; color: #3b82f6; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 6px;">已打款</span>
+          </div>
+          <span style="font-size: 18px; font-weight: 700; color: #7c3aed;">¥5,800</span>
+        </div>
+        <div style="font-size: 13px; color: #6b7280; line-height: 1.8;">演出日期：2024-12-10</div>
+        <div style="font-size: 13px; color: #6b7280; line-height: 1.8;">结算方式：对公转账</div>
+        <div style="height: 1px; background: #f0f0f2; margin: 10px 0;"></div>
+        <div class="text-right" style="font-size: 12px; color: #9ca3af;">到账日期：2024-12-15</div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full bg-white border-t" style="max-width: 375px; border-color: #e5e7eb; z-index: 100;">
+      <div class="flex justify-around items-center" style="height: 56px; padding-bottom: env(safe-area-inset-bottom);">
+        <!-- Tab: 排期 -->
+        <div class="flex flex-col items-center justify-center flex-1" data-dom-id="tab-assignment" style="cursor: pointer;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span style="font-size: 11px; color: #9ca3af; margin-top: 2px;">排期</span>
+        </div>
+        <!-- Tab: 结算 (active) -->
+        <div class="flex flex-col items-center justify-center flex-1" style="cursor: pointer;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <span style="font-size: 11px; color: #7c3aed; font-weight: 600; margin-top: 2px;">结算</span>
+        </div>
+        <!-- Tab: 我的 -->
+        <div class="flex flex-col items-center justify-center flex-1" style="cursor: pointer;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span style="font-size: 11px; color: #9ca3af; margin-top: 2px;">我的</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+    <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f5f7;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .page-container {
+      max-width: 375px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background-color: #f5f5f7;
+      position: relative;
+      overflow-x: hidden;
+    }
+  </style>
+<script>if(typeof lucide!=='undefined')lucide.createIcons();</script>
+</body>
+</html>

@@ -1,165 +1,139 @@
-# 项目总控文件（PROJECT_CONTROL.md）
+# 演立方 (YANLI) — 项目治理文件
 
-> 这是喜剧工厂（演出撮合平台）的**总控文档**。每次动手前读一遍，确保没走偏。
+## 一、项目范围
 
----
+| 维度 | 定义 |
+|:----|:-----|
+| 品牌名 | 演立方（英文 YANLI / 全拼 YANLIFANG / 缩写 YLF） |
+| 定位 | AI 商演成交机器 |
+| 产品体系 | 演立方商演助手（小程序）←→ 小演 AI Agent ←→ 演立方艺人工作台（supplier-console）←→ 演立方行业库（平台） |
+| Phase 1 核心 | supplier-console（内部成交工具）：AI成交日报 / 销售作战台 / SKU管理 / 利润看板 / 订单管理 |
 
-## 一、项目概述
-
-| 项目 | 内容 |
-|------|------|
-| **项目名称** | 喜剧工厂（原演出撮合平台） |
-| **项目目标** | B2B演出供应链撮合平台 — 活动公司选标准化SKU方案 → 平台匹配演员 → 保履约 |
-| **当前阶段** | MVP已完成核心功能，P0/P1功能大部分上线，P2待优化 |
-| **核心模式** | 不是招投标！是平台撮合匹配。活动公司选套餐，运营配演员，演员接单。 |
-| **仓库** | `haoli8399-cpu/yan-shi`（代码在 `miniprogram/` 子目录） |
-
----
-
-## 二、四个子项目
-
-| 子项目 | 目录 | 技术栈 | 状态 | 负责人 |
-|--------|------|--------|:----:|:------:|
-| **① 微信小程序** | `miniprogram/` | uni-app 3 + Vue 3 + TypeScript + Vant Weapp | 🟡 主力，**可改动** | CodeBuddy |
-| **② 活动公司Web端** | `frontend-agent/` | React 19 + Vite + Ant Design | ✅ 已上线，**别动** | 不可动 |
-| **③ 运营后台** | `~/Documents/演出撮合平台/frontend-admin/` | Umi 4 + React + Ant Design Pro | ✅ 已上线（34项全实现），**别动** | 不可动 |
-| **④ 后端API** | `~/Documents/演出撮合平台/backend/` | TypeScript + Fastify + PostgreSQL + JWT | ✅ 已上线（51端点），**别动** | 不可动 |
-
-**一句话政策：只需要管小程序（miniprogram/），其他三个不要碰。**
-
-### 小程序详情
-
-| 属性 | 值 |
-|------|-----|
-| **构建命令** | `nvm use 18 && npx uni build --platform mp-weixin` |
-| **预览路径** | `dist/build/mp-weixin/` |
-| **AppID** | `wx60d185cab446ab40` |
-| **组件库** | Vant Weapp（`wxcomponents/@vant/`） |
-| **状态管理** | Pinia + uni-app 内置 |
-| **网络请求** | uni.request 封装 |
-
-小程序**双角色**：同一App，登录后按角色显示不同视图。
-
----
-
-## 三、核心业务规则
-
-| 规则 | 说明 |
-|------|------|
-| **SKU 标准化** | 演出以SKU为单位（标准套餐），不是自由招标。有固定名称、价格、时长、演员画像 |
-| **撮合机制** | **平台（运营）匹配，不是演员竞标。** 活动公司不是等3个演员报价来选，而是选套餐，平台配最优演员 |
-| **定价体系** | 三种价格：甲方价（标准价）→ 活动公司价（7折）→ 内部结算价（T0-T6阶梯价，演员拿的） |
-| **演员咖位** | T0-T6七级，决定内部结算价格。T0/T1人工认定，T2-T6系统建议+运营确认 |
-| **演员信誉分** | S/A/B/C/D五级，决定派单优先级。与咖位互补：咖位决定身价，信誉分决定能不能开高价 |
-| **双角色** | 小程序同一App：活动公司是买方（4Tab），演员是供给方（3Tab+入驻页面） |
-| **需求流程** | 提交需求 → AI/运营出方案 → 活动公司确认 → 运营分配演员 → 演员确认 → 演出 → 结算 |
-| **结算方式** | MVP阶段线下操作：定金/尾款线下转账，运营后台登记。演员结算线下打款，系统记录 |
-
-### 不允许的误解
-
-> ❌ 不是招投标（3个演员各自报价，活动公司选一个）
-> ❌ 不是C端票务（不是卖票给普通观众的）
-> ✅ 正确关键词：匹配、分配、标准化方案、确认、结算
-
----
-
-## 四、小程序页面清单 & 功能状态
-
-### 活动公司角色（小程序）— PRD角色C
-
-| 功能 | PRD编号 | 页面 | 状态 | 说明 |
-|------|:-------:|------|:----:|------|
-| 微信一键登录 | C-01 | `pages/login/index` | ✅ | |
-| 用户协议/隐私政策 | C-02 | `pages/login/index` | ✅ | |
-| 账号注销 | C-03 | 待确定 | ❌ P1 | 未实现 |
-| 提交需求 | C-04 | `pages/request/submit` | ✅ | |
-| 需求修改/撤回 | C-05 | `pages/request/submit` | ✅ | |
-| AI方案查看 | C-06 | `pages/request/detail` | ✅ | |
-| SKU方案浏览 | C-07 | `pages/sku/list`, `pages/discover/index` | ✅ | |
-| SKU获取报价 | C-08 | `pages/sku/detail` | ⚠️ | 按钮有，需确认后端联调 |
-| 订单时间线 | C-09 | `pages/request/detail` | ✅ | |
-| 最终方案确认 | C-10 | `pages/request/detail` | ✅ | |
-| 电话咨询 | C-11 | 全局FloatingPhone | ✅ | |
-| 方案导出Word | C-12 | 待定 | ❌ P1 | 未实现 |
-| 角色路由 | C-13 | 全局 | ✅ | 登录后按角色跳转 |
-
-### 演员角色（小程序）— PRD角色B
-
-| 功能 | PRD编号 | 页面 | 状态 | 说明 |
-|------|:-------:|------|:----:|------|
-| 首页卡片 | B-01 | `pages/assignment/list` | ✅ | 待确认排期数/今日演出/待结算总额 |
-| 排期确认 | B-02 | `pages/assignment/detail` | ✅ | 确认/拒绝 |
-| 排期日历 | B-03 | `pages/assignment/calendar` | ✅ | 月视图 |
-| 演出订单 | B-04 | `pages/assignment/list` | ✅ | 待确认/已确认/已完成 |
-| 结算统计 | B-05 | `pages/settlement/index` | ✅ | |
-| 我的主页 | B-06 | `pages/credit/index` | ✅ | |
-| 信誉分明细 | B-07 | `pages/credit/index` | ✅ | |
-| 阵容查看 | B-08 | `pages/assignment/detail` | ✅ | |
-| 演出反馈 | B-09 | 待定 | ❓ | 需确认是否实现 |
-| 演出签到打卡 | B-10 | `pages/checkin/index` | ✅ | |
-| 到场时间查看 | B-11 | `pages/assignment/detail` | ✅ | |
-| 入驻申请 | B-12 | `pages/onboarding/index` | ✅ | |
-| 价格协商 | B-13 | — | ❌ P2 | 异常流程 |
-| 角色路由 | B-14 | 全局 | ✅ | 已入驻→首页，未入驻→入驻申请页 |
-
-### 活动公司Web端（备用，不可动）— PRD角色W
-
-| 功能 | PRD编号 | 状态 | 说明 |
-|------|:-------:|:----:|------|
-| SKU方案浏览/选购 | W-01 | ✅ | |
-| 快速注册 | W-02 | ✅ | 微信扫码/手机号 |
-| 企业认证 | W-03 | ✅ | 获取报价前挡板 |
-| 需求发布→AI方案 | W-04 | ✅ | |
-| AI方案查看 | W-05 | ✅ | |
-| 最终方案确认 | W-06 | ✅ | |
-| 多方案并行对比 | W-07 | ✅ | |
-| 多订单管理 | W-08 | ✅ | |
-| 订单时间线 | W-09 | ✅ | |
-| 历史记录 | W-10 | ✅ | |
-| 消费统计 | W-11 | ✅ | |
-| 邀请同行 | W-12 | ✅ | |
-| 电话咨询 | W-13 | ✅ | |
-| 方案导出Word | W-14 | ✅ | |
-| 合同管理 | W-15 | ✅ | |
-| 演员收藏夹 | W-16 | ✅ | |
-| 客户管理 | W-17 | ✅ | |
-
-### 运营后台（内部管理，不可动）— PRD角色D
-
-34项功能全部实现，详见 PRD 原文。包含：
-- 运营效率：工作台/看板/模板/需求管理/日志/撤销
-- 演员管理：库/编辑/签约/信誉分/咖位/档期/排期/冲突检测/批量导入
-- 订单管理：监控/退款
-- 结算：定金登记/尾款登记/结算统计/明细导出/消费统计
-- 内容管理：SKU库/案例/AI模板/供应商/价格配置
-- 工具：通用搜索/超时标记/客户卡片/通知记录/代客下单/签约模式
-- 系统：RBAC角色权限
-
----
-
-## 五、对接人信息
-
-| 信息 | 内容 |
-|------|------|
-| **称呼** | 豪哥 |
-| **背景** | 后仰喜剧联合创始人，连续创业者，擅长营销/销售/私域 |
-| **沟通风格** | 结论先行、直接批评、用大白话、不说术语 |
-| **决策方式** | 你说方案 → 豪哥确认 → 执行。不要先斩后奏 |
-
----
-
-## 六、工作纪律
-
-每次执行任务前，必须走完以下8步：
+## 二、技术架构
 
 ```
-1. 读 AGENT_RULES.md           ← 提醒自己规则
-2. 读 FREEZE.md                ← 确认不在冻结区（重点读第 6 节「当前任务」）
-3. 读 PROJECT_CONTROL.md       ← 确认理解全景
-4. 确认改的是哪个子项目        ← 仅 miniprogram/，其余冻结
-5. 确认改了哪个角色的功能      ← 活动公司/演员/运营
-6. 读该页面的设计方案 HTML     ← 视觉对齐依据
-7. 执行修改
-8. 编译验证（不改的项目也得检查不破坏构建）
-9. git commit + push（不要 rebase）
+演立方 前端架构
+├── supplier-console/          # React + Ant Design 6 + Vite
+│   ├── src/
+│   │   ├── components/        # 业务组件库
+│   │   ├── pages/             # 页面
+│   │   ├── tokens/            # Design Token (CSS Variables)
+│   │   └── layouts/           # 布局模板
+│   └── package.json
+├── miniprogram/                # uni-app + Vue3 + Vant Weapp
+├── frontend-web/               # Vite + React + Ant Design 6 (PC 活动公司端)
+├── frontend-admin/             # Umi 4 + @umijs/max (平台管理员)
+└── docs/                       # 设计文档
 ```
+
+## 三、组件库体系（原子设计）
+
+### 原子层（Atoms）
+```
+Button       — 5变体（主要/次要/文字/危险/禁用）
+Tag          — 自营/成交/待跟进/丢单/第三方
+Badge        — 数字角标
+Icon         — 24px 线性 SVG 图标集
+Avatar       — 企业/个人头像
+StatusDot    — 绿/紫/琥珀/红/灰 状态点
+Divider      — 分割线
+Spinner      — 立方体加载动画
+```
+
+### 复合层（Molecules）
+```
+Card             — 通用卡片容器
+Input            — 输入框（含微信粘贴模式）
+Select           — 下拉选择器
+PriceDisplay     — 价格展示（等宽字体+千分位）
+OpportunityBadge — 商机状态胶囊（自动映射状态色）
+SupplierBadge    — 自营/第三方标识
+StatCard         — KPI 数据卡片
+Timeline         — 时间线
+EmptyState       — 空状态
+LoadingSkeleton  — 骨架屏
+CelebrationCard  — 成交庆祝卡（舞台深色模式）
+BusinessFeedbackCard — 商业反馈卡
+```
+
+### 业务层（Organisms）
+```
+RequirementInput    — 首屏需求输入区（粘贴/语音/表单三入口）
+SchemeCard          — 方案卡片（含供应商标识+价格+匹配度）
+OpportunityCard     — 商机卡片（状态+优先级+超时标记）
+ArtistCard          — 艺人卡片
+OrderCard           — 订单卡片
+ChatBubble          — AI对话气泡（小演人格+紫色气泡）
+QuickEntry          — 活动类型快捷入口（6宫格）
+FilterPanel         — 筛选面板（树形/标签）
+PipelineBoard       — 商机看板（三栏+拖拽）
+AIDailyBriefing     — AI成交日报组件
+```
+
+## 四、Design Token（2026-07-07 定版）
+
+_更新路径：docs/tokens/_
+
+| Token | 值 | 用途 |
+|:------|:---|:-----|
+| `--brand` | `#7c3aed` | 主品牌紫 |
+| `--brand-light` | `#a78bfa` | 紫浅（hover/背景） |
+| `--brand-dark` | `#5b21b6` | 紫深（pressed） |
+| `--brand-50` | `#f5f3ff` | 紫极浅（标签/AI气泡） |
+| `--green` | `#16a34a` | 成交绿 |
+| `--amber` | `#f59e0b` | 警示 |
+| `--red` | `#ef4444` | 错误 |
+| `--blue` | `#3b82f6` | 信息 |
+| `--stage` | `#0f0f1a` | 舞台深色 |
+
+_完整 Token 见 docs/tokens/variables.css_
+
+## 五、优先级路线图
+
+```
+Phase 0 (当前)   组件库搭建 + supplier-console 首批页面
+  ├── Design Token 落地
+  ├── 原子+复合组件库
+  ├── AI成交日报（页面 #1）
+  └── 销售作战台（页面 #2）
+
+Phase 1 (第1周)  Supplier-Console 完整
+  ├── SKU管理
+  ├── 利润看板
+  ├── 订单管理
+  └── 艺人管理（简化版）
+
+Phase 2 (第2周)  小程序端
+  ├── 首页（微信粘贴入口）
+  ├── 提需求（AI经纪人对话）
+  ├── 找方案 + SKU详情
+  └── 消息 + 我的 + 订单详情
+
+Phase 3 (第3周)  PC Web + Platform-Admin
+  ├── 品牌官网首页
+  ├── PC找方案列表
+  └── 平台管理数据看板
+```
+
+## 六、开发规范
+
+1. 组件必须导出 TS 类型定义
+2. 所有颜色引用 CSS 变量，禁止硬编码 hex
+3. 每个组件必须包含 Loading / Empty / Error 三态
+4. 触控目标 ≥ 44px（小程序）/ 32px（PC）
+5. 中文字体 `PingFang SC`，等宽数字 `JetBrains Mono`
+6. 禁止出现品牌禁用词：赋能/闭环/一站式/生态/沉淀/工作流/CRM
+
+## 七、Penpot MCP 集成状态
+
+| 项目 | 状态 | 说明 |
+|:----|:----:|:-----|
+| HTTP MCP 连接 | ✅ | 通过 nginx localhost:9001/mcp/stream |
+| execute_code | ⚠️ | 浏览器 Plugin 需前台激活 |
+| export_shape | ❌ | Plugin 不稳定，待修复 |
+| 后端 API 暴露 | ❌ | 需修改 docker-compose 或 nginx 配置 |
+| **替代方案** | ✅ | 直接建 HTML/CSS 预览 + 代码生成，绕过 Penpot 导出 |
+
+## 八、AI Agent 规则
+
+_详见 AGENT_RULES.md_

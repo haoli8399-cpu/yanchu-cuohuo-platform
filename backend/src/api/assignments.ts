@@ -20,6 +20,7 @@ const respondBody = z.object({
 });
 
 const checkinBody = z.object({ latitude: z.number(), longitude: z.number() });
+const calendarQuery = z.object({ performer_id: z.string().uuid().optional(), month: z.string().regex(/^\d{4}-\d{2}$/) });
 
 export default async function assignmentRoutes(app: FastifyInstance) {
   // 1. 分配排期
@@ -42,7 +43,7 @@ export default async function assignmentRoutes(app: FastifyInstance) {
       if (!price) {
         const tier = await query('SELECT tier FROM performers WHERE id=$1', [performer_id]);
         const tierPrices: Record<string, number> = { T1:2000,T2:1000,T3:800,T4:600,T5:400,T6:300 };
-        price = tierPrices[String(tier.rows[0]?.tier)] || 800;
+        price = tierPrices[tier.rows[0]?.tier] || 800;
       }
 
       const result = await query(
