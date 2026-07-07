@@ -59,7 +59,7 @@ export default async function companyRoutes(app: FastifyInstance) {
   // ==========================================================
   app.get('/:id/stats', { preHandler: [authMiddleware, requireRole('admin', 'agent')] },
     async (req, reply) => {
-      const { id } = req.params as { id: string };
+      const { id } = req.params as any as { id: string };
       const user = req.user;
 
       // 校验公司存在

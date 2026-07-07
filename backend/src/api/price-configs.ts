@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validation.js';
 import { query } from '../utils/db.js';
-import { successResponse, errorResponse, paginatedResponse } from '../utils/response.js';
+import { successResponse, errorResponse } from '../utils/response.js';
 
 const listQuery = z.object({
   config_type: z.enum(['performer_settlement','agent_quote','client_quote']).optional(),

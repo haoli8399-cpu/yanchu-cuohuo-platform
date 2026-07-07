@@ -18,10 +18,7 @@ import type {
   TimelineEntry,
 } from '../types/index.js';
 
-const refundBodySchema = z.object({
-  amount: z.number().positive(),
-  reason: z.string().min(1),
-});
+// refundBodySchema removed (unused)
 
 // ============================================================
 // Zod 校验 Schema
@@ -138,15 +135,7 @@ interface DemandRow {
   status_history: StatusHistoryEntry[];
 }
 
-interface TimelineRow {
-  id: string;
-  demand_id: string;
-  status: string;
-  at: string;
-  operator_id: string | null;
-  operator_name: string | null;
-  note: string | null;
-}
+// TimelineRow removed (unused)
 
 // ============================================================
 // 路由注册

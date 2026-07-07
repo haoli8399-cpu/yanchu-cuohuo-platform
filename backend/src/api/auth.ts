@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { validate } from '../middleware/validation.js';
 import { query } from '../utils/db.js';
-import { successResponse, errorResponse } from '../utils/response.js';
+import { successResponse } from '../utils/response.js';
 
 const phoneCodeBody = z.object({ phone: z.string().regex(/^1[3-9]\d{9}$/) });
 const phoneLoginBody = z.object({ phone: z.string().regex(/^1[3-9]\d{9}$/), code: z.string().length(6), role: z.enum(['agent']) });
@@ -19,7 +19,7 @@ export default async function authRoutes(app: FastifyInstance) {
 
   // 手机号登录
   app.post('/phone', { validate: req => validate({ body: phoneLoginBody })(req) }, async (req, reply) => {
-    const { phone, code, role } = req.body as z.infer<typeof phoneLoginBody>;
+    const { phone, code: _code, role } = req.body as z.infer<typeof phoneLoginBody>;
     // 生产环境验证code，开发环境默认通过
     let user = await query('SELECT * FROM users WHERE phone=$1', [phone]);
     let isNew = false;

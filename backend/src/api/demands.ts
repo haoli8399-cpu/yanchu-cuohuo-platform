@@ -7,7 +7,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validation.js';
-import { query, transaction } from '../utils/db.js';
+import { query } from '../utils/db.js';
 import {
   successResponse,
   errorResponse,
@@ -36,7 +36,7 @@ import type {
 
 const demandSourceSchema = z.enum(['sku', 'requirement', 'phone']);
 
-const urgencySchema = z.enum(['normal', 'urgent', 'emergency']);
+// urgencySchema removed (unused)
 
 const demandStatusSchema = z.enum([
   'pending_ai',
