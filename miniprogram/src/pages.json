@@ -1,21 +1,114 @@
 {
   "pages": [
-    { "path": "pages/login/index", "style": { "navigationStyle": "custom", "navigationBarTitleText": "登录" } },
-    { "path": "pages/discover/index", "style": { "navigationBarTitleText": "发现" } },
-    { "path": "pages/sku/list/index", "style": { "navigationBarTitleText": "方案列表" } },
-    { "path": "pages/sku/detail/index", "style": { "navigationBarTitleText": "方案详情" } },
-    { "path": "pages/request/list/index", "style": { "navigationBarTitleText": "我的需求" } },
-    { "path": "pages/request/submit/index", "style": { "navigationBarTitleText": "提交需求" } },
-    { "path": "pages/request/detail/index", "style": { "navigationBarTitleText": "需求详情" } },
-    { "path": "pages/user/index", "style": { "navigationBarTitleText": "我的" } },
-    { "path": "pages/assignment/list/index", "style": { "navigationBarTitleText": "我的排期" } },
-    { "path": "pages/assignment/detail/index", "style": { "navigationBarTitleText": "排期详情" } },
-    { "path": "pages/assignment/calendar/index", "style": { "navigationBarTitleText": "排期日历" } },
-    { "path": "pages/settlement/index", "style": { "navigationBarTitleText": "结算记录" } },
-    { "path": "pages/checkin/index", "style": { "navigationBarTitleText": "签到打卡" } },
-    { "path": "pages/credit/index", "style": { "navigationBarTitleText": "我的信誉分" } },
-    { "path": "pages/onboarding/index", "style": { "navigationBarTitleText": "演员入驻" } },
-    { "path": "pages/user/performer/index", "style": { "navigationBarTitleText": "我的" } }
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "登录"
+      }
+    },
+    {
+      "path": "pages/discover/index",
+      "style": {
+        "navigationBarTitleText": "发现"
+      }
+    },
+    {
+      "path": "pages/sku/list/index",
+      "style": {
+        "navigationBarTitleText": "方案列表"
+      }
+    },
+    {
+      "path": "pages/sku/detail/index",
+      "style": {
+        "navigationBarTitleText": "方案详情"
+      }
+    },
+    {
+      "path": "pages/request/list/index",
+      "style": {
+        "navigationBarTitleText": "我的需求"
+      }
+    },
+    {
+      "path": "pages/request/submit/index",
+      "style": {
+        "navigationBarTitleText": "提交需求"
+      }
+    },
+    {
+      "path": "pages/request/detail/index",
+      "style": {
+        "navigationBarTitleText": "需求详情"
+      }
+    },
+    {
+      "path": "pages/user/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/assignment/list/index",
+      "style": {
+        "navigationBarTitleText": "我的排期"
+      }
+    },
+    {
+      "path": "pages/assignment/detail/index",
+      "style": {
+        "navigationBarTitleText": "排期详情"
+      }
+    },
+    {
+      "path": "pages/assignment/calendar/index",
+      "style": {
+        "navigationBarTitleText": "排期日历"
+      }
+    },
+    {
+      "path": "pages/settlement/index",
+      "style": {
+        "navigationBarTitleText": "结算记录"
+      }
+    },
+    {
+      "path": "pages/checkin/index",
+      "style": {
+        "navigationBarTitleText": "签到打卡"
+      }
+    },
+    {
+      "path": "pages/credit/index",
+      "style": {
+        "navigationBarTitleText": "我的信誉分"
+      }
+    },
+    {
+      "path": "pages/onboarding/index",
+      "style": {
+        "navigationBarTitleText": "演员入驻"
+      }
+    },
+    {
+      "path": "pages/user/performer/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/message/index",
+      "style": {
+        "navigationBarTitleText": "消息"
+      }
+    },
+    {
+      "path": "pages/user/orders/index",
+      "style": {
+        "navigationBarTitleText": "订单详情"
+      }
+    }
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",
@@ -32,21 +125,27 @@
     "list": [
       {
         "pagePath": "pages/discover/index",
-        "text": "发现",
+        "text": "首页",
         "iconPath": "static/tab/home.png",
         "selectedIconPath": "static/tab/home-active.png"
       },
       {
         "pagePath": "pages/sku/list/index",
-        "text": "方案",
+        "text": "找方案",
         "iconPath": "static/tab/grid.png",
         "selectedIconPath": "static/tab/grid-active.png"
       },
       {
-        "pagePath": "pages/request/list/index",
-        "text": "需求",
+        "pagePath": "pages/request/submit/index",
+        "text": "提需求",
         "iconPath": "static/tab/list.png",
         "selectedIconPath": "static/tab/list-active.png"
+      },
+      {
+        "pagePath": "pages/message/index",
+        "text": "消息",
+        "iconPath": "static/tab/user.png",
+        "selectedIconPath": "static/tab/user-active.png"
       },
       {
         "pagePath": "pages/user/index",

@@ -6,7 +6,7 @@ import { successResponse, errorResponse } from '../utils/response.js';
 
 export default async function adminRoutes(app: FastifyInstance) {
   app.get('/dashboard', { preHandler: [authMiddleware, requireRole('admin')] }, async (_req, reply) => {
-    const [[demands],[assignments],[settlements],[revenue],[performers],[companies]] = await Promise.all(
+    const r = await Promise.all(
       ['SELECT COUNT(*) FROM demands WHERE status NOT IN ($1,$2,$3)', // pending
        'SELECT COUNT(*) FROM assignments WHERE status=$1',
        'SELECT COUNT(*) FROM settlements WHERE status=$1',
@@ -23,12 +23,12 @@ export default async function adminRoutes(app: FastifyInstance) {
       ]))
     );
     return reply.send(successResponse({
-      pending_demands: Number(demands.rows[0].count),
-      pending_assignments: Number(assignments.rows[0].count),
-      pending_settlements: Number(settlements.rows[0].count),
-      monthly_revenue: Number(revenue.rows[0].coalesce),
-      active_performers: Number(performers.rows[0].count),
-      active_companies: Number(companies.rows[0].count),
+      pending_demands: Number(r[0].rows[0].count),
+      pending_assignments: Number(r[1].rows[0].count),
+      pending_settlements: Number(r[2].rows[0].count),
+      monthly_revenue: Number(r[3].rows[0].coalesce),
+      active_performers: Number(r[4].rows[0].count),
+      active_companies: Number(r[5].rows[0].count),
     }));
   });
 
@@ -191,7 +191,7 @@ export default async function adminRoutes(app: FastifyInstance) {
   // POST /v1/admin/mark-timeout - 超时自动标记 (P-27)
   // 查询超时的 demand，标记 urgency=urgent
   // ==========================================================
-  app.post('/mark-timeout', { preHandler: [authMiddleware, requireRole('admin')] }, async (req, reply) => {
+  app.post('/mark-timeout', { preHandler: [authMiddleware, requireRole('admin')] }, async (_req, reply) => {
     // 定义各状态超时阈值（小时）
     const timeoutConfig: Record<string, number> = {
       pending_ai: 2,           // AI 生成超时 2h

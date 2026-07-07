@@ -332,7 +332,13 @@ export default async function demandRoutes(app: FastifyInstance): Promise<void> 
         ]
       );
 
-      reply
+    // Auto-create opportunity (PRD 6.4: every demand = a new opportunity)
+    await query(
+      `INSERT INTO opportunities (demand_id, status, priority) VALUES ($1, 'new', 'medium')`,
+      [result.rows[0].id]
+    );
+
+reply
         .status(201)
         .send(
           createdResponse(

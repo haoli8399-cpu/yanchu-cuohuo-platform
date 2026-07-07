@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import Login from './pages/Login';
+import LandingPage from './pages/LandingPage';
 import SkuList from './pages/SkuList';
 import SkuDetail from './pages/SkuDetail';
 import SubmitRequest from './pages/SubmitRequest';
@@ -15,6 +16,7 @@ import SupplierLayout from './pages/supplier/SupplierLayout';
 import DailyReport from './pages/supplier/DailyReport';
 import SalesWarRoom from './pages/supplier/SalesWarRoom';
 import SkuManage from './pages/supplier/SkuManage';
+import Orders from './pages/supplier/Orders';
 import ProfitDashboard from './pages/supplier/ProfitDashboard';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -32,7 +34,9 @@ export default function App() {
             {/* 活动公司/甲方端 */}
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<SkuList />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/skus/:id" element={<SkuDetail />} />
+            <Route path="/browse" element={<SkuBrowse />} />
             <Route path="/demands/:id" element={<ProtectedRoute><DemandDetail /></ProtectedRoute>} />
             <Route path="/demands/new" element={<ProtectedRoute><SubmitRequest /></ProtectedRoute>} />
             <Route path="/demands" element={<ProtectedRoute><RequestHistory /></ProtectedRoute>} />
@@ -44,7 +48,7 @@ export default function App() {
               <Route path="war-room" element={<SalesWarRoom />} />
               <Route path="skus" element={<SkuManage />} />
               <Route path="profit" element={<ProfitDashboard />} />
-              <Route path="orders" element={<div style={{padding:40,textAlign:'center',color:'#9ca3af'}}>订单管理 — 开发中</div>} />
+              <Route path="orders" element={<Orders />} />
             </Route>
           </Routes>
           <FloatingPhoneButton />

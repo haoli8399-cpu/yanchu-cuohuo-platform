@@ -210,3 +210,15 @@ function handleBook() {
   display: block;
 }
 </style>
+
+.channel-price { font-size: 24rpx; color: $color-text-secondary; margin-top: 4rpx; }
+.price-tier-list { margin-top: 20rpx; padding: 0; }
+.price-tier-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14rpx 20rpx; border: 2rpx solid $color-border; border-radius: $radius-sm; margin-bottom: 8rpx;
+}
+.price-tier-item.current { background: $color-primary-subtle; border-color: $color-primary; }
+.tier-label { font-size: 26rpx; font-weight: 600; }
+.tier-duration { font-size: 22rpx; color: $color-text-secondary; }
+.tier-price { font-family: 'JetBrains Mono', monospace; font-size: 28rpx; font-weight: 700; color: $color-primary; }
+.tier-badge { font-size: 20rpx; font-weight: 700; padding: 2rpx 10rpx; border-radius: 9999px; background: $color-primary; color: #fff; margin-left: 8rpx; }

@@ -242,3 +242,15 @@ function goDetail(id: string) {
   }
 }
 </style>
+
+.supplier-badge {
+  display: inline-block;
+  font-size: 20rpx;
+  font-weight: 600;
+  padding: 2rpx 12rpx;
+  border-radius: 9999px;
+  margin-top: 4rpx;
+}
+.supplier-badge.self { background: $color-primary-subtle; color: $color-primary; }
+.supplier-badge.broker { background: $color-bg-input; color: $color-text-secondary; }
+.supplier-badge.indie { background: #ecfdf5; color: #059669; }

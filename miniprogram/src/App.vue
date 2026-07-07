@@ -2,7 +2,7 @@
 import { onLaunch } from '@dcloudio/uni-app'
 
 onLaunch(() => {
-  console.log('喜剧工厂 App Launch')
+  console.log('演立方 App Launch')
 })
 </script>
 

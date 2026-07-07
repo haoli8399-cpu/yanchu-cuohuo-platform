@@ -1,7 +1,7 @@
 <template>
   <view class="user-page page-with-tabbar">
     <!-- Profile Header -->
-    <view class="user-page__header">
+    <view class="user-page__header user-header-purple">
       <view class="user-page__profile">
         <image src="/static/images/performer-avatar.jpg" mode="aspectFill" class="user-page__avatar" />
         <view class="user-page__info">
@@ -145,3 +145,47 @@ function handleMenuTap(item: typeof menuGroup1[0]) {
   &__menu-arrow { color: $color-text-placeholder; font-size: $text-sm; }
 }
 </style>
+
+.user-header-purple {
+  background: $color-primary;
+  color: $color-text-inverse;
+  padding: 32rpx;
+}
+.user-header-purple .user-page__name { color: #fff; }
+.user-header-purple .user-page__badge--role { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.9); }
+.user-header-purple .user-page__badge--verified { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rpx;
+  background: $color-border;
+  margin: 24rpx 0;
+  border-radius: $radius-md;
+  overflow: hidden;
+}
+.quick-grid-item {
+  background: $color-bg-card;
+  padding: 28rpx 8rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+.quick-grid-item:active { background: $color-bg-hover; }
+.quick-grid-icon { font-size: 40rpx; }
+.quick-grid-label { font-size: 22rpx; color: $color-text-secondary; }
+
+.user-stats-row {
+  display: flex;
+  padding: 20rpx 0;
+  border-bottom: 2rpx solid $color-border;
+}
+.user-stat-item {
+  flex: 1; text-align: center;
+}
+.user-stat-value {
+  font-size: 36rpx; font-weight: 700; color: $color-primary;
+  font-family: 'JetBrains Mono', monospace;
+}
+.user-stat-label { font-size: 22rpx; color: $color-text-secondary; margin-top: 4rpx; }

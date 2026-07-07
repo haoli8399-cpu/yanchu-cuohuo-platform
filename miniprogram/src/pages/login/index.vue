@@ -4,8 +4,8 @@
     <view class="login-page__brand">
       <image class="login-page__brand-bg" src="/static/images/login-bg.jpg" mode="aspectFill" />
       <view class="login-page__brand-overlay">
-        <text class="login-page__title">喜剧工厂</text>
-        <text class="login-page__subtitle">连接优质演出内容</text>
+        <text class="login-page__title">演立方</text>
+        <text class="login-page__subtitle">商演找演立方</text>
       </view>
     </view>
 
