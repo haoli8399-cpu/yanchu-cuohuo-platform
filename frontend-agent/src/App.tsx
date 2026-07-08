@@ -20,6 +20,8 @@ import SkuBrowse from "./pages/SkuBrowse";
 import SkuManage from './pages/supplier/SkuManage';
 import Orders from './pages/supplier/Orders';
 import ProfitDashboard from './pages/supplier/ProfitDashboard';
+import PerformerManage from './pages/supplier/PerformerManage';
+import CompanyOverview from './pages/supplier/CompanyOverview';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth();
@@ -52,6 +54,8 @@ export default function App() {
               <Route path="skus" element={<SkuManage />} />
               <Route path="profit" element={<ProfitDashboard />} />
               <Route path="orders" element={<Orders />} />
+              <Route path="performers" element={<PerformerManage />} />
+              <Route path="overview" element={<CompanyOverview />} />
             </Route>
           </Routes>
           <FloatingPhoneButton />

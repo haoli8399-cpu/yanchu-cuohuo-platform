@@ -19,9 +19,11 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   FieldTimeOutlined,
+  RobotOutlined,
   SearchOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
+import DispatchPanel from '../../components/DispatchPanel';
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -80,6 +82,8 @@ export default function Orders() {
   const [keyword, setKeyword] = useState('');
   const [status, setStatus] = useState<OrderStatus | 'all'>('all');
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+  const [dispatchOpen, setDispatchOpen] = useState(false);
+  const [dispatchOrder, setDispatchOrder] = useState<{ orderId: string; orderNo: string; plan: string } | null>(null);
 
   const filteredOrders = useMemo(() => {
     const [start, end] = dateRange || [];
@@ -142,9 +146,15 @@ export default function Orders() {
       key: 'actions',
       align: 'right',
       render: (_, record) => (
-        <Button type="link" style={{ paddingRight: 0 }} onClick={() => console.log(record.orderNo)}>
-          查看详情
-        </Button>
+        <Space size="small">
+          <Button type="link" style={{ paddingRight: 0 }} onClick={() => console.log(record.orderNo)}>
+            查看详情
+          </Button>
+          <Button type="link" style={{ paddingRight: 0 }} icon={<RobotOutlined />}
+            onClick={() => { setDispatchOrder({ orderId: record.orderNo, orderNo: record.orderNo, plan: record.plan }); setDispatchOpen(true); }}>
+            派单
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -197,6 +207,12 @@ export default function Orders() {
           pagination={{ pageSize: 10, showSizeChanger: false }}
         />
       </Card>
+
+      <DispatchPanel
+        open={dispatchOpen}
+        order={dispatchOrder}
+        onClose={() => setDispatchOpen(false)}
+      />
     </div>
   );
 }

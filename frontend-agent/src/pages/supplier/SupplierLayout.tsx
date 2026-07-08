@@ -7,6 +7,8 @@ import {
   AppstoreOutlined,
   FundOutlined,
   OrderedListOutlined,
+  TeamOutlined,
+  GlobalOutlined,
 } from '@ant-design/icons';
 import XiaoYanFloat from '../../components/XiaoYanFloat';
 
@@ -19,6 +21,8 @@ const MENU_ITEMS = [
   { key: '/supplier/skus', icon: <AppstoreOutlined />, label: 'SKU管理' },
   { key: '/supplier/profit', icon: <FundOutlined />, label: '利润看板' },
   { key: '/supplier/orders', icon: <OrderedListOutlined />, label: '订单管理' },
+  { key: '/supplier/performers', icon: <TeamOutlined />, label: '艺人管理' },
+  { key: '/supplier/overview', icon: <GlobalOutlined />, label: '公司总览' },
 ];
 
 export default function SupplierLayout() {
