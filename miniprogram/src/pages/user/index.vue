@@ -177,22 +177,19 @@ function goOrderDetail(id: string) {
   uni.navigateTo({ url: `/pages/user/orders/index?id=${id}` })
 }
 
-const menuGroup1 = [
+const allMenuItems = [
   { label: '我的需求', icon: '📋', iconBg: '#f5f3ff' },
   { label: '我的收藏', icon: '❤️', iconBg: '#fef2f2' },
   { label: '历史订单', icon: '🕐', iconBg: '#eff6ff' },
   { label: '企业信息', icon: '🏢', iconBg: '#f0fdf4' },
   { label: '发票管理', icon: '🧾', iconBg: '#fffbeb' },
-]
-
-const menuGroup2 = [
   { label: '联系客服', icon: '🎧', iconBg: '#eef2ff' },
   { label: '意见反馈', icon: '✉️', iconBg: '#f0fdf4' },
   { label: '关于我们', icon: 'ℹ️', iconBg: '#f5f3ff' },
   { label: '设置', icon: '⚙️', iconBg: '#f5f5f7' },
 ]
 
-function handleMenuTap(item: typeof menuGroup1[0]) {
+function handleMenuTap(item: typeof allMenuItems[0]) {
   if (item.label === '我的需求') {
     uni.navigateTo({ url: '/pages/profile/demand/index' })
     return
@@ -302,6 +299,37 @@ onMounted(() => {
 
   &__menu-text { flex: 1; font-size: $text-md; color: $color-text-primary; }
   &__menu-arrow { color: $color-text-placeholder; font-size: $text-sm; }
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16rpx;
+  padding: 16rpx 20rpx 24rpx;
+}
+.quick-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0;
+  background: #fff;
+  border-radius: 16rpx;
+  border: 1px solid #f0f1f3;
+  gap: 8rpx;
+  &:active { opacity: 0.7; transform: scale(0.96); }
+}
+.quick-grid-item__icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+}
+.quick-grid-item__label {
+  font-size: 22rpx;
+  color: #6b7280;
 }
 </style>
 

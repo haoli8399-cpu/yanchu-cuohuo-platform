@@ -129,7 +129,9 @@ const filters = [
   { label: '咖位筛选', onTap: () => {} },
 ]
 
-const skuList = ref<Sku[]>([
+const skuList_full = ref<Sku[]>([
+const filteredSkus = ref<SkuItem[]>([])
+
   { id: '1', title: '周末脱口秀之夜', showType: 'talkshow', coverImage: '/static/images/show-card-1.jpg', description: '', duration: 90, price: 8800, priceUnit: '场', rating: 4.9, ratingCount: 126, salesCount: 200, suitableScene: '适合年会/团建', businessType: 'commercial', performers: [], tags: [] },
   { id: '2', title: '即兴喜剧互动秀', showType: 'improv', coverImage: '/static/images/show-card-1.jpg', description: '', duration: 60, price: 6500, priceUnit: '场', rating: 4.8, ratingCount: 89, salesCount: 150, suitableScene: '适合团建/客户答谢', businessType: 'commercial', performers: [], tags: [] },
   { id: '3', title: '漫才双人专场', showType: 'manzai', coverImage: '/static/images/show-card-1.jpg', description: '', duration: 90, price: 12000, priceUnit: '场', rating: 4.7, ratingCount: 56, salesCount: 80, suitableScene: '适合年会/商演', businessType: 'commercial', performers: [], tags: [] },

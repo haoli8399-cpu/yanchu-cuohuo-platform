@@ -46,6 +46,20 @@ export default function PerformerManage() {
   const columns: ColumnsType<Performer> = [
     {
       title: '姓名', dataIndex: 'name', key: 'name',
+    render: (text: string, record: any) => (
+      <Space>
+        <Typography.Text>{text}</Typography.Text>
+        <Typography.Link onClick={() => {
+          // TODO: open edit modal pre-filled with record data
+          // setEditingPerformer(record);
+          // setEditModalVisible(true);
+        }}
+        style={{ fontSize: 11 }}
+        >
+          编辑
+        </Typography.Link>
+      </Space>
+    ),,
       render: (name: string) => <Text strong style={{ fontSize: 13 }}>{name}</Text>,
     },
     {
