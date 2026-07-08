@@ -1,8 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Card, Col, Empty, Row, Space, Spin, Tag, Typography } from 'antd';
+import { Button, Card, Col, Empty, Row, Segmented, Space, Spin, Tag, Typography } from 'antd';
 import { GiftOutlined, SmileOutlined, StarOutlined } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
+
+type UserRole = 'client' | 'company' | 'performer';
+
+// 价格分层：与小程序 sku/list 逻辑对齐（活动公司=渠道价×0.7，演员=成本价×0.6，散客=标准价原价）
+const roleLabelMap: Record<UserRole, string> = {
+  client: '标准价',
+  company: '渠道价',
+  performer: '成本价',
+};
+
+function calcPrice(base: number, role: UserRole) {
+  if (role === 'company') return Math.round(base * 0.7);
+  if (role === 'performer') return Math.round(base * 0.6);
+  return base;
+}
 
 type SupplierType = 'self' | 'broker' | 'artist';
 
@@ -55,6 +70,16 @@ export default function SkuBrowse() {
   const [tier, setTier] = useState('全部');
   const [loading, setLoading] = useState(true);
 
+  const [userRole, setUserRole] = useState<UserRole>(() => {
+    const saved = (typeof localStorage !== 'undefined' ? localStorage.getItem('user_role') : null) as UserRole | null;
+    return saved === 'client' || saved === 'company' || saved === 'performer' ? saved : 'client';
+  });
+
+  function handleRoleChange(role: UserRole) {
+    setUserRole(role);
+    try { localStorage.setItem('user_role', role); } catch { /* ignore */ }
+  }
+
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 600);
     return () => clearTimeout(t);
@@ -75,8 +100,21 @@ export default function SkuBrowse() {
   return (
     <div style={{ minHeight: '100vh', background: '#f6f7fb', padding: 24, fontFamily: 'Inter, PingFang SC, sans-serif' }}>
       <div style={{ maxWidth: 1180, margin: '0 auto' }}>
-        <Title level={3} style={{ marginBottom: 8 }}>找方案</Title>
-        <Text type="secondary">演立方 YANLI · 商演找演立方</Text>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <div>
+            <Title level={3} style={{ marginBottom: 8 }}>找方案</Title>
+            <Text type="secondary">演立方 YANLI · 商演找演立方</Text>
+          </div>
+          <Segmented
+            value={userRole}
+            onChange={(val) => handleRoleChange(val as UserRole)}
+            options={[
+              { label: '散客', value: 'client' },
+              { label: '活动公司', value: 'company' },
+              { label: '演员', value: 'performer' },
+            ]}
+          />
+        </div>
 
         <div style={{ display: 'flex', gap: 24, marginTop: 24, alignItems: 'flex-start' }}>
           <Card style={{ width: 200, flexShrink: 0, borderRadius: 8 }} styles={{ body: { padding: 16 } }}>
@@ -125,7 +163,10 @@ export default function SkuBrowse() {
                                 </span>
                               </Space>
                               <div style={{ marginTop: 8, color: '#7c3aed', fontSize: 24, fontWeight: 800, fontFamily: "'JetBrains Mono', monospace" }}>
-                                {formatMoney(plan.price)}
+                                {formatMoney(calcPrice(plan.price, userRole))}
+                                <span style={{ fontSize: 12, fontWeight: 600, color: '#9ca3af', marginLeft: 6, fontFamily: 'Inter, PingFang SC, sans-serif' }}>
+                                  {roleLabelMap[userRole]}
+                                </span>
                               </div>
                               <Paragraph type="secondary" style={{ margin: '8px 0 0' }}>
                                 <Tag>{plan.tier}</Tag>
