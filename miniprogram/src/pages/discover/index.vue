@@ -257,12 +257,12 @@ const recentPlans = [
   {
     id: 'magic-estate', name: 'XX地产开盘 · 魔术喜剧 T4 45min',
     meta: '匹配 87% · 可调整艺人级别', matchTag: '可调整', note: '',
-    price: '¥3,800', color: '#f59e0b',
+    price: '¥3,800', color: 'var(--color-primary)',
   },
   {
     id: 'improv-bank', name: '某银行答谢 · 即兴喜剧 60min',
     meta: '匹配 82% · 需确认人数', matchTag: '待补信息', note: '',
-    price: '¥4,500', color: '#a78bfa',
+    price: '¥4,500', color: 'var(--color-primary)',
   },
 ];
 
@@ -424,18 +424,18 @@ function goCaseDetail(item: any) {
 }
 .hero-ai-text { font-size: $text-sm; color: $color-primary; font-weight: 600; }
 .hero-title {
-  display: block; font-size: 48rpx; font-weight: 800; line-height: 1.2;
+  display: block; font-size: $text-xl; font-weight: 800; line-height: 1.2;
   color: $color-text-primary; margin-bottom: 8rpx;
 }
 .hero-subtitle {
   display: block; font-size: $text-base; color: $color-text-secondary;
-  line-height: 1.5; margin-bottom: 24rpx;
+  line-height: 1.5; margin-bottom: 16rpx;
 }
 
 /* ===== Input Bar ===== */
 .input-bar {
   margin: 0 32rpx; display: flex; align-items: center; gap: 8rpx;
-  background: $color-bg-card; border: 2rpx solid $color-border;
+  background: $color-bg-card; border: 2rpx solid $color-primary;
   border-radius: $radius-full; padding: 8rpx; box-shadow: $shadow-sm;
 }
 .voice-btn {
