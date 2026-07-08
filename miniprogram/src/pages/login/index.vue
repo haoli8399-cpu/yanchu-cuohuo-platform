@@ -21,10 +21,17 @@
         </button>
         <button
           class="login-page__role-btn"
-          :class="{ 'login-page__role-btn--active': selectedRole === 'performer' }"
-          @tap="selectRole('performer')"
+          :class="{ 'login-page__role-btn--active': selectedRole === 'performer' && selectedActor === 'indie' }"
+          @tap="selectRole('performer', 'indie')"
         >
-          🎭 艺人/经纪公司
+          🎭 独立艺人
+        </button>
+        <button
+          class="login-page__role-btn"
+          :class="{ 'login-page__role-btn--active': selectedRole === 'performer' && selectedActor === 'agency' }"
+          @tap="selectRole('performer', 'agency')"
+        >
+          🏢 经纪公司
         </button>
         <button
           class="login-page__role-btn"
@@ -57,13 +64,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
-import type { UserRole } from '@/types'
+import type { UserRole, PerformerType } from '@/types'
 
 const userStore = useUserStore()
 const selectedRole = ref<UserRole>('company')
+const selectedActor = ref<PerformerType>('indie')
 
-function selectRole(role: UserRole) {
+function selectRole(role: UserRole, actor?: PerformerType) {
   selectedRole.value = role
+  if (role === 'performer') {
+    selectedActor.value = actor || 'indie'
+  }
 }
 
 function handleWechatLogin() {
@@ -71,8 +82,9 @@ function handleWechatLogin() {
   uni.showToast({ title: '登录中...', icon: 'loading' })
   setTimeout(() => {
     userStore.setToken('mock_token_123')
-    userStore.setRole(selectedRole.value)
+    userStore.setRole(selectedRole.value, selectedActor.value)
     uni.setStorageSync('user_role', selectedRole.value)
+    uni.setStorageSync('user_actor_type', selectedActor.value)
 
     if (selectedRole.value === 'performer') {
       uni.redirectTo({ url: '/pages/user/performer/index' })

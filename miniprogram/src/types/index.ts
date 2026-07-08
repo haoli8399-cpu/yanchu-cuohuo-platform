@@ -1,6 +1,9 @@
 // User Role
 export type UserRole = 'company' | 'performer' | 'client'
 
+// 艺人身份细分：独立艺人 / 经纪公司
+export type PerformerType = 'indie' | 'agency'
+
 // Status Enums
 export type RequestStatus = 'pending_quote' | 'quoted' | 'confirmed' | 'signed' | 'cancelled'
 export type AssignmentStatus = 'pending_confirm' | 'confirmed' | 'completed' | 'rejected'
@@ -38,6 +41,7 @@ export interface CompanyUser extends User {
 // Performer User
 export interface PerformerUser extends User {
   role: 'performer'
+  actorType?: PerformerType
   stageName: string
   stats: {
     monthlySchedule: number

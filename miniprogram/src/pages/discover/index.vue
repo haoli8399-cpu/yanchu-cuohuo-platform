@@ -80,8 +80,8 @@
         </view>
       </view>
 
-      <!-- ===== 独立艺人工作台入口（仅艺人角色可见）===== -->
-      <view v-if="isPerformer" class="performer-entry" @tap="goPerformerWorkbench">
+      <!-- ===== 独立艺人工作台入口（仅独立艺人可见）===== -->
+      <view v-if="isIndiePerformer" class="performer-entry" @tap="goPerformerWorkbench">
         <text class="performer-entry__icon">🎭</text>
         <view class="performer-entry__body">
           <text class="performer-entry__title">独立艺人工作台</text>
@@ -233,11 +233,13 @@ const inputText = ref('');
 const selectedTag = ref('all');
 const loading = ref(true);
 const error = ref(false);
-const isPerformer = ref(false);
+const isIndiePerformer = ref(false);
 
 function syncRole() {
-  // 从本地存储读取角色，艺人(performer)可见工作台入口
-  isPerformer.value = uni.getStorageSync('user_role') === 'performer';
+  // 仅「独立艺人」可见入口：角色为 performer 且非经纪公司(agency)
+  const role = uni.getStorageSync('user_role');
+  const actorType = uni.getStorageSync('user_actor_type');
+  isIndiePerformer.value = role === 'performer' && actorType !== 'agency';
 }
 
 function loadData() {

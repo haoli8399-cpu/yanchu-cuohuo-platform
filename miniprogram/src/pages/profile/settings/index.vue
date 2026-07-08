@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import CfNavBar from '@/components/CfNavBar.vue'
-import type { UserRole } from '@/types'
+import type { UserRole, PerformerType } from '@/types'
 
 const role = ref<UserRole>('company')
 const cacheSize = ref('12.4 MB')
@@ -54,6 +54,11 @@ const roleLabelMap: Record<UserRole, string> = {
   client: '甲方企业',
 }
 const roleLabel = ref(roleLabelMap[role.value])
+
+function getRoleLabel(r: UserRole, actor: PerformerType): string {
+  if (r === 'performer') return actor === 'agency' ? '经纪公司' : '独立艺人'
+  return roleLabelMap[r]
+}
 
 function switchRole() {
   uni.showToast({ title: '角色切换开发中', icon: 'none' })
@@ -79,7 +84,8 @@ function logout() {
 
 onMounted(() => {
   role.value = (uni.getStorageSync('user_role') as UserRole) || 'company'
-  roleLabel.value = roleLabelMap[role.value]
+  const actor = (uni.getStorageSync('user_actor_type') as PerformerType) || 'indie'
+  roleLabel.value = getRoleLabel(role.value, actor)
 })
 </script>
 
