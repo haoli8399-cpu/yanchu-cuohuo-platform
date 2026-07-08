@@ -1,48 +1,51 @@
 # HANDOFF — 演立方 项目状态
 
-> 更新: 2026-07-08 12:00 | AI EM: Hermes Agent
+> 更新: 2026-07-08 | AI EM: Hermes Agent
 
 ---
 
 ## 已完成 ✅
 
-| 模块 | 内容 | 状态 |
-|:-----|:-----|:----:|
-| 小程序 10 页 | 首页/提需求/找方案/SKU详情/消息/订单详情/我的/登录 | ✅ 全部对齐设计稿 |
-| PC 端 12 页 | 官网首页+找方案+5页Supplier Console+登录等 | ✅ 构建通过 |
-| 运营后台 | Dashboard重写(GMV+漏斗)，14模块完整 | ✅ |
-| 后端 API | 20组路由,17张表,Phase1 4张新增表全部完成 | ✅ TS 0错误 |
-| Redis 缓存 | SKU列表5分钟缓存，优雅降级 | ✅ |
-| TabBar 图标 | 5个几何风格图标(灰色/紫色)，281B真实PNG | ✅ |
-| 治理体系 | PRODUCT_OS/ARCHITECTURE/DECISION_LOG/CHANGELOG/DEVELOPMENT_RULES | ✅ |
-| 品牌合规 | 品牌名/颜色/禁用词全部清零 | ✅ |
+| 模块 | 说明 |
+|:-----|:------|
+| 小程序 10 页 | 全部对齐设计稿，含角色切换/价格分层 |
+| PC 端 12 页 | LandingPage/SkuBrowse/Login + SupplierConsole 6 页，路由完整 |
+| 运营后台 14 模块 | Dashboard 重写(GMV+漏斗) |
+| 后端 API 20 组 | 17 张表，TS 0 错误，Redis 缓存 |
+| 治理体系 | 7 份治理文档，全部按 Skill 模板重写完成 |
+| 品牌合规 | 品牌名/颜色/禁用词全线清零 |
+| 小演悬浮助手 | XiaoYanFloat 挂载 SupplierLayout，5 页生效 |
+| Kanban 看板 | 5 列原生拖拽，零依赖 |
+| SKU 自定义字段 | migration + API 6 端点 |
+| 登录页角色切换 | 活动公司/甲方/艺人 三角色，价格分层展示 |
+| UIUX 审计 P0/P1 | 全局字体/绿色修正/user变量/双底部栏 + 三态覆盖 + 8px 网格 |
+| PRD V3.3.3 | 4 处更新：经纪公司增强+独立艺人AI Agent+Phase1范围+3入口 |
 
 ---
 
 ## 进行中 🔄
 
-| 事项 | 备注 |
+| 事项 | 状态 |
 |:-----|:-----|
-| 已全部完成 ✅ 已完成
-| CodeBuddy 小演悬浮组件 + Kanban看板 | ✅ 已完成 (44f180f + e0c36a5) |
-| Codex SKU自定义字段 ✅
-| CodeBuddy UIUX审计P0修复 | ✅ 已完成 (a567f16: PingFangSC+绿色+user变量+双底部栏) |
-| CodeBuddy 登录页角色切换 | ✅ 已完成 |
-| CodeBuddy P1三态+间距 | 📋 待执行 |
-| CodeBuddy 甲方散客端口 | 📋 待执行 | (d520352) | | 滥用+响应格式+输入校验+API_CONTRACT更新 (任务已下发) |
-| Node v24 兼容 | 小程序构建需本地uni二进制，npx版本不兼容v24 |
+| 独立艺人端小演接入 | 📋 提示词已出(09)，待执行 |
 
 ---
 
 ## 未完成 📋
 
-| 事项 | 优先级 | 备注 |
-|:-----|:------:|:-----|
-| Elasticsearch 接入 | P1 | 搜索性能优化，当前PG ILIKE够用 |
-| Dify AI 工作流 | P2 | 小演对话升级 |
-| MinIO 对象存储 | P3 | 图片文件统一管理 |
-| Milvus 语义搜索 | P4 | 历史成交数据积累后 |
-| frontend-admin Dashboard API | P1 | 路径已修正/operations→/admin |
+| 优先级 | 事项 | 备注 |
+|:------:|:-----|:------|
+| 🔴 P0 | 部署后端到腾讯云 119.28.134.67 | 需 Docker 部署 |
+| 🔴 P0 | 小程序提审发布 | 微信开发者工具提交审核 |
+| 🟡 P1 | 经纪公司增强：艺人管理/AI派单/公司排期结算 | PRD 已更新，待 CodeBuddy |
+| 🟡 P1 | 独立艺人 supplier 小程序版 (SKU/订单/收入) | 同艺人模式入口，额外 Tab |
+| 🟢 P2 | PC 端 /browse 同步价格分层 | 小程序验证后做 |
+| 🟢 P2 | 间距彻底收敛 (旧提示词归档清理) | 剩余 3 处非 8px 值 |
+| 🔵 P3 | Elasticsearch 搜索 | 数据量大了再做 |
+| 🔵 P3 | Dify AI 工作流 | 小演对话升级 |
+| 🔵 P3 | MinIO 对象存储 | 图片/文件统一管理 |
+| 🔵 P3 | Milvus 语义搜索 | 历史成交数据积累后 |
+| 🔵 P3 | 经纪公司入驻/抽佣/Agent订阅/争议仲裁 | PRD Phase 3 |
 
 ---
 
@@ -50,15 +53,15 @@
 
 | 问题 | 影响 | 方案 |
 |:-----|:-----|:-----|
-| Node v24 不兼容 npx uni | 小程序需用本地uni构建 | 已解决(node_modules/.bin/uni) |
-| backend 6文件@ts-nocheck | 预存Fastify类型问题 | 不修(风险>收益) |
-| API_CONTRACT.md落后代码 | 文档52端点vs代码88端点 | Codex更新中 |
+| Node v24 不兼容 npx uni | 小程序需本地 uni 构建 | ✅ 已解决 (node_modules/.bin/uni) |
+| backend 6 文件 @ts-nocheck | 预存 Fastify 类型问题 | 不修 (风险>收益) |
+| PC 端 5173 端口被占 | 自动切到 5174 | 需要启动时注意 |
 
 ---
 
-## 下一步计划
+## 下一步（本周）
 
-1. 等 Codex 完成代码质量修复 → Review → 合并
-2. 部署后端到腾讯云 (119.28.134.67)
-3. 小程序提审发布
-4. Phase 1 末: Elasticsearch 接入
+1. 执行独立艺人端小演接入 (09)
+2. 后端 + PC 端全量部署测试
+3. 小程序提审
+4. 经纪公司增强排期 (PRD V3.3.3)
