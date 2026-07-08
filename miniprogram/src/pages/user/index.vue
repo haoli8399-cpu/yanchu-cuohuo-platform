@@ -282,7 +282,7 @@ onMounted(() => {
 .quick-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2rpx;
+  gap: 0rpx;
   background: $color-border;
   margin: 24rpx 0;
   border-radius: $radius-md;
@@ -290,7 +290,7 @@ onMounted(() => {
 }
 .quick-grid-item {
   background: $color-bg-card;
-  padding: 28rpx 8rpx;
+  padding: 32rpx 8rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -302,7 +302,7 @@ onMounted(() => {
 
 .user-stats-row {
   display: flex;
-  padding: 20rpx 0;
+  padding: 24rpx 0;
   border-bottom: 2rpx solid $color-border;
 }
 .user-stat-item {
@@ -312,7 +312,7 @@ onMounted(() => {
   font-size: 36rpx; font-weight: 700; color: $color-primary;
   font-family: 'JetBrains Mono', monospace;
 }
-.user-stat-label { font-size: 22rpx; color: $color-text-secondary; margin-top: 4rpx; }
+.user-stat-label { font-size: 22rpx; color: $color-text-secondary; margin-top: 8rpx; }
 
 .orders-section { margin-top: 32rpx; padding: 0 4rpx; }
 .section-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16rpx; }
@@ -321,11 +321,11 @@ onMounted(() => {
 .order-tab { font-size: $text-sm; color: $color-text-secondary; padding: 4rpx 0; }
 .order-tab.active { color: $color-primary; font-weight: 600; border-bottom: 4rpx solid $color-primary; }
 .order-card { cursor: pointer; 
-  padding: 20rpx 24rpx; background: $color-bg-card;
-  border-radius: $radius-md; border: 2rpx solid $color-border; margin-bottom: 12rpx;
+  padding: 24rpx 24rpx; background: $color-bg-card;
+  border-radius: $radius-md; border: 2rpx solid $color-border; margin-bottom: 16rpx;
 }
 .order-card:active { opacity: 0.8; }
-.order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6rpx; }
+.order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8rpx; }
 .order-name { font-size: $text-base; font-weight: 600; color: $color-text-primary; }
 .order-status { font-size: $text-xs; font-weight: 600; padding: 4rpx 12rpx; border-radius: $radius-full; }
 .status-purple { background: $color-primary-subtle; color: $color-primary; }
