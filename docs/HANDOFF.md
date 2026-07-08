@@ -26,6 +26,7 @@
 | 消息详情页 + 8宫格页 | 小程序：消息详情页(类型化渲染+跳转) + 我的需求/收藏/企业信息/发票/客服/反馈/关于/设置 8页，路由注册，build DONE |
 | 首页独立艺人入口 | discover/index.vue：AI最近方案上方条件渲染入口卡片，仅**独立艺人**(performer且非agency)可见，跳转 /pages/user/performer/index，build DONE |
 | 独立/经纪身份区分 | types新增 PerformerType + store.actorType/isIndiePerformer + login拆分独立艺人/经纪公司按钮(写user_actor_type) + settings标签区分，build DONE |
+| 经纪公司落地页 | 新建 pages/agency/index.vue（公司头+KPI 3卡+2x2快捷入口+最近订单），注册路由 pages/agency/index；login 中 actorType=agency 时 redirectTo 到此页（独立艺人仍跳 performer 页），build DONE |
 
 ---
 
