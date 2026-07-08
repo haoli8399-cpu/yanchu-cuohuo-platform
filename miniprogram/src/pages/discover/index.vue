@@ -374,16 +374,16 @@ function goCaseDetail(item: any) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28rpx 32rpx 0;
+  padding: 32rpx 32rpx 0;
 }
 .brand-left {
   display: flex;
   align-items: center;
-  gap: 10rpx;
+  gap: 8rpx;
 }
 .brand-cube {
   width: 32rpx; height: 32rpx;
-  border-radius: 6rpx;
+  border-radius: 8rpx;
   background: $color-primary;
 }
 .brand-name {
@@ -394,8 +394,8 @@ function goCaseDetail(item: any) {
   padding-left: 8rpx; border-left: 2rpx solid $color-border; font-weight: 400;
 }
 .agent-badge {
-  display: flex; align-items: center; gap: 6rpx;
-  height: 48rpx; padding: 0 18rpx;
+  display: flex; align-items: center; gap: 8rpx;
+  height: 48rpx; padding: 0 16rpx;
   border-radius: $radius-full; background: $color-primary-subtle;
   color: $color-primary; font-size: $text-sm; font-weight: 600;
 }
@@ -411,10 +411,10 @@ function goCaseDetail(item: any) {
 
 /* ===== Hero ===== */
 .hero-section {
-  padding: 28rpx 32rpx 0; text-align: center;
+  padding: 32rpx 32rpx 0; text-align: center;
 }
 .hero-ai-hint {
-  display: flex; align-items: center; justify-content: center; gap: 6rpx; margin-bottom: 10rpx;
+  display: flex; align-items: center; justify-content: center; gap: 8rpx; margin-bottom: 8rpx;
 }
 .ai-mini-cube {
   width: 28rpx; height: 28rpx; border-radius: 4rpx;
@@ -436,7 +436,7 @@ function goCaseDetail(item: any) {
 .input-bar {
   margin: 0 32rpx; display: flex; align-items: center; gap: 8rpx;
   background: $color-bg-card; border: 2rpx solid $color-border;
-  border-radius: $radius-full; padding: 6rpx; box-shadow: $shadow-sm;
+  border-radius: $radius-full; padding: 8rpx; box-shadow: $shadow-sm;
 }
 .voice-btn {
   width: 60rpx; height: 60rpx; border-radius: 50%;
@@ -446,12 +446,12 @@ function goCaseDetail(item: any) {
 }
 .voice-btn:active { opacity: 0.7; }
 .input-field {
-  flex: 1; height: 60rpx; padding: 0 12rpx;
+  flex: 1; height: 60rpx; padding: 0 16rpx;
   background: transparent; border: none; outline: none;
   font-size: $text-base; color: $color-text-primary;
 }
 .send-btn {
-  height: 56rpx; padding: 0 28rpx;
+  height: 56rpx; padding: 0 24rpx;
   background: $color-primary; color: $color-text-inverse;
   border-radius: $radius-full;
   font-size: $text-base; font-weight: 600;
@@ -461,7 +461,7 @@ function goCaseDetail(item: any) {
 
 /* ===== Paste Link ===== */
 .paste-link {
-  text-align: center; padding: 12rpx 0 4rpx;
+  text-align: center; padding: 16rpx 0 8rpx;
   display: flex; align-items: center; justify-content: center; gap: 4rpx;
   font-size: $text-sm; color: $color-primary; font-weight: 600;
 }
@@ -472,7 +472,7 @@ function goCaseDetail(item: any) {
   display: flex; gap: 8rpx; padding: 16rpx 32rpx; flex-wrap: wrap;
 }
 .tag-item {
-  padding: 10rpx 24rpx; border-radius: $radius-full;
+  padding: 8rpx 24rpx; border-radius: $radius-full;
   font-size: $text-sm; font-weight: 500;
   color: $color-text-secondary; background: $color-bg-input;
 }
@@ -483,11 +483,11 @@ function goCaseDetail(item: any) {
 
 /* ===== Section Block ===== */
 .section-block {
-  padding: 16rpx 32rpx 0;
+  padding: 24rpx 32rpx 0;
 }
 .section-header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14rpx;
+  margin-bottom: 16rpx;
 }
 .section-header-left {
   display: flex; align-items: center; gap: 8rpx;
@@ -505,16 +505,16 @@ function goCaseDetail(item: any) {
 
 /* ===== Plan Card ===== */
 .plan-card {
-  min-height: 112rpx; padding: 20rpx 22rpx; margin-bottom: 12rpx;
+  min-height: 112rpx; padding: 24rpx 24rpx; margin-bottom: 16rpx;
   border-radius: $radius-md; background: $color-bg-card;
   border-left: 6rpx solid $color-primary; box-shadow: $shadow-sm;
   display: flex; align-items: center; justify-content: space-between; gap: 16rpx;
 }
 .plan-card:active { opacity: 0.85; }
-.plan-info { min-width: 0; display: flex; flex-direction: column; gap: 6rpx; }
+.plan-info { min-width: 0; display: flex; flex-direction: column; gap: 8rpx; }
 .plan-name { font-size: $text-md; font-weight: 700; color: $color-text-primary; }
 .plan-meta { font-size: $text-sm; color: $color-text-secondary; }
-.plan-tags { display: flex; gap: 6rpx; flex-wrap: wrap; }
+.plan-tags { display: flex; gap: 8rpx; flex-wrap: wrap; }
 .plan-tag {
   padding: 2rpx 12rpx; border-radius: $radius-full; font-size: $text-xs; font-weight: 600;
 }
@@ -529,13 +529,13 @@ function goCaseDetail(item: any) {
 /* ===== History Card ===== */
 .history-card {
   display: flex; align-items: center; gap: 12rpx;
-  padding: 16rpx 18rpx; margin-bottom: 8rpx;
+  padding: 16rpx 24rpx; margin-bottom: 16rpx;
   border-radius: $radius-md; background: $color-bg-card;
   border: 2rpx solid $color-border;
 }
 .history-card:active { opacity: 0.8; }
 .history-icon {
-  width: 40rpx; height: 40rpx; border-radius: 10rpx;
+  width: 40rpx; height: 40rpx; border-radius: 8rpx;
   display: flex; align-items: center; justify-content: center;
   font-size: 20rpx; flex-shrink: 0;
 }
@@ -544,9 +544,9 @@ function goCaseDetail(item: any) {
 .history-icon.green { background: #f0fdf4; color: #16a34a; }
 .history-info { flex: 1; min-width: 0; }
 .history-name { display: block; font-size: $text-sm; font-weight: 600; color: $color-text-primary; }
-.history-meta { display: block; font-size: $text-xs; color: $color-text-tertiary; margin-top: 2rpx; }
+.history-meta { display: block; font-size: $text-xs; color: $color-text-tertiary; margin-top: 4rpx; }
 .history-status {
-  font-size: $text-xs; font-weight: 600; padding: 4rpx 14rpx; border-radius: $radius-full; flex-shrink: 0;
+  font-size: $text-xs; font-weight: 600; padding: 4rpx 16rpx; border-radius: $radius-full; flex-shrink: 0;
 }
 .history-status.primary { background: $color-primary-subtle; color: $color-primary; }
 .history-status.amber { background: #fffbeb; color: #f59e0b; }
@@ -559,13 +559,13 @@ function goCaseDetail(item: any) {
 /* ===== Case Card ===== */
 .case-card {
   border-radius: $radius-md; background: $color-bg-card;
-  border: 2rpx solid $color-border; overflow: hidden; margin-bottom: 12rpx;
+  border: 2rpx solid $color-border; overflow: hidden; margin-bottom: 16rpx;
 }
 .case-card:active { opacity: 0.85; }
 .case-cover {
   height: 120rpx; display: flex; align-items: center; justify-content: center; font-size: 40rpx;
 }
-.case-body { padding: 14rpx 16rpx; }
+.case-body { padding: 16rpx; }
 .case-title { display: block; font-size: $text-md; font-weight: 700; color: $color-text-primary; margin-bottom: 4rpx; }
 .case-desc { display: block; font-size: $text-xs; color: $color-text-secondary; line-height: 1.5; margin-bottom: 8rpx; }
 .case-footer { display: flex; align-items: center; justify-content: space-between; }
@@ -581,7 +581,7 @@ function goCaseDetail(item: any) {
 
 /* ===== Curated Card ===== */
 .curated-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12rpx;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx;
 }
 .curated-card {
   border-radius: $radius-md; background: $color-bg-card;
@@ -591,15 +591,15 @@ function goCaseDetail(item: any) {
 .curated-cover {
   height: 100rpx; display: flex; align-items: center; justify-content: center; font-size: 32rpx;
 }
-.curated-body { padding: 10rpx 12rpx; }
+.curated-body { padding: 8rpx 16rpx; }
 .curated-name { display: block; font-size: $text-sm; font-weight: 700; color: $color-text-primary; margin-bottom: 4rpx; }
 .curated-tags { margin-bottom: 4rpx; }
 .curated-tag {
-  display: inline-block; font-size: $text-xs; font-weight: 600; padding: 1rpx 10rpx; border-radius: $radius-full;
+  display: inline-block; font-size: $text-xs; font-weight: 600; padding: 2rpx 12rpx; border-radius: $radius-full;
 }
 .curated-tag.self { background: $color-primary-subtle; color: $color-primary; }
 .curated-tag.third { background: $color-bg-input; color: $color-text-secondary; }
-.curated-tag.indie { background: #ecfdf5; color: #059669; }
+.curated-tag.indie { background: #ecfdf5; color: $color-success; }
 .curated-price {
   color: $color-primary; font-size: $text-md; font-weight: 800;
   font-family: 'JetBrains Mono', monospace;
@@ -637,7 +637,7 @@ function goCaseDetail(item: any) {
   margin-bottom: 24rpx;
 }
 .error-title {
-  font-size: 36rpx;
+  font-size: 40rpx;
   font-weight: 700;
   color: $color-text-primary;
   margin-bottom: 12rpx;
@@ -645,7 +645,7 @@ function goCaseDetail(item: any) {
 .error-desc {
   font-size: $text-base;
   color: $color-text-secondary;
-  margin-bottom: 40rpx;
+  margin-bottom: 48rpx;
 }
 .error-retry-btn {
   padding: 16rpx 48rpx;
