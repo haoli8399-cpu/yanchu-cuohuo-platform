@@ -35,9 +35,9 @@
       <text class="card-title">信誉变动记录</text>
       <view class="credit-page__timeline">
         <view v-for="(r, i) in records" :key="i" class="credit-page__timeline-item">
-          <view class="credit-page__timeline-dot" :style="{ backgroundColor: r.change > 0 ? '#22c55e' : '#ef4444' }" />
+          <view class="credit-page__timeline-dot" :style="{ backgroundColor: r.change > 0 ? '#16a34a' : '#ef4444' }" />
           <view class="credit-page__timeline-content">
-            <text class="credit-page__timeline-text" :style="{ color: r.change > 0 ? '#22c55e' : '#ef4444' }">{{ r.change > 0 ? '+' : '' }}{{ r.change }}分 {{ r.reason }}</text>
+            <text class="credit-page__timeline-text" :style="{ color: r.change > 0 ? '#16a34a' : '#ef4444' }">{{ r.change > 0 ? '+' : '' }}{{ r.change }}分 {{ r.reason }}</text>
             <text class="credit-page__timeline-date">{{ r.date }}</text>
           </view>
         </view>
@@ -55,9 +55,9 @@
 import CfNavBar from '@/components/CfNavBar.vue'
 
 const breakdown = [
-  { label: '准时签到', score: 95, color: '#22c55e' },
-  { label: '演出质量', score: 90, color: '#22c55e' },
-  { label: '沟通配合', score: 92, color: '#22c55e' },
+  { label: '准时签到', score: 95, color: '#16a34a' },
+  { label: '演出质量', score: 90, color: '#16a34a' },
+  { label: '沟通配合', score: 92, color: '#16a34a' },
   { label: '客户评价', score: 88, color: '#f59e0b' },
 ]
 

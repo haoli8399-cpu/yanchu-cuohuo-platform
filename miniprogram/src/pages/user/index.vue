@@ -219,7 +219,7 @@ function handleMenuTap(item: typeof menuGroup1[0]) {
 .order-tabs { display: flex; gap: 16rpx; margin-bottom: 16rpx; }
 .order-tab { font-size: $text-sm; color: $color-text-secondary; padding: 4rpx 0; }
 .order-tab.active { color: $color-primary; font-weight: 600; border-bottom: 4rpx solid $color-primary; }
-.order-card {
+.order-card { cursor: pointer; 
   padding: 20rpx 24rpx; background: $color-bg-card;
   border-radius: $radius-md; border: 2rpx solid $color-border; margin-bottom: 12rpx;
 }
@@ -233,3 +233,4 @@ function handleMenuTap(item: typeof menuGroup1[0]) {
 .order-meta { font-size: $text-xs; color: $color-text-secondary; }
 .order-card-footer { margin-top: 8rpx; }
 .order-amount { font-size: $text-lg; font-weight: 800; color: $color-primary; font-family: 'JetBrains Mono', monospace; }
+.order-card:active,.quick-grid-item:active{opacity:.7;transform:scale(.98)}

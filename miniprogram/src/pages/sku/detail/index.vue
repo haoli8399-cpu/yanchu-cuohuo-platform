@@ -238,6 +238,7 @@ function handleBook() {
   display: flex; gap: 16rpx;
   padding: 20rpx 32rpx;
   padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
   background: $color-bg-card;
   border-top: 2rpx solid $color-border;
   z-index: 100;
