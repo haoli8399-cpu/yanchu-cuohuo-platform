@@ -187,7 +187,7 @@ userRole.value = (uni.getStorageSync('user_role') as UserRole) || 'client'
 
   &__tab {
     display: inline-block;
-    padding: 12rpx $space-lg;
+    padding: 8rpx $space-lg;
     border-radius: $radius-full;
     font-size: $text-base;
     color: $color-text-secondary;
@@ -275,6 +275,7 @@ userRole.value = (uni.getStorageSync('user_role') as UserRole) || 'client'
     font-size: $text-2xl;
     font-weight: 600;
     color: $color-primary;
+    font-family: 'JetBrains Mono', monospace;
   }
 
   &__card-price-label {
@@ -317,7 +318,7 @@ userRole.value = (uni.getStorageSync('user_role') as UserRole) || 'client'
 }
 .supplier-badge.self { background: $color-primary-subtle; color: $color-primary; }
 .supplier-badge.broker { background: $color-bg-input; color: $color-text-secondary; }
-.supplier-badge.indie { background: #ecfdf5; color: #059669; }
+.supplier-badge.indie { background: #ecfdf5; color: $color-success; }
 
 /* ===== 加载骨架屏 ===== */
 .sku-loading {
