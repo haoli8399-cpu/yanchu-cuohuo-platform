@@ -110,8 +110,11 @@
       <view class="card">
         <text class="card-title">价格说明</text>
         <view class="sku-detail-page__price-row">
-          <text class="sku-detail-page__price">¥{{ sku.price.toLocaleString() }}</text>
+          <text class="sku-detail-page__price">¥{{ displayPrice.toLocaleString() }}</text>
           <text class="sku-detail-page__price-unit">/场 起</text>
+        </view>
+        <view class="sku-detail-page__price-tag">
+          <text style="font-size: 22rpx; color: #7c3aed; font-weight: 600;">{{ priceLabel }}</text>
         </view>
         <text class="sku-detail-page__price-note">最终价格根据具体需求确定，含演员差旅费</text>
       </view>
@@ -131,12 +134,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import CfNavBar from '@/components/CfNavBar.vue'
-import type { Sku, Performer } from '@/types'
+import type { Sku, Performer, UserRole } from '@/types'
 
 const loading = ref(true)
 const error = ref(false)
+const userRole = ref<UserRole>('client')
+
+const priceLabel = computed(() => {
+  const map: Record<UserRole, string> = { client: '标准价', company: '渠道价', performer: '成本价' }
+  return map[userRole.value] || '标准价'
+})
+
+const displayPrice = computed(() => {
+  const base = sku.value.price
+  if (userRole.value === 'company') return Math.round(base * 0.7)
+  if (userRole.value === 'performer') return Math.round(base * 0.6)
+  return base
+})
 
 const sku = ref<Sku>({
   id: '1',
@@ -182,6 +198,7 @@ function onContactAgent() {
 }
 
 onMounted(() => {
+  userRole.value = (uni.getStorageSync('user_role') as UserRole) || 'client'
   loadSkuDetail()
 })
 </script>
@@ -275,6 +292,7 @@ onMounted(() => {
 
   &__price { font-size: $text-4xl; font-weight: 700; color: $color-primary; }
   &__price-unit { font-size: $text-base; color: $color-text-tertiary; margin-left: 4rpx; }
+  &__price-tag { margin-bottom: $space-sm; }
   &__price-note { font-size: $text-sm; color: $color-text-tertiary; }
 }
 

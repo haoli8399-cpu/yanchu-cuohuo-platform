@@ -26,6 +26,13 @@
         >
           🎭 艺人/经纪公司
         </button>
+        <button
+          class="login-page__role-btn"
+          :class="{ 'login-page__role-btn--active': selectedRole === 'client' }"
+          @tap="selectRole('client')"
+        >
+          🎫 甲方/散客
+        </button>
       </view>
       <button
         class="login-page__wechat-btn"

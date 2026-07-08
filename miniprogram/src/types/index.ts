@@ -1,5 +1,5 @@
 // User Role
-export type UserRole = 'company' | 'performer'
+export type UserRole = 'company' | 'performer' | 'client'
 
 // Status Enums
 export type RequestStatus = 'pending_quote' | 'quoted' | 'confirmed' | 'signed' | 'cancelled'

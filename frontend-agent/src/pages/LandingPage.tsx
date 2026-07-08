@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button, Card, Col, Input, Result, Row, Skeleton, Space, Tag, Typography } from 'antd';
-import { ArrowRightOutlined, DollarOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, BuildingOutlined, DollarOutlined, TeamOutlined, ThunderboltOutlined } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -13,6 +14,7 @@ const highlights = [
 ];
 
 export default function LandingPage() {
+  const navigate = useNavigate();
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -146,6 +148,52 @@ export default function LandingPage() {
               </Card>
             </Col>
           ))}
+        </Row>
+      </section>
+
+      {/* 角色入口 */}
+      <section style={{ maxWidth: 640, margin: '0 auto', padding: '0 24px 72px' }}>
+        <Row gutter={[24, 24]}>
+          <Col xs={24} sm={12}>
+            <Card
+              hoverable
+              onClick={() => navigate('/login')}
+              style={{
+                borderRadius: 12,
+                border: '1px solid #ddd6fe',
+                height: '100%',
+                transition: 'all 0.2s',
+                cursor: 'pointer',
+              }}
+              styles={{
+                body: { padding: 32, textAlign: 'center' },
+              }}
+            >
+              <BuildingOutlined style={{ fontSize: 40, color: '#7c3aed', marginBottom: 16 }} />
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 8 }}>我是活动公司</div>
+              <Text type="secondary">撮合演员、出方案、管履约 · 一站式搞定</Text>
+            </Card>
+          </Col>
+          <Col xs={24} sm={12}>
+            <Card
+              hoverable
+              onClick={() => navigate('/browse')}
+              style={{
+                borderRadius: 12,
+                border: '1px solid #ddd6fe',
+                height: '100%',
+                transition: 'all 0.2s',
+                cursor: 'pointer',
+              }}
+              styles={{
+                body: { padding: 32, textAlign: 'center' },
+              }}
+            >
+              <TeamOutlined style={{ fontSize: 40, color: '#7c3aed', marginBottom: 16 }} />
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 8 }}>我是甲方/散客</div>
+              <Text type="secondary">浏览方案、看报价、直接下单 · 简单快捷</Text>
+            </Card>
+          </Col>
         </Row>
       </section>
     </div>

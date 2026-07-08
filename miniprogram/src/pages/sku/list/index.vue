@@ -78,7 +78,10 @@
           </view>
           <text class="sku-list-page__card-sub">{{ item.suitableScene }} | {{ item.duration }}分钟</text>
           <view class="sku-list-page__card-footer">
-            <text class="sku-list-page__card-price">¥{{ item.price.toLocaleString() }}<text class="sku-list-page__card-unit">/场</text></text>
+            <view>
+              <text class="sku-list-page__card-price">¥{{ calcPrice(item.price).toLocaleString() }}<text class="sku-list-page__card-unit">/场</text></text>
+              <text class="sku-list-page__card-price-label">{{ priceLabel }}</text>
+            </view>
             <view class="sku-list-page__card-meta">
               <text class="sku-list-page__card-rating">{{ item.rating }}分</text>
               <text class="sku-list-page__card-sales">已售{{ item.salesCount }}</text>
@@ -91,14 +94,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { Sku } from '@/types'
+import { ref, computed } from 'vue'
+import type { Sku, UserRole } from '@/types'
 import { ShowTypeLabels } from '@/types'
 
 const searchText = ref('')
 const activeCategory = ref('全部')
 const loading = ref(true)
 const error = ref(false)
+const userRole = ref<UserRole>('client')
+
+const priceLabel = computed(() => {
+  const map: Record<UserRole, string> = { client: '标准价', company: '渠道价', performer: '成本价' }
+  return map[userRole.value] || '标准价'
+})
+
+function calcPrice(base: number) {
+  if (userRole.value === 'company') return Math.round(base * 0.7)
+  if (userRole.value === 'performer') return Math.round(base * 0.6)
+  return base
+}
 const categories = ['全部', '脱口秀', '即兴喜剧', '漫才', '新喜剧', '魔术喜剧', '亲子喜剧']
 const filters = [
   { label: '价格排序', onTap: () => {} },
@@ -121,6 +136,8 @@ function goDetail(id: string) {
 setTimeout(() => {
   loading.value = false;
 }, 800);
+
+userRole.value = (uni.getStorageSync('user_role') as UserRole) || 'client'
 </script>
 
 <style lang="scss" scoped>
@@ -243,6 +260,12 @@ setTimeout(() => {
     font-size: $text-2xl;
     font-weight: 600;
     color: $color-primary;
+  }
+
+  &__card-price-label {
+    font-size: 20rpx;
+    color: $color-text-tertiary;
+    margin-left: 8rpx;
   }
 
   &__card-unit {
