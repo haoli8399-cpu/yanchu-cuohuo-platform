@@ -9,6 +9,7 @@ import fjwt from '@fastify/jwt';
 import { registerErrorHandler } from './middleware/error.js';
 import type { JwtPayload } from './types/index.js';
 import skuRoutes from './api/skus.js';
+import skuCustomFieldRoutes from './api/sku-custom-fields.js';
 import demandRoutes from './api/demands.js';
 import orderRoutes from './api/orders.js';
 import contractRoutes from './api/contracts.js';
@@ -95,6 +96,7 @@ app.get('/v1/health', async (_request, reply) => {
 // ============================================================
 
 await app.register(skuRoutes, { prefix: '/v1/skus' });
+await app.register(skuCustomFieldRoutes, { prefix: '/v1/sku-custom-fields' });
 await app.register(demandRoutes, { prefix: '/v1/demands' });
 await app.register(orderRoutes, { prefix: '/v1/orders' });
 await app.register(contractRoutes, { prefix: '/v1/contracts' });

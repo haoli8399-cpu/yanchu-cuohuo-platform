@@ -7,7 +7,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validation.js';
-import { query } from '../utils/db.js';
+import { query, transaction } from '../utils/db.js';
 import {
   successResponse,
   errorResponse,
@@ -15,7 +15,13 @@ import {
   normalizePagination,
   createdResponse,
 } from '../utils/response.js';
-import type { SkuListItem, SkuDetail, BusinessLine } from '../types/index.js';
+import type {
+  SkuListItem,
+  SkuDetail,
+  BusinessLine,
+  SkuCustomFieldValue,
+  SkuCustomFieldType,
+} from '../types/index.js';
 
 // ============================================================
 // Zod 校验 Schema
@@ -83,6 +89,18 @@ const statusBodySchema = z.object({
   status: skuStatusSchema,
 });
 
+const customValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+
+const customValuesBodySchema = z.object({
+  values: z.union([
+    z.array(z.object({
+      field_id: z.string().uuid(),
+      value: customValueSchema,
+    })),
+    z.record(z.string().uuid(), customValueSchema),
+  ]),
+});
+
 // ============================================================
 // 数据库行类型（映射 skus 表）
 // ============================================================
@@ -103,6 +121,21 @@ interface SkuRow {
   status: string;
   created_at: string;
   updated_at: string;
+}
+
+interface SkuCustomFieldRow {
+  id: string;
+  name: string;
+  field_type: SkuCustomFieldType;
+  options: string[];
+  required: boolean;
+  sort_order: number;
+  value: string | number | boolean | null;
+}
+
+interface CustomValueInput {
+  field_id: string;
+  value: string | number | boolean | null;
 }
 
 // ============================================================
@@ -135,12 +168,75 @@ function toSkuListItem(row: SkuRow): SkuListItem {
 /**
  * 将数据库行映射为 SkuDetail
  */
-function toSkuDetail(row: SkuRow): SkuDetail {
+function toSkuDetail(row: SkuRow, customFields: SkuCustomFieldValue[] = []): SkuDetail {
   return {
     ...toSkuListItem(row),
     media_urls: row.media_urls,
+    custom_fields: customFields,
     updated_at: row.updated_at,
   };
+}
+
+async function getSkuCustomFields(skuId: string): Promise<SkuCustomFieldValue[]> {
+  const result = await query<SkuCustomFieldRow>(
+    `SELECT f.id, f.name, f.field_type, f.options, f.required, f.sort_order, v.value
+     FROM sku_custom_fields f
+     LEFT JOIN sku_custom_values v
+       ON v.field_id = f.id AND v.sku_id = $1
+     ORDER BY f.sort_order ASC, f.created_at ASC`,
+    [skuId]
+  );
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    field_type: row.field_type,
+    options: row.options,
+    required: row.required,
+    sort_order: row.sort_order,
+    value: row.value,
+  }));
+}
+
+function normalizeCustomValues(
+  values: z.infer<typeof customValuesBodySchema>['values']
+): CustomValueInput[] {
+  if (Array.isArray(values)) {
+    return values;
+  }
+
+  return Object.entries(values).map(([fieldId, value]) => ({
+    field_id: fieldId,
+    value,
+  }));
+}
+
+function isEmptyCustomValue(value: CustomValueInput['value']): boolean {
+  return value === null || value === '';
+}
+
+function validateCustomValue(
+  field: SkuCustomFieldValue,
+  value: CustomValueInput['value']
+): string | null {
+  if (isEmptyCustomValue(value)) {
+    return field.required ? `${field.name} 为必填字段` : null;
+  }
+
+  if (field.field_type === 'text' && typeof value !== 'string') {
+    return `${field.name} 必须是文本`;
+  }
+  if (field.field_type === 'number' && (typeof value !== 'number' || !Number.isFinite(value))) {
+    return `${field.name} 必须是数字`;
+  }
+  if (field.field_type === 'switch' && typeof value !== 'boolean') {
+    return `${field.name} 必须是开关布尔值`;
+  }
+  if (field.field_type === 'select' && (typeof value !== 'string' || !field.options.includes(value))) {
+    return `${field.name} 必须是有效下拉选项`;
+  }
+
+  return null;
 }
 
 // ============================================================
@@ -264,7 +360,79 @@ export default async function skuRoutes(app: FastifyInstance): Promise<void> {
         return;
       }
 
-      reply.status(200).send(successResponse(toSkuDetail(result.rows[0])));
+      const customFields = await getSkuCustomFields(id);
+
+      reply.status(200).send(successResponse(toSkuDetail(result.rows[0], customFields)));
+    }
+  );
+
+  // ==========================================================
+  // PUT /v1/skus/:id/custom-values - 更新 SKU 自定义字段值（admin）
+  // ==========================================================
+  app.put(
+    '/:id/custom-values',
+    {
+      preHandler: [
+        authMiddleware,
+        requireRole('admin'),
+        validate({ params: idParamSchema, body: customValuesBodySchema }),
+      ],
+    },
+    async function updateSkuCustomValues(
+      request: FastifyRequest,
+      reply: FastifyReply
+    ): Promise<void> {
+      const { id } = request.params as z.infer<typeof idParamSchema>;
+      const body = request.body as z.infer<typeof customValuesBodySchema>;
+      const incomingValues = normalizeCustomValues(body.values);
+
+      const sku = await query<{ id: string }>('SELECT id FROM skus WHERE id = $1', [id]);
+      if (sku.rows.length === 0) {
+        reply.status(404).send(errorResponse(2002, 'SKU不存在'));
+        return;
+      }
+
+      const customFields = await getSkuCustomFields(id);
+      const fieldsById = new Map(customFields.map((field) => [field.id, field]));
+      const mergedValues = new Map(customFields.map((field) => [field.id, field.value]));
+
+      for (const item of incomingValues) {
+        const field = fieldsById.get(item.field_id);
+        if (!field) {
+          reply.status(400).send(errorResponse(2104, '自定义字段不存在'));
+          return;
+        }
+
+        const validationError = validateCustomValue(field, item.value);
+        if (validationError) {
+          reply.status(400).send(errorResponse(2105, validationError));
+          return;
+        }
+
+        mergedValues.set(item.field_id, item.value);
+      }
+
+      for (const field of customFields) {
+        const mergedValue = mergedValues.get(field.id) ?? null;
+        if (field.required && isEmptyCustomValue(mergedValue)) {
+          reply.status(400).send(errorResponse(2105, `${field.name} 为必填字段`));
+          return;
+        }
+      }
+
+      await transaction(async (client) => {
+        for (const item of incomingValues) {
+          await client.query(
+            `INSERT INTO sku_custom_values (sku_id, field_id, value)
+             VALUES ($1, $2, $3::jsonb)
+             ON CONFLICT (sku_id, field_id)
+             DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+            [id, item.field_id, JSON.stringify(item.value)]
+          );
+        }
+      });
+
+      reply.send(successResponse({ id }, 'SKU自定义字段值已更新'));
     }
   );
 

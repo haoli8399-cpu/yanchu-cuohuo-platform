@@ -69,6 +69,9 @@ export type PerformerStatus = 'active' | 'inactive';
 /** SKU 状态 */
 export type SkuStatus = 'active' | 'inactive';
 
+/** SKU 自定义字段类型 */
+export type SkuCustomFieldType = 'text' | 'number' | 'switch' | 'select';
+
 /** 评价状态 */
 export type ReviewStatus = 'pending' | 'published' | 'hidden';
 
@@ -164,9 +167,25 @@ export interface SkuListItem {
   created_at: string;
 }
 
+/** SKU 自定义字段定义 */
+export interface SkuCustomField {
+  id: string;
+  name: string;
+  field_type: SkuCustomFieldType;
+  options: string[];
+  required: boolean;
+  sort_order: number;
+}
+
+/** SKU 详情中的自定义字段值 */
+export interface SkuCustomFieldValue extends SkuCustomField {
+  value: string | number | boolean | null;
+}
+
 /** SKU 详情 */
 export interface SkuDetail extends SkuListItem {
   media_urls: string[];
+  custom_fields: SkuCustomFieldValue[];
   updated_at: string;
 }
 
