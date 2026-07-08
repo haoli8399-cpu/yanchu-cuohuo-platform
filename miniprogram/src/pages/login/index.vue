@@ -11,6 +11,22 @@
 
     <!-- White card area -->
     <view class="login-page__card">
+      <view class="login-page__role-switch">
+        <button
+          class="login-page__role-btn"
+          :class="{ 'login-page__role-btn--active': selectedRole === 'company' }"
+          @tap="selectRole('company')"
+        >
+          🎪 活动公司
+        </button>
+        <button
+          class="login-page__role-btn"
+          :class="{ 'login-page__role-btn--active': selectedRole === 'performer' }"
+          @tap="selectRole('performer')"
+        >
+          🎭 艺人/经纪公司
+        </button>
+      </view>
       <button
         class="login-page__wechat-btn"
         open-type="getPhoneNumber"
@@ -32,16 +48,30 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
+import type { UserRole } from '@/types'
 
 const userStore = useUserStore()
+const selectedRole = ref<UserRole>('company')
+
+function selectRole(role: UserRole) {
+  selectedRole.value = role
+}
 
 function handleWechatLogin() {
   // TODO: implement WeChat phone number login
   uni.showToast({ title: '登录中...', icon: 'loading' })
   setTimeout(() => {
     userStore.setToken('mock_token_123')
-    userStore.setRole('company')
+    userStore.setRole(selectedRole.value)
+    uni.setStorageSync('user_role', selectedRole.value)
+
+    if (selectedRole.value === 'performer') {
+      uni.redirectTo({ url: '/pages/user/performer/index' })
+      return
+    }
+
     uni.switchTab({ url: '/pages/discover/index' })
   }, 1500)
 }
@@ -107,6 +137,36 @@ function openAgreement(type: string) {
     z-index: 2;
     padding: 64rpx $space-2xl;
     padding-bottom: calc(64rpx + env(safe-area-inset-bottom));
+  }
+
+  &__role-switch {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    margin-bottom: $space-xl;
+  }
+
+  &__role-btn {
+    flex: 1;
+    height: 72rpx;
+    line-height: 72rpx;
+    padding: 0 $space-md;
+    border-radius: $radius-full;
+    background-color: #f3f4f6;
+    color: #6b7280;
+    font-size: $text-sm;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+
+    &::after { border: none; }
+
+    &:active { opacity: 0.85; }
+  }
+
+  &__role-btn--active {
+    background-color: #7c3aed;
+    color: #ffffff;
   }
 
   &__wechat-btn {

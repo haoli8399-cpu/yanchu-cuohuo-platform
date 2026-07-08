@@ -1,294 +1,356 @@
-# 演立方 YANLI · UI/UX 逐项对照审计报告
+# 演立方 YANLI · UI/UX 全面审查报告
 
-> **审计人**: 泰莎（Tessa）· 测试专家  
-> **审计日期**: 2026-07-15  
-> **范围**: 设计稿 19 页 vs 实现代码全量对比  
-> **参考**: `桌面/演立方设计预览/index.html` + `docs/DESIGN_SYSTEM.md`
-
----
-
-## 审计摘要
-
-| 页面 | 设计稿 | 代码文件 | 通过 | 不匹配 | 缺失 | 评分 |
-|:----|:------|:---------|:---:|:-----:|:---:|:----:|
-| 2.1.1 首页 | `#mp-home` | `discover/index.vue` | 10 | 0 | 1 | ⚠️ 90% |
-| 2.1.2 提需求 | `#mp-demand` | `request/submit/index.vue` | 4 | 1 | 0 | ⚠️ 80% |
-| 2.1.3 找方案 | `#mp-find` | `sku/list/index.vue` | 2 | 3 | 1 | ❌ 50% |
-| 2.1.4 SKU详情 | `#mp-sku` | `sku/detail/index.vue` | 1 | 2 | 3 | ❌ 30% |
-| 2.1.5 我的 | `#mp-mine` | `user/index.vue` | 2 | 2 | 1 | ⚠️ 60% |
-| 2.1.6 消息 | `#mp-msg` | `message/index.vue` | 3 | 0 | 0 | ✅ 100% |
-| 2.1.7 订单详情 | `#mp-order` | `user/orders/index.vue` | 4 | 0 | 0 | ✅ 100% |
-| 2.1.8 登录页 | — | `login/index.vue` | 2 | 0 | 0 | ✅ 100% |
-| 2.2.1 PC官网 | `#pc-home` | `LandingPage.tsx` | 4 | 1 | 0 | ✅ 80% |
-| 2.2.2 PC找方案 | `#pc-list` | `SkuBrowse.tsx` | 4 | 0 | 0 | ✅ 100% |
-| 2.2.3 PC登录 | — | `Login.tsx` | 0 | 2 | 0 | ❌ — |
-| 2.3 运营后台 | `#admin` | `Dashboard.tsx` | 0 | 3 | 3 | ❌ 0% |
-
-**总体通过率**: ~57% (30/53 检查项)
+> 审查日期：2026-07-08
+> 审查范围：小程序 7 页 + PC 端 6 页 = 13 个页面
+> 对照基准：设计预览 19 Section + 演立方设计系统 V2.0 规范
+> 审查人：SOLO Design Agent
 
 ---
 
-## 2.1 小程序 8 页
+## 总览评分
+
+| 检查维度 | 评分 | 说明 |
+|:---------|:----:|:-----|
+| A. 布局（8px 网格） | **C+** | 小程序较好，PC 端大量非标间距 |
+| B. 品牌合规 | **A-** | 禁用词/品牌名零违规；绿色 token 值偏差 |
+| C. 组件一致性 | **B-** | Card borderRadius 系统性偏低；按钮圆角不统一 |
+| D. 字体 | **B-** | 等宽字体基本到位；全局缺 PingFang SC |
+| E. 状态覆盖 | **D** | 全产品线缺少 Loading/Error 状态，最大短板 |
 
 ---
 
-### 2.1.1 首页（设计稿 `#mp-home`）
+## 一、严重问题（必须修复）
 
-**代码**: `miniprogram/src/pages/discover/index.vue`
+### 1.1 全局 font-family 缺少 PingFang SC
 
-| # | 检查项 | 设计稿要求 | 代码现状 | 状态 |
-|---|--------|-----------|---------|:----:|
-| 1 | 品牌栏 | 「演立方」+ 占位语「商演找演立方」 | `brand-name: "演立方"` + `brand-tagline: "商演找演立方"` | ✅ |
-| 2 | Agent badge | 「小演」+ 绿色脉冲点 | `agent-badge` 含 `agent-dot` (绿色呼吸动画) | ✅ |
-| 3 | Hero | AI 标签 + 标题 + 副标题 | `ai-mini-cube`(AI) + `hero-title` + `hero-subtitle` | ✅ |
-| 4 | 输入栏 | 语音按钮 + 输入框 + 发送按钮 | `voice-btn` + `input-field` + `send-btn` | ✅ |
-| 5 | 粘贴入口 | 📱 粘贴微信聊天记录（文字链接） | `paste-link` 含 📱 图标 + 箭头 | ✅ |
-| 6 | 活动标签行 | flex-wrap，选中态高亮 | `tag-row` flex-wrap + `.active` 高亮 | ✅ |
-| 7 | 区块1：AI 最近为你生成 | 3 张卡片含匹配度标签 | 3 个 `plan-card` 含 `plan-tag` 匹配标签 | ✅ |
-| 8 | 区块2：我的历史需求 | 3 条含状态胶囊 | 3 个 `history-card` 含 `history-status` 胶囊 | ✅ |
-| 9 | 区块3：真实成交案例 | 2 张含封面 + 供应商标识 | 2 个 `case-card` 含 `case-source-tag` 标识 | ✅ |
-| 10 | 区块4：平台甄选 | 2×2 网格 | `curated-grid` 使用 `grid-template-columns: 1fr 1fr` | ✅ |
-| 11 | 底部历史需求链接 | 设计稿显示底部历史需求入口 | 仅有 `bottom-space` 占位，无可点击历史链接 | ❌ |
+**影响范围**：小程序全局 + PC 端全局 + 4/6 PC 页面
 
-**问题汇总**: 10 项通过 / 0 项不匹配 / 1 项缺失  
-**严重问题**: 无严重问题。底部历史需求链接缺失不影响核心功能，但降低用户导航效率。
+| 文件 | 行号 | 问题 |
+|:-----|:-----|:-----|
+| `miniprogram/src/styles/global.scss` | 4 | `font-family: -apple-system, BlinkMacSystemFont, ...` 缺少 `PingFang SC` |
+| `miniprogram/src/styles/variables.scss` | 36 | `$font-family` 定义中缺少 `PingFang SC` |
+| `frontend-agent/src/index.css` | 2 | `font-family: -apple-system, BlinkMacSystemFont, ...` 缺少 `PingFang SC` |
+| `frontend-agent/src/pages/LandingPage.tsx` | 19 | `fontFamily: 'Inter, PingFang SC'` — Inter 排在 PingFang SC 前面 |
+| `frontend-agent/src/pages/SkuBrowse.tsx` | 70 | 同上，Inter 排序错误 |
+| `frontend-agent/src/pages/supplier/DailyReport.tsx` | — | 无页面级 fontFamily 声明 |
+| `frontend-agent/src/pages/supplier/SalesWarRoom.tsx` | — | 同上 |
+| `frontend-agent/src/pages/supplier/SkuManage.tsx` | — | 同上 |
+| `frontend-agent/src/pages/supplier/ProfitDashboard.tsx` | — | 同上 |
 
----
-
-### 2.1.2 提需求（设计稿 `#mp-demand`）
-
-**代码**: `miniprogram/src/pages/request/submit/index.vue`
-
-| # | 检查项 | 设计稿要求 | 代码现状 | 状态 |
-|---|--------|-----------|---------|:----:|
-| 1 | 双 Tab | 「📋 选方案提交」/「💬 描述需求」 | 两个 Tab 存在，但顺序相反：「💬 描述需求提交」在前、「📋 选方案提交」在后 | ⚠️ |
-| 2 | 小演 AI 对话气泡 | 紫色头像 + `$color-primary-subtle` 背景 | `ai-cube-avatar` 紫色 + `ai-bubble-intro` 使用 `$color-primary-subtle` | ✅ |
-| 3 | 能力标签行 | ✅判断需求 / ✅推荐方案 / ✅算报价 / ✅提醒跟进 | 4 个 `cap-tag` 内容匹配 | ✅ |
-| 4 | 粘贴入口 | 📱 粘贴微信聊天记录（虚框） | `paste-bar` 使用 dashed border + 📱 图标 | ✅ |
-| 5 | SKU 模式占位 | 选方案提交 Tab 空态提示 | `sku-empty` 显示空态提示「请从方案库中选择方案」 | ✅ |
-
-**问题汇总**: 4 项通过 / 1 项不匹配 / 0 项缺失  
-**严重问题**: Tab 顺序与设计稿相反。设计稿「选方案提交」在左（首屏权重），代码「描述需求」在左。建议交换 Tab 顺序以匹配设计意图。
+**修复方案**：全局 `font-family` 改为 `'PingFang SC', Inter, -apple-system, sans-serif`
 
 ---
 
-### 2.1.3 找方案（设计稿 `#mp-find`）
+### 1.2 $color-success 与规范不一致
 
-**代码**: `miniprogram/src/pages/sku/list/index.vue`
+| 文件 | 行号 | 实际值 | 规范值 |
+|:-----|:-----|:-------|:-------|
+| `miniprogram/src/styles/variables.scss` | 24 | `$color-success: #10b981` | `#16a34a` |
 
-| # | 检查项 | 设计稿要求 | 代码现状 | 状态 |
-|---|--------|-----------|---------|:----:|
-| 1 | 搜索栏 | 🔍 搜索方案... | `search-bar` 含 🔍 图标 + placeholder「搜索演出方案」 | ✅ |
-| 2 | 分类筛选标签行 | 全部/脱口秀/即兴喜剧/魔术/亲子/漫才 | `categories` 含 全部/脱口秀/即兴喜剧/漫才/**新喜剧**/魔术喜剧/亲子喜剧 — 内容略有偏差，多了「新喜剧」 | ⚠️ |
-| 3 | 方案卡片 | 图标 + 名称 + 元数据 + 供应商标识角标 + 价格 | 卡片使用大图封面（320rpx），非设计稿的 icon+名称横向布局。**未使用供应商标识** | ❌ |
-| 4 | 供应商标识角标 | 自营(紫底)/经纪(灰底)/独立艺人(绿底) | CSS 中定义了 `supplier-badge` 类（含 .self/.broker/.indie），但**模板中未使用**。模板使用 `status-tag--signed` 显示 showTypeLabel | ❌ |
-| 5 | 价格 | JetBrains Mono 字体 + 品牌紫色 | `color: $color-primary` 品牌紫 ✅，但未使用 JetBrains Mono 字体 | ⚠️ |
+**关联影响**：`discover/index.vue:567` 使用了非标准绿 `#059669`，`sku/list/index.vue:256` 也使用了 `#059669`（独立艺人标签）。三处绿色值不统一。
 
-**问题汇总**: 2 项通过 / 1 项不匹配 / 2 项缺失  
-**严重问题**: 方案卡片缺少供应商标识角标（自营/经纪/独立艺人），这是品牌差异化的核心视觉元素。价格缺少 JetBrains Mono 等宽字体。
+**修复方案**：统一 `$color-success` 为 `#16a34a`，全局搜索替换 `#059669` 和 `#10b981`
 
 ---
 
-### 2.1.4 SKU 详情（设计稿 `#mp-sku`）
+### 1.3 user/index.vue 未定义变量导致运行时报错
 
-**代码**: `miniprogram/src/pages/sku/detail/index.vue`
+| 文件 | 行号 | 问题 |
+|:-----|:-----|:-----|
+| `miniprogram/src/pages/user/index.vue` | 68-78 | 模板引用 `recentOrders`、`orderTab`、`goOrders`、`goOrderDetail`，但 `<script>` 中未声明 |
 
-| # | 检查项 | 设计稿要求 | 代码现状 | 状态 |
-|---|--------|-----------|---------|:----:|
-| 1 | 封面区 | 方案名 + 级别 + 时长 + 人数 + 供应商标识 | 仅显示 `title` + 标签。**缺少**: 级别(T3)、时长(60min)、人数(2人)、供应商标识(自营角标) | ❌ |
-| 2 | 甲方标准价 + 渠道价 | 大紫「甲方标准价」+ 小灰「渠道价」 | 仅有单个价格 `¥{price}`，**缺少渠道价**显示 | ❌ |
-| 3 | 价格阶梯 T1-T5 | 列表显示，当前高亮 | **完全缺失** T1-T5 价格阶梯列表。仅有一个统一价格 | ❌ |
-| 4 | 底部按钮 | 「获取报价」+「联系小演」 | 底部有**两个重叠的 CTA 栏**: `fixed-bottom` ("咨询"+"立即预约") + `detail-bottom-bar` ("获取报价"+"联系小演") | ❌ |
-| 5 | 存在价格显示 | 价格使用品牌紫 | `__price` 使用 `$color-primary` | ✅ |
-
-**问题汇总**: 1 项通过 / 0 项不匹配 / 4 项缺失  
-**严重问题**: 这是最严重的页面偏差。缺少核心商务信息（渠道价、价格阶梯 T1-T5）、供应商标识、底部按钮文案错误且有重叠。**建议重写此页。**
+**修复方案**：在 script 中声明这些响应式变量和方法，或移除模板中对应区块
 
 ---
 
-### 2.1.5 我的（设计稿 `#mp-mine`）
+### 1.4 sku/detail 双套底部操作栏
 
-**代码**: `miniprogram/src/pages/user/index.vue`
+| 文件 | 行号 | 问题 |
+|:-----|:-----|:-----|
+| `miniprogram/src/pages/sku/detail/index.vue` | 71-85 | `fixed-bottom`（CfNavBar 带的）和 `detail-bottom-bar` 两套底部操作栏并存 |
 
-| # | 检查项 | 设计稿要求 | 代码现状 | 状态 |
-|---|--------|-----------|---------|:----:|
-| 1 | 紫底企业信息卡 | 企业名 + 认证标识 | `user-header-purple` 紫色背景 + `user-page__name` + `badge` 认证标识 | ✅ |
-| 2 | 本月数据行 | 成交 / 收入 / 合作艺人（品牌紫色数字） | 显示为「需求总数/进行中/已签约」，**不是**「成交/收入/合作艺人」 | ❌ |
-| 3 | 8 宫格功能网格 | 4×2 网格布局 | 菜单为列表（5+4=9项列表），**不是 8 宫格**。CSS 中有 `.quick-grid` 但模板未使用 | ❌ |
-| 4 | 最近订单列表 | 最近订单列表 | `orders-section` 含 order-cards，可切换 Tab | ✅ |
-| 5 | 页面底色 | 品牌品牌底色 | `$color-bg-page` | ✅ |
-
-**问题汇总**: 2 项通过 / 2 项不匹配 / 1 项缺失  
-**严重问题**: 数据指标（成交/收入/合作艺人）与设计稿完全不符，这是月度业务数据的核心展示。缺少 8 宫格功能网格。
+**修复方案**：只保留一套底部操作栏，删除冗余的 `fixed-bottom` 或 `detail-bottom-bar`
 
 ---
 
-### 2.1.6 消息（设计稿 `#mp-msg`）
+### 1.5 全产品线缺少 Loading/Error 状态
 
-**代码**: `miniprogram/src/pages/message/index.vue`
+| 文件 | Loading | Empty | Error |
+|:-----|:-------|:------|:------|
+| `discover/index.vue` | 缺失 | 部分有（历史需求） | 缺失 |
+| `request/submit/index.vue` | 缺失 | 部分有（SKU空） | 缺失 |
+| `sku/list/index.vue` | 缺失 | 缺失 | 缺失 |
+| `sku/detail/index.vue` | 缺失 | 部分有（阵容空） | 缺失 |
+| `message/index.vue` | 缺失 | 缺失 | 缺失 |
+| `user/index.vue` | 缺失 | 缺失 | 缺失 |
+| `orders/index.vue` | 缺失 | 缺失 | 缺失 |
+| `LandingPage.tsx` | 缺失 | 缺失 | 缺失 |
+| `SkuBrowse.tsx` | 缺失 | 缺失 | 缺失 |
+| `DailyReport.tsx` | 缺失 | 缺失 | 缺失 |
+| `SalesWarRoom.tsx` | 缺失 | 缺失 | 缺失 |
+| `SkuManage.tsx` | 缺失 | Ant默认空状态 | 缺失 |
+| `ProfitDashboard.tsx` | 缺失 | 缺失 | 缺失 |
 
-| # | 检查项 | 设计稿要求 | 代码现状 | 状态 |
-|---|--------|-----------|---------|:----:|
-| 1 | Tab 分组 | 全部/方案通知/跟进消息/系统 | `tabs = ['全部', '方案通知', '跟进消息', '系统']` | ✅ |
-| 2 | 消息条目 | 彩色头像 + 标题 + 时间 + 摘要 | `message-item` 含 `avatar`(彩色) + `title` + `time` + `summary` | ✅ |
-| 3 | 未读红点 | 红色小圆点 | `message-item__dot` 红色圆点，`unread` 控制 | ✅ |
-
-**问题汇总**: 3 项通过 / 0 项不匹配 / 0 项缺失  
-**完全符合设计稿。**
-
----
-
-### 2.1.7 订单详情（设计稿 `#mp-order`）
-
-**代码**: `miniprogram/src/pages/user/orders/index.vue`
-
-| # | 检查项 | 设计稿要求 | 代码现状 | 状态 |
-|---|--------|-----------|---------|:----:|
-| 1 | 商机状态机节点行 | new→qualified→quoted→negotiating→pending→won | `state-chain` 含 6 个 `state-node` + 箭头，颜色按设计规范 | ✅ |
-| 2 | 订单信息卡 | 订单名称 + 方案信息 + 报价 | `order-card` 含 title + 方案/时间/报价行 | ✅ |
-| 3 | 成交庆祝卡 | 深色底 + 紫色光晕 + ✓ | `won-card` 含 `__glow`(紫色光晕) + `__check`(✓) + `__title`(已成交) | ✅ |
-| 4 | 底部按钮 | 「邀请评价」+「联系小演」 | `action-row` 含「邀请评价」+「联系小演」 | ✅ |
-
-**问题汇总**: 4 项通过 / 0 项不匹配 / 0 项缺失  
-**完全符合设计稿。**
+**修复方案**：每个页面至少添加 Skeleton 加载态 + 自定义 Empty 组件 + ErrorBoundary
 
 ---
 
-### 2.1.8 登录页
+## 二、高优先级问题
 
-**代码**: `miniprogram/src/pages/login/index.vue`
+### 2.1 Card borderRadius 系统性偏差
 
-| # | 检查项 | 设计稿要求 | 代码现状 | 状态 |
-|---|--------|-----------|---------|:----:|
-| 1 | 品牌名 | 「演立方」（已修 ✅） | `__title: "演立方"` | ✅ |
-| 2 | 副标题 | 「商演找演立方」（已修 ✅） | `__subtitle: "商演找演立方"` | ✅ |
+设计规范要求 Card `border-radius: 12px`，实际实现普遍偏低：
 
-**问题汇总**: 2 项通过 / 0 项不匹配 / 0 项缺失
+| 文件 | 行号 | 实际值 | 规范值 |
+|:-----|:-----|:-------|:-------|
+| `LandingPage.tsx` | 79 | `8px` | `12px` |
+| `SkuBrowse.tsx` | 76 | `8px` | `12px` |
+| `SkuBrowse.tsx` | 88 | `8px` | `12px` |
+| `SalesWarRoom.tsx` | — | 未设置（Ant 默认 8px） | `12px` |
+| `SkuManage.tsx` | — | 未设置（Ant 默认 8px） | `12px` |
+| `ProfitDashboard.tsx` | — | 未设置（Ant 默认 8px） | `12px` |
 
----
-
-## 2.2 PC 端 3 页
-
----
-
-### 2.2.1 PC 官网首页（设计稿 `#pc-home`）
-
-**代码**: `frontend-agent/src/pages/LandingPage.tsx`
-
-| # | 检查项 | 设计稿要求 | 代码现状 | 状态 |
-|---|--------|-----------|---------|:----:|
-| 1 | Hero 标题 | 「有商演需求？一句话，成交一场演出」 | 标题匹配 ✅ | ✅ |
-| 2 | 副标题 | 演立方 · AI 商演成交机器 + 说明文案 | 副标题匹配 ✅ | ✅ |
-| 3 | 输入框 | placeholder：「例如：周五晚公司年会有 200 人...」 | placeholder：「商演找演立方」**占位语放错位置，不是具体示例** | ⚠️ |
-| 4 | 数据亮点 | 15 分钟 / ×0.7 / 0 佣金 | 3 个 `highlights` 卡片内容匹配 ✅ | ✅ |
-| 5 | 活动类型标签 | 脱口秀/喜剧专场/企业年会/品牌活动/路演 | 代码：**脱口秀/年会/团建/商业活动/路演** — 缺少「喜剧专场」和「企业年会」，多了「团建」 | ⚠️ |
-| 6 | 品牌色 `#7c3aed` | 全页面使用品牌紫色 | 多处使用 `#7c3aed` ✅ | ✅ |
-| 7 | 小演引用 | 文案中提及「小演」 | `AI「小演」替你匹配方案...` ✅ | ✅ |
-
-**问题汇总**: 5 项通过 / 2 项不匹配 / 0 项缺失  
-**问题**: 输入框 placeholder 使用了占位语「商演找演立方」而非设计稿的具体示例文案。活动类型标签与设计稿有差异。
+**修复方案**：在 Ant Design `ConfigProvider` 的 `theme` 中设置 `borderRadius: 12`，全局生效
 
 ---
 
-### 2.2.2 PC 找方案（设计稿 `#pc-list`）
+### 2.2 按钮圆角不统一
 
-**代码**: `frontend-agent/src/pages/SkuBrowse.tsx`
+设计规范要求按钮 `border-radius: 8px`，但多处使用药丸形：
 
-| # | 检查项 | 设计稿要求 | 代码现状 | 状态 |
-|---|--------|-----------|---------|:----:|
-| 1 | 左侧筛选面板 | 类型/价格/级别 | `filter-side` 含 FilterGroup: 演出类型/价格区间/艺人级别 | ✅ |
-| 2 | 方案网格卡片 | 图标 + 名称 + 价格 + 元数据 | `pcard` 含 icon + name + price + tags | ✅ |
-| 3 | 供应商分类标识 | 自营(紫)/经纪(灰)/独立艺人(绿) | `supplierStyle` 映射三种类型对应颜色 | ✅ |
-| 4 | 品牌色 | 品牌紫色主导 | 多处使用 `#7c3aed` | ✅ |
-
-**问题汇总**: 4 项通过 / 0 项不匹配 / 0 项缺失  
-**完全符合设计稿。**
+| 文件 | 行号 | 实际值 | 规范值 |
+|:-----|:-----|:-------|:-------|
+| `miniprogram/.../request/submit/index.vue` | 388 | `$radius-full`（药丸） | `8px` |
+| `miniprogram/.../sku/detail/index.vue` | 248 | `$radius-full` | `8px` |
+| `miniprogram/.../orders/index.vue` | 283, 298 | `$radius-full` | `8px` |
+| `frontend-agent/.../SalesWarRoom.tsx` | 209 | emoji 作为 UI 文本 | 应替换为图标组件 |
 
 ---
 
-### 2.2.3 PC 登录页
+### 2.3 非标准颜色使用
 
-**代码**: `frontend-agent/src/pages/Login.tsx`
+**PC 端灰色文字不统一**：
 
-| # | 检查项 | 设计要求 | 代码现状 | 状态 |
-|---|--------|---------|---------|:----:|
-| 1 | 品牌名 | 「演立方」 | Title：「演出撮合平台」❌ — 使用了旧品牌名 | ❌ |
-| 2 | 品牌色 | 品牌紫色 #7c3aed | 无品牌紫色元素，使用 antd 默认蓝色 | ❌ |
+| 颜色值 | 使用位置 | 规范对应 |
+|:-------|:---------|:---------|
+| `#4b5563` | LandingPage:40, SkuBrowse:162, DailyReport 洞察正文 | 无此 token（应用 `--text-sec: #6b7280`） |
+| `#6b7280` | SalesWarRoom:187, ProfitDashboard 多处 | 偏差（规范辅助文字为 `--text-sec: #6b7280`，此处合规但与 `#4b5563` 并存） |
+| `#111827` | global.scss:$color-gray-900 | 规范正文色为 `--text: #1a1a2e` |
 
-**问题汇总**: 0 项通过 / 2 项不匹配 / 0 项缺失  
-**严重问题**: PC 登录页未使用演立方品牌，仍使用旧品牌名「演出撮合平台」。建议整套页面按品牌规范重做。
+**PC 端背景色不统一**：
 
----
+| 颜色值 | 使用位置 | 规范对应 |
+|:-------|:---------|:---------|
+| `#f5f5f5` | index.css:2 | 偏差（规范 `--bg: #f5f5f7`） |
+| `#f6f7fb` | SkuBrowse:70 | 非标准色 |
+| `#f9fafb` | SkuBrowse:43, SalesWarRoom:121,127 | `--surface-sub` |
 
-## 2.3 运营后台
+**SalesWarRoom 优先级红色**：
 
----
-
-### 2.3.1 数据看板（设计稿 `#admin`）
-
-**代码**: `frontend-admin/src/pages/Dashboard.tsx`
-
-| # | 检查项 | 设计稿要求 | 代码现状 | 状态 |
-|---|--------|-----------|---------|:----:|
-| 1 | 侧边栏导航 | 深色侧边栏含 数据看板/供应商/订单/争议/设置 | **完全缺失**。代码使用 `PageContainer` 自带面包屑，无自定义侧边栏 | ❌ |
-| 2 | KPI 指标 | GMV / 订单量 / 新增需求 | KPI 为：**在线SKU / 合作演员 / 本月订单 / 已完成** — 指标完全不一致 | ❌ |
-| 3 | 商机漏斗 | 新增需求→已确认→已报价→成交 可视化 | **完全缺失**。代码展示的是「供需健康指标」(演员月接单率/活动公司月活率) | ❌ |
-| 4 | API 路径正确性 | 已修 ✅ | 使用 `getSupplyDemandMetrics`，路径待确认 | ✅ |
-| 5 | 三态处理 | loading/empty/error | 骨架屏 + Result 错误 + 重试按钮 ✅ | ✅ |
-
-**问题汇总**: 0 项通过 / 0 项不匹配 / 3 项缺失  
-**严重问题**: 运营后台与设计稿完全不符。侧边栏导航、KPI 指标、商机漏斗三个核心元素全部缺失。当前实现的是「供需健康指标」看板，而非设计稿的「运营总看板」。建议按照设计稿重做。
+| 文件 | 行号 | 实际值 | 规范值 |
+|:-----|:-----|:-------|:-------|
+| `SalesWarRoom.tsx` | 83 | `#dc2626` | `--red: #ef4444` |
 
 ---
 
-## 3. 严重问题汇总
+### 2.4 px 与 rpx 混用（小程序）
 
-按影响等级排列：
+| 文件 | 行号 | 问题 |
+|:-----|:-----|:-----|
+| `request/submit/index.vue` | 265, 313 | `border-radius: 9999px`（应为 `9999rpx`） |
+| `sku/list/index.vue` | 251 | `border-radius: 9999px` |
+| `sku/detail/index.vue` | 234 | `border-radius: 9999px` |
 
-| 等级 | 问题 | 页面 | 影响 |
-|:----:|------|:----|:----|
-| 🔴 P0 | SKU 详情页与设计稿完全不符 — 缺少渠道价、价格阶梯、供应商标识，底部按钮重叠 | `sku/detail/` | 核心交易页无法展示完整价格信息 |
-| 🔴 P0 | 运营后台与设计稿完全不同 — 侧边栏、KPI、商机漏斗全部缺失 | `Dashboard.tsx` | 平台管理核心功能缺失 |
-| 🔴 P0 | PC 登录页未使用品牌名和品牌色 | `Login.tsx` | 品牌形象不一致 |
-| 🟠 P1 | 我的页面数据指标与设计稿不一致（成交/收入/合作艺人→需求总数/进行中/已签约） | `user/index.vue` | 核心业务数据展示错误 |
-| 🟠 P1 | 找方案页面缺少供应商标识角标 | `sku/list/index.vue` | 供应商分类核心视觉缺失 |
-| 🟠 P1 | 我的页面缺少 8 宫格功能网格 | `user/index.vue` | 功能导航入口缺失 |
-| 🟡 P2 | 提需求 Tab 顺序与设计稿相反 | `request/submit/` | 与设计意图不一致 |
-| 🟡 P2 | PC 官网输入框 placeholder 错误 | `LandingPage.tsx` | 用户体验下降 |
-| 🟡 P2 | 首页缺少底部历史需求链接 | `discover/index.vue` | 用户导航路径中断 |
+**修复方案**：统一使用 SCSS 变量 `$radius-full` 或 `9999rpx`
 
 ---
 
-## 4. 修复优先级建议
+### 2.5 间距偏离 8px 网格
 
-### 第一优先（P0 — 阻塞发布）
-1. **重写 `sku/detail/index.vue`** — 按设计稿增加渠道价、价格阶梯 T1-T5、供应商标识，修复底部 CTA 重叠
-2. **重写运营后台 `Dashboard.tsx`** — 按 `#admin` 设计稿实现侧边栏、GMV/KPI、商机漏斗
-3. **重做 PC 登录页** — 使用演立方品牌名和品牌色
+**PC 端高频违规值**（按出现次数排序）：
 
-### 第二优先（P1 — 核心功能偏差）
-4. **修复 `user/index.vue` 数据指标** — 改为展示「成交/收入/合作艺人」
-5. **在 `sku/list/index.vue` 卡片中使用供应商标识** — 已有 CSS 类，只需模板接入
-6. **实现 8 宫格功能网格** — 替换现有列表菜单
+| 偏差值 | 出现次数 | 涉及文件 | 应改为 |
+|:-------|:---------|:---------|:-------|
+| `10px` | 12 次 | LandingPage(3), SkuBrowse(3), DailyReport(4), ProfitDashboard(1), SalesWarRoom(1) | `8px` 或 `12px` |
+| `14px` | 6 次 | LandingPage(1), SkuBrowse(1), DailyReport(1), SalesWarRoom(3) | `12px` 或 `16px` |
+| `6px` | 7 次 | SkuBrowse(1), DailyReport(3), SalesWarRoom(3) | `4px` 或 `8px` |
+| `18px` | 5 次 | LandingPage(2), DailyReport(1), SkuBrowse(1), ProfitDashboard(1) | `16px` 或 `20px` |
+| `2px/3px` | 5 次 | DailyReport(3), SkuBrowse(1), ProfitDashboard(1) | `4px` |
 
-### 第三优先（P2 — 体验优化）
-7. **交换提需求 Tab 顺序**
-8. **修复 LandingPage 输入框 placeholder**
-9. **添加首页底部历史需求入口链接**
+**小程序高频违规值**：
 
----
-
-## 5. 设计 Token 一致性检查
-
-| Token | 设计稿值 | 代码使用 | 状态 |
-|:------|:---------|:---------|:----:|
-| `$color-primary` | `#7c3aed` | ✅ 多处使用 | ✅ |
-| `$color-primary-subtle` | rgba(124,58,237,0.05) / `#f5f3ff` | ✅ | ✅ |
-| `$color-success` | `#16a34a` | ❌ 代码使用 `#10b981`（翠绿非成交绿） | ❌ |
-| `JetBrains Mono` | 价格/数字等宽 | discover ✅, sku/detail ⚠️ 部分缺失, sku/list ❌ 缺失 | ⚠️ |
-| 圆角体系 | 4/8/12/16px | 基本使用 SCSS 变量 | ✅ |
-| 8px 基准网格 | 间距 8px 基准 | 使用 SCSS 变量 `$space-*` | ✅ |
+| 偏差值 | 出现次数 | 涉及文件 | 应改为 |
+|:-------|:---------|:---------|:-------|
+| `28rpx`(14px) | 2 次 | discover(2) | `24rpx` 或 `32rpx` |
+| `10rpx`(5px) | 2 次 | discover(2) | `8rpx` 或 `16rpx` |
+| `14rpx`(7px) | 2 次 | discover(1), request(1) | `12rpx` 或 `16rpx` |
+| `22rpx`(11px) | 1 次 | request(1) | `20rpx` 或 `24rpx` |
 
 ---
 
-*审计结束。建议开发团队按优先级列表安排修复工作，修复后应由测试专家进行回归验证。*
+## 三、中优先级问题
+
+### 3.1 价格缺少等宽字体
+
+| 文件 | 行号 | 位置 | 问题 |
+|:-----|:-----|:-----|:-----|
+| `sku/list/index.vue` | 216-220 | `.sku-list-page__card-price` | 主价格无 `JetBrains Mono` |
+| `sku/detail/index.vue` | 210 | `.sku-detail-page__price` | 页面最重要的价格无等宽字体 |
+| `orders/index.vue` | 269-271 | `.won-card__stat-value` | 成交统计数值无等宽字体 |
+| `message/index.vue` | — | 消息中包含价格信息 | 无等宽字体 |
+
+---
+
+### 3.2 全局主文本色不一致
+
+| 文件 | 行号 | 实际值 | 规范值 |
+|:-----|:-----|:-------|:-------|
+| `global.scss` | 6 | `color: #374151` | `--text: #1a1a2e` |
+
+`#374151`（gray-700）比规范 `#1a1a2e` 偏灰，视觉对比度不足。
+
+---
+
+### 3.3 DailyReport 组件圆角偏差
+
+| 文件 | 行号 | 组件 | 实际值 | 规范值 |
+|:-----|:-----|:-----|:-------|:-------|
+| `DailyReport.tsx` | 141 | 成交庆祝卡片 | `16px` | `12px`（Card） |
+| `DailyReport.tsx` | 167 | "查看完整订单" 按钮 | `4px` | `8px`（Button） |
+| `DailyReport.tsx` | 195 | 漏斗容器 | `10px` | `8px` 或 `12px` |
+
+---
+
+### 3.4 SkuBrowse 筛选按钮圆角
+
+| 文件 | 行号 | 实际值 | 规范值 |
+|:-----|:-----|:-------|:-------|
+| `SkuBrowse.tsx` | 160 | `6px` | `4px` 或 `8px` |
+
+---
+
+### 3.5 硬编码颜色值（统计）
+
+小程序端约 30+ 处硬编码颜色（如 `#fff`、`#9ca3af`、`#f5f3ff` 等），应使用 SCSS 变量。PC 端约 20+ 处内联颜色，应使用 CSS 变量或 Ant Design token。
+
+---
+
+## 四、通过项
+
+### 4.1 禁用词扫描
+
+| 检查范围 | 结果 |
+|:---------|:-----|
+| 小程序 7 页 + 全局样式 | **零违规** |
+| PC 端 6 页 + 全局样式 | **零违规** |
+| 搜索词汇 | 赋能/闭环/一站式/生态/CRM/票务/厂牌/沉淀/工作流 |
+
+---
+
+### 4.2 品牌名称一致性
+
+| 检查范围 | 结果 |
+|:---------|:-----|
+| 全部 13 个页面 | **通过** — 统一使用「演立方」 |
+| LandingPage 品牌区 | `演立方 YANLI` — 通过 |
+| SkuBrowse | `演立方 YANLI · 商演找演立方` — 通过 |
+| 未发现变体 | 无「演立坊」等错误写法 |
+
+---
+
+### 4.3 品牌主色使用
+
+| 色值 | 使用情况 |
+|:-----|:---------|
+| `#7c3aed`（主品牌紫） | 全部 13 个页面正确使用，Ant ConfigProvider 配置正确 |
+
+---
+
+### 4.4 等宽字体（价格/数字）
+
+| 通过项 | 文件 |
+|:-------|:-----|
+| discover 首页价格 | `font-family: 'JetBrains Mono', monospace` |
+| request/submit 方案价格 + SKU 价格 | 通过 |
+| sku/detail 阶梯价格 | 通过 |
+| user 个人中心统计 | 通过 |
+| orders 订单价格 | 通过 |
+| LandingPage | 通过 |
+| SkuBrowse | 通过 |
+| DailyReport KPI + 金额 | 通过 |
+| SalesWarRoom 方案价格 | 通过 |
+| SkuManage 标准价 + 渠道价 | 通过 |
+| ProfitDashboard 全部数值 | 通过 |
+
+---
+
+### 4.5 小程序 BEM 命名与变量使用
+
+`sites/sku/list`、`message`、`orders` 三页全面使用 `$space-*` / `$text-*` SCSS 变量和 BEM 命名规范，代码质量最高。
+
+---
+
+## 五、逐页审查清单
+
+### 小程序（7 页）
+
+| 页面 | 布局 | 品牌色 | 字体 | 组件 | 状态 | 总评 |
+|:-----|:----:|:------:|:----:|:----:|:----:|:----:|
+| #mp-home discover/index.vue | B | B | B+ | B | D | B- |
+| #mp-demand request/submit | B+ | B | B | B- | C- | B |
+| #mp-find sku/list | A- | B | C | A- | D | B- |
+| #mp-sku sku/detail | A- | A- | B- | B | C | B |
+| #mp-msg message | A | A | C | A | D | B- |
+| #mp-mine user | B- | B | B | A | D | **C+** (运行时报错) |
+| #mp-order orders | A | A | B | B | C- | B+ |
+
+### PC 端（6 页）
+
+| 页面 | 布局 | 品牌色 | 字体 | 组件 | 状态 | 总评 |
+|:-----|:----:|:------:|:----:|:----:|:----:|:----:|
+| #pc-home LandingPage | C | B | C | B- | D | C+ |
+| #pc-list SkuBrowse | C | B- | C | C | D | C |
+| #daily DailyReport | C | B+ | B | C+ | D | C+ |
+| #war SalesWarRoom | B- | B | B- | B- | D | C+ |
+| #sku SkuManage | A | A- | B | B- | D | B- |
+| #profit ProfitDashboard | B | B | B | B- | D | B- |
+
+---
+
+## 六、Top 10 修复优先级
+
+| # | 修复项 | 影响范围 | 优先级 | 工作量 |
+|:-:|:-------|:---------|:------:|:------:|
+| 1 | 全局 font-family 加入 PingFang SC | 全产品线 | P0 | 0.5h |
+| 2 | `$color-success` 统一为 `#16a34a` | 小程序全局 | P0 | 0.5h |
+| 3 | 修复 user/index.vue 未定义变量 | 小程序"我的"页 | P0 | 1h |
+| 4 | 修复 sku/detail 双套底部栏 | SKU 详情页 | P0 | 0.5h |
+| 5 | 全部 13 页添加 Loading/Empty/Error 状态 | 全产品线 | P1 | 3-5h |
+| 6 | Ant ConfigProvider borderRadius: 12 | PC 端全局 | P1 | 0.5h |
+| 7 | 统一灰色文字 token（消除 #4b5563 并存） | PC 端 | P1 | 1h |
+| 8 | 间距全面对齐 8px 网格 | PC 端为主 | P2 | 2-3h |
+| 9 | 补全 4 处价格等宽字体 | 小程序 3 页 | P2 | 0.5h |
+| 10 | 消除 px/rpx 混用 | 小程序 3 页 | P2 | 0.5h |
+
+---
+
+## 七、设计规范 vs 实现 对照表
+
+| 规范项 | 规范值 | 小程序实际 | PC 实际 | 结论 |
+|:-------|:-------|:-----------|:---------|:-----|
+| 主色 | `#7c3aed` | 通过 | 通过 | 一致 |
+| 成交绿 | `#16a34a` | `#10b981`(偏差) + `#059669`(偏差) | 通过 | 需修复 |
+| 错误红 | `#ef4444` | 通过 | `#dc2626`(war 页偏差) | 需修复 |
+| 正文色 | `#1a1a2e` | `#374151`(偏差) | `#111827`/`#4b5563`(偏差) | 需修复 |
+| 辅助文字 | `#6b7280` | 通过 | 通过(但与 #4b5563 并存) | 需统一 |
+| 页面背景 | `#f5f5f7` | 通过 | `#f5f5f5`/`#f6f7fb`(偏差) | 需修复 |
+| 中文字体 | PingFang SC | 缺失 | 缺失 | 需修复 |
+| 数字字体 | JetBrains Mono | 9/11 处通过 | 6/6 通过 | 小程序补 2 处 |
+| Card 圆角 | 12px | 8px(通过,小程序 $radius-md) | 8px(偏差) | PC 需修复 |
+| Button 圆角 | 8px | 药丸形(偏差) | 8px(通过) | 小程序需修复 |
+| Tag 圆角 | 4px | 通过 | 通过 | 一致 |
+| 间距网格 | 8px 基准 | 大部分通过 | 大量偏差 | PC 需修复 |
+
+---
+
+*报告结束。以上问题均为审查发现，未修改任何源文件。*
