@@ -3,10 +3,10 @@
     <!-- Tab 切换 -->
     <view class="submit-tabs">
       <view class="tab-item" :class="{ active: mode === 'ai' }" @click="mode = 'ai'">
-        <text>💬 描述需求提交</text>
+        <text>描述需求提交</text>
       </view>
       <view class="tab-item" :class="{ active: mode === 'sku' }" @click="mode = 'sku'">
-        <text>📋 选方案提交</text>
+        <text>选方案提交</text>
       </view>
     </view>
 
@@ -14,7 +14,7 @@
     <view class="ai-chat-container" v-if="mode === 'ai'">
       <!-- 微信粘贴入口：对话框顶部常驻 -->
       <view class="paste-bar" @click="onPaste">
-        <text class="paste-icon">📱</text>
+        <text class="paste-icon">📎</text>
         <text class="paste-text">粘贴客户微信聊天记录，AI 自动识别</text>
       </view>
 

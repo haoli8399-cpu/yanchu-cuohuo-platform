@@ -99,7 +99,7 @@ const messages = ref([
     id: 'm2',
     type: '方案通知',
     tone: 'plan',
-    icon: '📋',
+    icon: '◇',
     title: '方案通知',
     time: '09:15',
     summary: 'XX地产开盘方案已被客户查看',
@@ -109,7 +109,7 @@ const messages = ref([
     id: 'm3',
     type: '跟进消息',
     tone: 'follow',
-    icon: '💬',
+    icon: '◈',
     title: '跟进提醒',
     time: '昨天',
     summary: 'XX银行答谢已等待48h，需要今天推进确认',
@@ -119,7 +119,7 @@ const messages = ref([
     id: 'm4',
     type: '方案通知',
     tone: 'plan',
-    icon: '📋',
+    icon: '◇',
     title: '报价已发送',
     time: '昨天',
     summary: 'XX保险年会报价已发送给活动公司',
@@ -129,9 +129,9 @@ const messages = ref([
     id: 'm5',
     type: '系统',
     tone: 'system',
-    icon: '🔔',
+    icon: '◉',
     title: '系统通知',
-    time: '7/5',
+    time: '07-05',
     summary: '本月成交率提升 20%，继续保持响应速度',
     unread: false,
   },
@@ -211,7 +211,7 @@ onMounted(() => {
   background: $color-bg-card;
 
   &--agent { border-left-color: $color-primary; }
-  &--follow { border-left-color: $color-danger; }
+  &--follow { border-left-color: $color-danger; background: rgba($color-danger, 0.04); }
   &--plan { border-left-color: $color-info; }
   &--system { border-left-color: $color-success; }
 
@@ -311,7 +311,7 @@ onMounted(() => {
   background: $color-bg-card;
 
   &--agent { border-left-color: $color-primary; }
-  &--follow { border-left-color: $color-danger; }
+  &--follow { border-left-color: $color-danger; background: rgba($color-danger, 0.04); }
   &--plan { border-left-color: $color-info; }
   &--system { border-left-color: $color-success; }
 

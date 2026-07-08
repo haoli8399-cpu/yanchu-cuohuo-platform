@@ -63,7 +63,7 @@
       </view>
 
       <view class="paste-link" @click="goPaste">
-        <text>📱 粘贴微信聊天记录自动识别</text>
+        <text>📎 粘贴微信聊天记录自动识别</text>
         <text class="paste-arrow">→</text>
       </view>
 

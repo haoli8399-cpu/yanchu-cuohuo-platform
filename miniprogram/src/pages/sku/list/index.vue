@@ -3,7 +3,7 @@
     <!-- Search Bar -->
     <view class="sku-list-page__search">
       <view class="sku-list-page__search-bar">
-        <text class="sku-list-page__search-icon">&#x1F50D;</text>
+        <text class="sku-list-page__search-icon">⌕</text>
         <input
           class="sku-list-page__search-input"
           type="text"
