@@ -87,7 +87,11 @@ function handleWechatLogin() {
     uni.setStorageSync('user_actor_type', selectedActor.value)
 
     if (selectedRole.value === 'performer') {
-      uni.redirectTo({ url: '/pages/user/performer/index' })
+      // 经纪公司跳专属落地页，独立艺人跳工作台
+      const target = selectedActor.value === 'agency'
+        ? '/pages/agency/index'
+        : '/pages/user/performer/index'
+      uni.redirectTo({ url: target })
       return
     }
 

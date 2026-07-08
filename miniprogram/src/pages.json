@@ -98,6 +98,12 @@
       }
     },
     {
+      "path": "pages/agency/index",
+      "style": {
+        "navigationBarTitleText": "经纪公司"
+      }
+    },
+    {
       "path": "pages/message/index",
       "style": {
         "navigationStyle": "custom"
