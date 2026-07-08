@@ -18,3 +18,8 @@
 ## 2026-07-08 | UIUX审计P0修复完成
 **决定**: 全局字体+绿色变量+user变量+sku双底部栏全部修复，CodeBuddy执行。
 **影响**: PingFang SC全项目覆盖，#16a34a统一绿色，user页运行时报错修复。
+
+## 2026-07-08 | Codex 任务 #3-A 经纪公司增强后端
+**决定**: 在 `performers` 增加 `company_id` 作为 supplier-console 公司级数据隔离字段，并新增 `/v1/supplier` 艺人管理、公司统计、AI派单 API。
+**原因**: 当前没有独立 suppliers 表，PRD 11.4 要求复用 performers 且按当前用户 company_id 限定旗下艺人范围；`company_profiles` 是现有可落地的公司身份来源。
+**影响**: 新增 migration 007；删除艺人采用软删除为 inactive，以保留历史排期、签到、结算和信誉记录。

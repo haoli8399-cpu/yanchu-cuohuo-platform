@@ -1501,6 +1501,106 @@ AI 反馈日志列表（需登录）
 
 ---
 
+### 2.23 Supplier 经纪公司增强 - `/v1/supplier`
+
+> Auth: Bearer Token（agent/admin）。所有接口按当前用户 `company_id` 限定数据范围。
+
+#### GET `/v1/supplier/performers`
+获取旗下艺人列表。
+
+```
+Query:
+  keyword?: string
+  tier?: PerformerTier
+  status?: 'active' | 'inactive'
+  page?: number
+  pageSize?: number
+
+Response 200:
+{ code: 0, data: { items: [], total: number, page: number, pageSize: number }, message: "ok" }
+```
+
+#### POST `/v1/supplier/performers`
+新增旗下艺人。
+
+```
+Request:
+{
+  name: string,
+  phone?: string,
+  tier?: PerformerTier,
+  status?: 'active' | 'inactive',
+  avatar_url?: string,
+  style_tags?: string[],
+  introduction?: string,
+  experience_years?: number
+}
+
+Response 201:
+{ code: 0, data: { id: string }, message: "艺人已创建" }
+```
+
+#### PUT `/v1/supplier/performers/:id`
+更新旗下艺人信息。
+
+#### DELETE `/v1/supplier/performers/:id`
+删除艺人（软删除为 inactive，保留历史排期/结算数据）。
+
+#### GET `/v1/supplier/performers/:id/schedule`
+查看某艺人排期日历。
+
+#### GET `/v1/supplier/performers/:id/checkins`
+查看某艺人签到记录。
+
+#### GET `/v1/supplier/performers/:id/settlements`
+查看某艺人结算明细。
+
+#### GET `/v1/supplier/performers/:id/credit`
+查看某艺人信誉分变动。
+
+#### GET `/v1/supplier/stats/calendar`
+公司排期日历（所有艺人合并）。
+
+#### GET `/v1/supplier/stats/checkins-today`
+今日签到状态（已签/未签/迟到）。
+
+#### GET `/v1/supplier/stats/settlements`
+公司结算总览。
+
+```
+Query:
+  period?: string // YYYY-MM
+```
+
+#### GET `/v1/supplier/stats/credit`
+公司信誉看板（平均分/最低分预警/趋势）。
+
+#### POST `/v1/supplier/dispatch/candidates`
+AI 派单候选艺人推荐。当前为 mock：过滤档期冲突，按信誉分 + 历史成交排序，匹配度为 `credit_score / 5`。
+
+```
+Request:
+{ demand_id: string }
+```
+
+#### POST `/v1/supplier/dispatch/confirm`
+确认派单，多选艺人后创建 assignments。
+
+```
+Request:
+{
+  demand_id: string,
+  performer_ids: string[],
+  performance_role?: string,
+  arrival_time?: string
+}
+
+Response 201:
+{ code: 0, data: { demand_id: string, arrival_time: string, assignments: [] }, message: "派单已确认，等待艺人确认" }
+```
+
+---
+
 ## 三、路由汇总
 
 | 路由组 | 路径 | 需要权限 | 端点数 |
@@ -1525,7 +1625,8 @@ AI 反馈日志列表（需登录）
 | 报价 | `/v1/quotes` | agent/admin | 5 |
 | 跟进 | `/v1/follow-ups` | agent/admin | 4 |
 | AI 反馈 | `/v1/ai-feedback` | agent/admin | 3 |
-| **合计** | **20 组** | | **88 端点** |
+| Supplier 经纪公司增强 | `/v1/supplier` | agent/admin | 14 |
+| **合计** | **21 组** | | **102 端点** |
 
 ---
 

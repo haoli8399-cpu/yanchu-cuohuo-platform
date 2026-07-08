@@ -49,7 +49,7 @@
 │   │   ├── middleware/      # auth / rbac / error / validation
 │   │   ├── utils/           # db / redis / response
 │   │   └── types/           # TypeScript 类型
-│   └── migrations/          # 6 个 SQL 迁移文件
+│   └── migrations/          # 7 个 SQL 迁移文件
 │
 └── docs/                    # 治理文档
     ├── PRODUCT_OS.md        # P0 产品宪法
@@ -98,7 +98,7 @@
 | 表名 | 说明 | 关键字段 |
 |:-----|:-----|:---------|
 | `skus` | SKU 方案模板 | name, business_line, base_price, agent_price, duration_minutes |
-| `performers` | 艺人信息 | name, tier(T0-T6), status |
+| `performers` | 艺人信息 | company_id, name, tier(T0-T6), status |
 | `demands` | 需求 | title, event_type, audience_count, budget, status |
 | `opportunities` | 商机 | demand_id, status(new→won/lost), priority, lost_reason |
 | `quotes` | 报价单 | demand_id, version, total_price, channel_price, cost_price, margin |
@@ -114,7 +114,7 @@
 
 ---
 
-## API 路由（20 组）
+## API 路由（21 组）
 
 | 前缀 | 说明 | 权限 |
 |:-----|:-----|:-----|
@@ -138,6 +138,7 @@
 | `/v1/notifications` | 通知 | admin |
 | `/v1/contracts` | 签约 | admin |
 | `/v1/payments` | 付款 | admin |
+| `/v1/supplier` | 经纪公司艺人管理/公司统计/AI派单 | agent/admin |
 
 ### API 设计原则
 - RESTful 风格，URL 使用名词复数

@@ -28,8 +28,27 @@ export default async function authRoutes(app: FastifyInstance) {
       user = await query(`INSERT INTO users (phone, name, role) VALUES ($1,$2,$3) RETURNING *`, [phone, phone.slice(-4), role]);
       isNew = true;
     }
-    const token = await reply.jwtSign({ sub: user.rows[0].id, role: user.rows[0].role });
-    return reply.send(successResponse({ token, user: user.rows[0], is_new: isNew }));
+    const company = await query(
+      'SELECT id, status, short_name FROM company_profiles WHERE user_id=$1 ORDER BY created_at DESC LIMIT 1',
+      [user.rows[0].id]
+    );
+    const companyProfile = company.rows[0]
+      ? {
+          id: company.rows[0].id,
+          status: company.rows[0].status,
+          short_name: company.rows[0].short_name,
+        }
+      : undefined;
+    const token = await reply.jwtSign({
+      sub: user.rows[0].id,
+      role: user.rows[0].role,
+      company_id: companyProfile?.id,
+    });
+    return reply.send(successResponse({
+      token,
+      user: { ...user.rows[0], company_profile: companyProfile },
+      is_new: isNew,
+    }));
   });
 
   // 微信小程序登录(占位)

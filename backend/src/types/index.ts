@@ -129,6 +129,7 @@ export interface AuthUser {
 
 /** 活动公司简要信息（登录时返回） */
 export interface CompanyProfileBrief {
+  id?: string;
   status: CompanyStatus;
   short_name: string;
 }
@@ -677,6 +678,7 @@ export interface NotificationRecord {
 export interface JwtPayload {
   sub: string;         // 用户 ID
   role: UserRole;
+  company_id?: string; // supplier-console 数据隔离范围
   aud: string;
   exp: number;
   iat: number;
