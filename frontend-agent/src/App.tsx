@@ -15,6 +15,7 @@ import FloatingPhoneButton from './components/FloatingPhoneButton';
 import SupplierLayout from './pages/supplier/SupplierLayout';
 import DailyReport from './pages/supplier/DailyReport';
 import SalesWarRoom from './pages/supplier/SalesWarRoom';
+import SkuBrowse from "./pages/SkuBrowse";
 import SkuManage from './pages/supplier/SkuManage';
 import Orders from './pages/supplier/Orders';
 import ProfitDashboard from './pages/supplier/ProfitDashboard';
