@@ -9,3 +9,8 @@
 **决定**: 通过，2处微小残留(any+reviews.ts)记入下次迭代。
 **原因**: backend tsc 0错误, API_CONTRACT补至1533行/20组, any滥用11→1, 响应格式基本统一。
 **影响**: 代码质量显著提升，剩余2项不影响功能。
+
+## 2026-07-08 | Twenty CRM 借鉴升级 — 小演悬浮助手 + Kanban看板 + SKU自定义字段
+**决定**: 借鉴Twenty CRM设计理念，小演AI悬浮助手(SupplierLayout统一挂载) + Kanban商机看板(原生HTML5拖拽) + SKU自定义字段系统(migration+API 6端点)。
+**原因**: 提升运营效率，小演从"外挂对话框"升级为"全平台AI底座"，Kanban补齐批量商机浏览，SKU字段可配置化赋予运营灵活性。
+**影响**: 新增3个功能模块，Zero额外依赖(Kanban用原生拖拽)。
