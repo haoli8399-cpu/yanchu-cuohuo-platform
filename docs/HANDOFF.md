@@ -25,7 +25,11 @@
 |:-----|:-----|
 | 已全部完成 ✅ 已完成
 | CodeBuddy 小演悬浮组件 + Kanban看板 | ✅ 已完成 (44f180f + e0c36a5) |
-| Codex SKU自定义字段 | ✅ 已完成 (d520352) | | 滥用+响应格式+输入校验+API_CONTRACT更新 (任务已下发) |
+| Codex SKU自定义字段 ✅
+| CodeBuddy UIUX审计P0修复 | ✅ 已完成 (a567f16: PingFangSC+绿色+user变量+双底部栏) |
+| CodeBuddy 登录页角色切换 | ✅ 已完成 |
+| CodeBuddy P1三态+间距 | 📋 待执行 |
+| CodeBuddy 甲方散客端口 | 📋 待执行 | (d520352) | | 滥用+响应格式+输入校验+API_CONTRACT更新 (任务已下发) |
 | Node v24 兼容 | 小程序构建需本地uni二进制，npx版本不兼容v24 |
 
 ---

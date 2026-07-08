@@ -14,3 +14,7 @@
 **决定**: 借鉴Twenty CRM设计理念，小演AI悬浮助手(SupplierLayout统一挂载) + Kanban商机看板(原生HTML5拖拽) + SKU自定义字段系统(migration+API 6端点)。
 **原因**: 提升运营效率，小演从"外挂对话框"升级为"全平台AI底座"，Kanban补齐批量商机浏览，SKU字段可配置化赋予运营灵活性。
 **影响**: 新增3个功能模块，Zero额外依赖(Kanban用原生拖拽)。
+
+## 2026-07-08 | UIUX审计P0修复完成
+**决定**: 全局字体+绿色变量+user变量+sku双底部栏全部修复，CodeBuddy执行。
+**影响**: PingFang SC全项目覆盖，#16a34a统一绿色，user页运行时报错修复。
