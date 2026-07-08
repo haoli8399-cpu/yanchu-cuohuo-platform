@@ -267,7 +267,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     gap: $space-sm;
-    margin-bottom: 4rpx;
+    margin-bottom: 8rpx;
   }
 
   &__performer-name { font-size: $text-md; font-weight: 500; color: $color-text-primary; }
@@ -429,11 +429,11 @@ onMounted(() => {
 }
 </style>
 
-.channel-price { font-size: 24rpx; color: $color-text-secondary; margin-top: 4rpx; }
-.price-tier-list { margin-top: 20rpx; padding: 0; }
+.channel-price { font-size: 24rpx; color: $color-text-secondary; margin-top: 8rpx; }
+.price-tier-list { margin-top: 24rpx; padding: 0; }
 .price-tier-item {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 14rpx 20rpx; border: 2rpx solid $color-border; border-radius: $radius-sm; margin-bottom: 8rpx;
+  padding: 16rpx 24rpx; border: 2rpx solid $color-border; border-radius: $radius-sm; margin-bottom: 8rpx;
 }
 .price-tier-item.current { background: $color-primary-subtle; border-color: $color-primary; }
 .tier-label { font-size: 26rpx; font-weight: 600; }
@@ -444,9 +444,8 @@ onMounted(() => {
 .detail-bottom-bar {
   position: fixed; bottom: 0; left: 0; right: 0;
   display: flex; gap: 16rpx;
-  padding: 20rpx 32rpx;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   background: $color-bg-card;
   border-top: 2rpx solid $color-border;
   z-index: 100;
