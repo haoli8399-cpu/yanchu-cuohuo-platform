@@ -140,7 +140,7 @@ export default function SalesWarRoom() {
         background: '#fafbfc', borderRight: '1px solid #e5e7eb',
         padding: 16, overflowY: 'auto',
       }}>
-        <Text style={{ fontSize: 10, fontWeight: 700, color: '#dc2626', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 8 }}>
+        <Text style={{ fontSize: 10, fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 8 }}>
           ● 高优先级
         </Text>
         {QUEUE.high.map((item) => (

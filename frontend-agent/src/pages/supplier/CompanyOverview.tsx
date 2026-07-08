@@ -16,7 +16,7 @@ const { Text } = Typography;
 const CHECKIN_META: Record<CheckinStatus, { label: string; color: string; dot: string }> = {
   signed: { label: '已签到', color: '#16a34a', dot: '#16a34a' },
   unsigned: { label: '未签到', color: '#f59e0b', dot: '#f59e0b' },
-  late: { label: '迟到', color: '#dc2626', dot: '#dc2626' },
+  late: { label: '迟到', color: '#ef4444', dot: '#ef4444' },
 };
 
 export default function CompanyOverview() {

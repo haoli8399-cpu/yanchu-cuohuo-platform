@@ -326,7 +326,7 @@ onMounted(() => {
     font-size: $text-xs;
   }
 
-  &__stat-value {
+  &__stat-value { font-family: 'JetBrains Mono', monospace;
     margin-top: 2rpx;
     color: $color-text-inverse;
     font-size: $text-base;

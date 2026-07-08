@@ -312,7 +312,7 @@ userRole.value = (uni.getStorageSync('user_role') as UserRole) || 'client'
   font-size: 20rpx;
   font-weight: 600;
   padding: 2rpx 12rpx;
-  border-radius: 9999px;
+  border-radius: $radius-full;
   margin-top: 4rpx;
 }
 .supplier-badge.self { background: $color-primary-subtle; color: $color-primary; }

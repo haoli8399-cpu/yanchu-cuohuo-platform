@@ -281,7 +281,7 @@ function onSkuSubmit() {
 }
 .cap-tag {
   font-size: 22rpx; font-weight: 600;
-  padding: 8rpx 16rpx; border-radius: 9999px;
+  padding: 8rpx 16rpx; border-radius: $radius-full;
   background: $color-bg-card; color: $color-primary;
 }
 
@@ -329,7 +329,7 @@ function onSkuSubmit() {
 }
 .chip {
   padding: 10rpx 22rpx; border: 2rpx solid $color-primary;
-  border-radius: 9999px;
+  border-radius: $radius-full;
   font-size: $text-sm; font-weight: 600; color: $color-primary;
 }
 .chip:active { background: $color-primary-subtle; }

@@ -220,7 +220,7 @@ function FilterGroup(props: {
               border: 'none',
               borderRadius: 6,
               background: props.value === item ? '#7c3aed' : '#f5f5f7',
-              color: props.value === item ? '#fff' : '#4b5563',
+              color: props.value === item ? '#fff' : '#6b7280',
               fontWeight: 700,
               textAlign: 'left',
               padding: '0 8px',

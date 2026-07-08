@@ -31,7 +31,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <ConfigProvider locale={zhCN} theme={{ token: { colorPrimary: '#7c3aed' } }}>
+    <ConfigProvider locale={zhCN} theme={{ token: { colorPrimary: '#7c3aed', borderRadius: 12 } }}>
       <AuthProvider>
         <BrowserRouter>
           <Routes>

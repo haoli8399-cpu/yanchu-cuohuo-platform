@@ -290,7 +290,7 @@ onMounted(() => {
     margin-bottom: $space-sm;
   }
 
-  &__price { font-size: $text-4xl; font-weight: 700; color: $color-primary; }
+  &__price { font-family: 'JetBrains Mono', monospace; font-size: $text-4xl; font-weight: 700; color: $color-primary; }
   &__price-unit { font-size: $text-base; color: $color-text-tertiary; margin-left: 4rpx; }
   &__price-tag { margin-bottom: $space-sm; }
   &__price-note { font-size: $text-sm; color: $color-text-tertiary; }
@@ -439,7 +439,7 @@ onMounted(() => {
 .tier-label { font-size: 26rpx; font-weight: 600; }
 .tier-duration { font-size: 22rpx; color: $color-text-secondary; }
 .tier-price { font-family: 'JetBrains Mono', monospace; font-size: 28rpx; font-weight: 700; color: $color-primary; }
-.tier-badge { font-size: 20rpx; font-weight: 700; padding: 2rpx 10rpx; border-radius: 9999px; background: $color-primary; color: #fff; margin-left: 8rpx; }
+.tier-badge { font-size: 20rpx; font-weight: 700; padding: 2rpx 10rpx; border-radius: $radius-full; background: $color-primary; color: #fff; margin-left: 8rpx; }
 
 .detail-bottom-bar {
   position: fixed; bottom: 0; left: 0; right: 0;

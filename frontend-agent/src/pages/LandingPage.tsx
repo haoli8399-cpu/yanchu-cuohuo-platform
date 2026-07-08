@@ -84,7 +84,7 @@ export default function LandingPage() {
           <Text style={{ display: 'block', fontSize: 18, color: '#7c3aed', fontWeight: 700, marginBottom: 16 }}>
             演立方 · AI 商演成交机器（YANLI）
           </Text>
-          <Paragraph style={{ fontSize: 16, color: '#4b5563', marginBottom: 32 }}>
+          <Paragraph style={{ fontSize: 16, color: '#6b7280', marginBottom: 32 }}>
             说一句需求，AI「小演」替你匹配方案、出报价、盯到成单。
           </Paragraph>
 
