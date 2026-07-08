@@ -33,6 +33,22 @@
       </view>
     </view>
 
+    <!-- Indie Supplier Workspace -->
+    <view v-if="isIndiePerformer" class="user-performer-page__supplier-workspace card">
+      <text class="user-performer-page__supplier-title">独立艺人工作台</text>
+      <view class="user-performer-page__supplier-grid">
+        <view
+          v-for="entry in indieSupplierEntries"
+          :key="entry.label"
+          class="user-performer-page__supplier-card"
+          @tap="goIndieSupplierEntry(entry.url)"
+        >
+          <text class="user-performer-page__supplier-icon">{{ entry.icon }}</text>
+          <text class="user-performer-page__supplier-label">{{ entry.label }}</text>
+        </view>
+      </view>
+    </view>
+
     <!-- Quick Actions -->
     <view class="user-performer-page__actions card">
       <view class="user-performer-page__action" @tap="goAssignment">
@@ -81,6 +97,15 @@
 import CfTabBar from '@/components/CfTabBar.vue'
 import XiaoYanFloat from '@/components/XiaoYanFloat.vue'
 
+const userRole = uni.getStorageSync('user_role')
+const isIndiePerformer = userRole === 'performer_indie'
+
+const indieSupplierEntries = [
+  { label: '我的SKU', icon: '📋', url: '/pages/request/submit/index' },
+  { label: '我的订单', icon: '📦', url: '/pages/user/orders/index' },
+  { label: '收入看板', icon: '💰', url: '/pages/profile/demand/index' },
+]
+
 const menuGroup1 = [
   { label: '我的作品', icon: '🎬', iconBg: '#f5f3ff' },
   { label: '我的收藏', icon: '❤️', iconBg: '#fef2f2' },
@@ -99,6 +124,7 @@ function goAssignment() { uni.redirectTo({ url: '/pages/assignment/list/index' }
 function goCheckin() { uni.navigateTo({ url: '/pages/checkin/index' }) }
 function goCredit() { uni.navigateTo({ url: '/pages/credit/index' }) }
 function goOnboarding() { uni.navigateTo({ url: '/pages/onboarding/index' }) }
+function goIndieSupplierEntry(url: string) { uni.navigateTo({ url }) }
 function handleMenuTap(item: typeof menuGroup1[0]) { uni.showToast({ title: item.label, icon: 'none' }) }
 </script>
 
@@ -122,6 +148,13 @@ function handleMenuTap(item: typeof menuGroup1[0]) { uni.showToast({ title: item
 .user-performer-page__overview-num--credit { color: $state-confirmed; }
 .user-performer-page__overview-label { font-size: $text-xs; color: $color-text-tertiary; margin-top: 4rpx; display: block; }
 .user-performer-page__overview-divider { width: 1rpx; height: 48rpx; background-color: $color-divider; }
+
+.user-performer-page__supplier-workspace { padding: $space-lg !important; }
+.user-performer-page__supplier-title { display: block; font-size: $text-lg; font-weight: 600; color: $color-text-primary; margin-bottom: $space-md; }
+.user-performer-page__supplier-grid { display: flex; gap: 16rpx; }
+.user-performer-page__supplier-card { flex: 1; min-height: 148rpx; background: #fff; border: 1px solid #7c3aed; border-radius: 16rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; &:active { background-color: #f5f3ff; } }
+.user-performer-page__supplier-icon { font-size: 40rpx; line-height: 1; margin-bottom: $space-xs; }
+.user-performer-page__supplier-label { font-size: 22rpx; color: #374151; }
 
 .user-performer-page__actions { display: flex; justify-content: space-around; padding: $space-md $space-lg !important; }
 .user-performer-page__action { display: flex; flex-direction: column; align-items: center; &:active { opacity: 0.85; } }
