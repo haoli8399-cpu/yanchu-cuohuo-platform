@@ -121,6 +121,16 @@ async function start(): Promise<void> {
   try {
     await app.listen({ port: PORT, host: HOST });
     app.log.info('Service started on http://' + HOST + ':' + PORT);
+    
+  // Connect Redis
+  try {
+    const { getRedis } = await import('./utils/redis.js');
+    await getRedis().connect();
+    app.log.info('Redis connected: ' + (process.env.REDIS_URL || 'redis://127.0.0.1:6379'));
+  } catch (err) {
+    app.log.warn('Redis not available, running without cache');
+  }
+
     app.log.info('Health check: http://' + HOST + ':' + PORT + '/v1/health');
   } catch (err) {
     app.log.error(err, 'Service start failed');
