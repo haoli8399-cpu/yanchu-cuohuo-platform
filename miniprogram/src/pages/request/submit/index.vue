@@ -222,12 +222,12 @@ function onSkuSubmit() {
 /* ===== Tabs ===== */
 .submit-tabs {
   display: flex; gap: 8rpx;
-  padding: 20rpx 32rpx;
+  padding: 24rpx 32rpx;
   background: $color-bg-card;
   border-bottom: 2rpx solid $color-border;
 }
 .tab-item {
-  flex: 1; text-align: center; padding: 14rpx 0;
+  flex: 1; text-align: center; padding: 16rpx 0;
   border-radius: $radius-sm;
   font-size: $text-base; font-weight: 600;
   color: $color-text-secondary; background: $color-bg-input;
@@ -271,13 +271,13 @@ function onSkuSubmit() {
   display: flex; align-items: center; justify-content: center;
 }
 .ai-name { font-size: 28rpx; font-weight: 700; color: $color-text-primary; }
-.ai-subtitle { font-size: 22rpx; color: $color-text-tertiary; }
+.ai-subtitle { font-size: 24rpx; color: $color-text-tertiary; }
 .intro-text {
   display: block;
   font-size: $text-base; color: $color-text-secondary; line-height: 1.6; margin-bottom: 8rpx;
 }
 .capability-tags {
-  display: flex; flex-wrap: wrap; gap: 8rpx; margin-top: 12rpx;
+  display: flex; flex-wrap: wrap; gap: 8rpx; margin-top: 16rpx;
 }
 .cap-tag {
   font-size: 22rpx; font-weight: 600;
@@ -287,18 +287,18 @@ function onSkuSubmit() {
 
 /* Chat messages */
 .chat-message {
-  display: flex; gap: 10rpx; margin-bottom: 20rpx;
+  display: flex; gap: 8rpx; margin-bottom: 24rpx;
 }
 .msg-user { justify-content: flex-end; }
 .msg-avatar { flex-shrink: 0; }
 .ai-cube-sm {
-  width: 40rpx; height: 40rpx; border-radius: 6rpx;
+  width: 40rpx; height: 40rpx; border-radius: 8rpx;
   background: $color-primary; color: #fff;
   font-size: 16rpx; font-weight: 800;
   display: flex; align-items: center; justify-content: center;
 }
 .msg-bubble {
-  max-width: 500rpx; padding: 16rpx 22rpx;
+  max-width: 500rpx; padding: 16rpx 24rpx;
   border-radius: $radius-md; font-size: $text-base; line-height: 1.5;
 }
 .bubble-ai { background: $color-primary-subtle; }
@@ -313,7 +313,7 @@ function onSkuSubmit() {
 }
 .bubble-plan-card:active { opacity: 0.8; }
 .bubble-plan-name { font-size: $text-base; font-weight: 700; color: $color-text-primary; }
-.bubble-plan-meta { font-size: 22rpx; color: $color-text-secondary; margin: 4rpx 0; }
+.bubble-plan-meta { font-size: 24rpx; color: $color-text-secondary; margin: 4rpx 0; }
 .bubble-plan-footer {
   display: flex; justify-content: space-between; align-items: center; margin-top: 8rpx;
 }
@@ -325,10 +325,10 @@ function onSkuSubmit() {
 
 /* Quick chips */
 .quick-chips {
-  display: flex; gap: 8rpx; flex-wrap: wrap; padding: 8rpx 0 24rpx;
+  display: flex; gap: 8rpx; flex-wrap: wrap; padding: 8rpx 0 16rpx;
 }
 .chip {
-  padding: 10rpx 22rpx; border: 2rpx solid $color-primary;
+  padding: 8rpx 24rpx; border: 2rpx solid $color-primary;
   border-radius: $radius-full;
   font-size: $text-sm; font-weight: 600; color: $color-primary;
 }
@@ -337,8 +337,8 @@ function onSkuSubmit() {
 /* Input bar */
 .bottom-bar {
   display: flex; align-items: center; gap: 8rpx;
-  padding: 12rpx 32rpx;
-  padding-bottom: calc(12rpx + env(safe-area-inset-bottom));
+  padding: 16rpx 32rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
   background: $color-bg-card;
   border-top: 2rpx solid $color-border;
 }
@@ -354,7 +354,7 @@ function onSkuSubmit() {
   font-size: $text-base; border: none; outline: none;
 }
 .send-btn {
-  height: 56rpx; padding: 0 28rpx;
+  height: 56rpx; padding: 0 24rpx;
   background: $color-primary; color: $color-text-inverse;
   border-radius: $radius-full;
   font-size: $text-base; font-weight: 600;
@@ -378,12 +378,12 @@ function onSkuSubmit() {
 }
 .sku-item {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 16rpx 20rpx;
+  padding: 16rpx 24rpx;
   background: $color-bg-card; border-radius: $radius-sm;
   border: 2rpx solid $color-border; margin-bottom: 8rpx;
 }
 .sku-item-name { font-size: $text-base; font-weight: 600; color: $color-text-primary; }
-.sku-item-meta { font-size: 22rpx; color: $color-text-secondary; margin-top: 4rpx; }
+.sku-item-meta { font-size: 24rpx; color: $color-text-secondary; margin-top: 4rpx; }
 .sku-item-price { font-size: 28rpx; font-weight: 800; color: $color-primary; font-family: 'JetBrains Mono', monospace; }
 .sku-item-remove { font-size: 22rpx; color: $color-text-tertiary; margin-left: 16rpx; }
 
@@ -393,7 +393,7 @@ function onSkuSubmit() {
   width: 100%; height: 72rpx; padding: 0 20rpx;
   background: $color-bg-card; border: 2rpx solid $color-border;
   border-radius: $radius-sm; font-size: $text-base;
-  box-sizing: border-box; margin-bottom: 12rpx;
+  box-sizing: border-box; margin-bottom: 16rpx;
 }
 .form-textarea {
   width: 100%; height: 120rpx; padding: 16rpx 20rpx;
@@ -412,7 +412,7 @@ function onSkuSubmit() {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  padding: 12rpx 0;
+  padding: 16rpx 0;
 }
 .typing-dot {
   width: 12rpx;
@@ -439,7 +439,7 @@ function onSkuSubmit() {
   align-items: center;
   justify-content: space-between;
   padding: 16rpx 24rpx;
-  margin: 12rpx 0;
+  margin: 16rpx 0;
   background: #fef2f2;
   border-radius: $radius-sm;
   border: 2rpx solid rgba($color-danger, 0.2);
