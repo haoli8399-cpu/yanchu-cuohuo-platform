@@ -24,6 +24,7 @@
 | 经纪公司增强后端 | performers 公司归属迁移 + 艺人管理/公司排期/签到/结算/信誉/AI派单 API |
 | 经纪公司增强前端 | supplier-console：艺人管理Tab + 公司总览(4区块) + AI派单面板，路由完成 |
 | 消息详情页 + 8宫格页 | 小程序：消息详情页(类型化渲染+跳转) + 我的需求/收藏/企业信息/发票/客服/反馈/关于/设置 8页，路由注册，build DONE |
+| 首页独立艺人入口 | discover/index.vue：AI最近方案上方条件渲染入口卡片，仅 performer 角色可见，跳转 /pages/user/performer/index，build DONE |
 
 ---
 
