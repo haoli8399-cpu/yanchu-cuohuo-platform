@@ -252,7 +252,7 @@ onMounted(() => {
     white-space: nowrap;
   }
 
-  &__summary { font-family: 'JetBrains Mono', monospace;
+  &__summary {
     display: block;
     margin-top: 4rpx;
     color: $color-text-secondary;
@@ -264,8 +264,8 @@ onMounted(() => {
     position: absolute;
     top: $space-md;
     right: $space-md;
-    width: 14rpx;
-    height: 14rpx;
+    width: 16rpx;
+    height: 16rpx;
     border-radius: 50%;
     background: $color-danger;
   }
