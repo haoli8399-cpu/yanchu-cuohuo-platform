@@ -97,7 +97,7 @@ export default function SalesKanban() {
   }, []);
 
   return (
-    <div style={{ display: 'flex', gap: 12, height: 'calc(100vh - 140px)', overflowX: 'auto', paddingBottom: 8 }}>
+    <div style={{ display: 'flex', gap: 16, height: 'calc(100vh - 140px)', overflowX: 'auto', paddingBottom: 8 }}>
       {COLUMNS.map(col => (
         <div
           key={col.key}
@@ -109,7 +109,7 @@ export default function SalesKanban() {
             maxWidth: 300,
             background: col.key === 'won' ? '#f0fdf4' : '#f5f5f7',
             borderRadius: 10,
-            padding: '12px 10px',
+            padding: '16px 8px',
             display: 'flex',
             flexDirection: 'column',
             transition: 'background 0.2s',
@@ -120,10 +120,10 @@ export default function SalesKanban() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: 10,
-            padding: '0 4px',
+            marginBottom: 8,
+            padding: '0 8px',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{
                 width: 8, height: 8, borderRadius: '50%',
                 background: col.color, flexShrink: 0,
@@ -138,7 +138,7 @@ export default function SalesKanban() {
           </div>
 
           {/* 卡片列表 */}
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {grouped[col.key].map(opp => (
               <Card
                 key={opp.id}
@@ -157,17 +157,17 @@ export default function SalesKanban() {
                   opacity: opp.id === dragId ? 0.5 : 1,
                   transition: 'all 0.15s',
                 }}
-                styles={{ body: { padding: '10px 12px' } }}
+                styles={{ body: { padding: '8px 16px' } }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <Text strong style={{ fontSize: 13, lineHeight: 1.4, flex: 1 }}>{opp.name}</Text>
                   <PriorityTag p={opp.priority} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 0 }}>
                   <UserOutlined style={{ fontSize: 10, color: '#9ca3af' }} />
                   <Text type="secondary" style={{ fontSize: 11 }}>{opp.customer}</Text>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <DollarOutlined style={{ fontSize: 10, color: '#7c3aed' }} />
                   <Text style={{
                     fontSize: 13,
@@ -192,7 +192,7 @@ export default function SalesKanban() {
           maxWidth: 300,
           background: LOST_BG,
           borderRadius: 10,
-          padding: '12px 10px',
+          padding: '16px 8px',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -201,10 +201,10 @@ export default function SalesKanban() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: 10,
-          padding: '0 4px',
+          marginBottom: 8,
+          padding: '0 8px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{
               width: 8, height: 8, borderRadius: '50%',
               background: '#9ca3af', flexShrink: 0,
@@ -217,7 +217,7 @@ export default function SalesKanban() {
             overflowCount={99}
           />
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {grouped['lost'].map(opp => (
             <Card
               key={opp.id}
@@ -230,19 +230,19 @@ export default function SalesKanban() {
                 background: '#f9fafb',
                 opacity: 0.75,
               }}
-              styles={{ body: { padding: '10px 12px' } }}
+              styles={{ body: { padding: '8px 16px' } }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                 <Text strong style={{ fontSize: 13, lineHeight: 1.4, flex: 1, color: '#6b7280', textDecoration: 'line-through' }}>
                   {opp.name}
                 </Text>
                 <PriorityTag p={opp.priority} />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 0 }}>
                 <UserOutlined style={{ fontSize: 10, color: '#d1d5db' }} />
                 <Text type="secondary" style={{ fontSize: 11 }}>{opp.customer}</Text>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <DollarOutlined style={{ fontSize: 10, color: '#9ca3af' }} />
                 <Text style={{
                   fontSize: 13,

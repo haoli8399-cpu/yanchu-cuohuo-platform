@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Button, Card, Col, Input, Row, Space, Tag, Typography } from 'antd';
+import { useEffect, useState } from 'react';
+import { Button, Card, Col, Input, Result, Row, Skeleton, Space, Tag, Typography } from 'antd';
 import { ArrowRightOutlined, DollarOutlined, ThunderboltOutlined } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
@@ -14,6 +14,51 @@ const highlights = [
 
 export default function LandingPage() {
   const [prompt, setPrompt] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    // 模拟首次加载，实际项目替换为真实数据请求
+    const t = setTimeout(() => {
+      setLoading(false);
+      // 模拟错误场景：取消下行注释可测试 error 状态
+      // setError(true);
+    }, 600);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', padding: '64px 24px' }}>
+        <div style={{ maxWidth: 920, margin: '0 auto' }}>
+          <Skeleton active paragraph={{ rows: 2 }} />
+          <Skeleton.Input active size="large" style={{ width: '100%', maxWidth: 600, marginTop: 32 }} />
+          <div style={{ display: 'flex', gap: 16, marginTop: 32 }}>
+            {[1, 2, 3].map(i => (
+              <Skeleton key={i} active title={false} paragraph={{ rows: 2 }} style={{ flex: 1 }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Result
+          status="error"
+          title="加载失败"
+          subTitle="页面数据加载异常，请稍后重试"
+          extra={[
+            <Button type="primary" key="retry" onClick={() => { setError(false); setLoading(true); setTimeout(() => setLoading(false), 600); }}>
+              重新加载
+            </Button>,
+          ]}
+        />
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Inter, PingFang SC, sans-serif' }}>
@@ -26,15 +71,15 @@ export default function LandingPage() {
         justifyContent: 'center',
       }}>
         <div style={{ width: '100%', maxWidth: 920, textAlign: 'center' }}>
-          <Space size={10} style={{ marginBottom: 18 }}>
-            <div style={{ width: 22, height: 22, borderRadius: 5, background: '#7c3aed' }} />
+          <Space size={8} style={{ marginBottom: 16 }}>
+            <div style={{ width: 24, height: 24, borderRadius: 5, background: '#7c3aed' }} />
             <Text strong style={{ color: '#7c3aed', fontSize: 16 }}>演立方 YANLI</Text>
           </Space>
 
-          <Title style={{ fontSize: 48, lineHeight: 1.12, marginBottom: 14, color: '#111827' }}>
+          <Title style={{ fontSize: 48, lineHeight: 1.12, marginBottom: 16, color: '#111827' }}>
             有商演需求？一句话，成交一场演出。
           </Title>
-          <Text style={{ display: 'block', fontSize: 18, color: '#7c3aed', fontWeight: 700, marginBottom: 18 }}>
+          <Text style={{ display: 'block', fontSize: 18, color: '#7c3aed', fontWeight: 700, marginBottom: 16 }}>
             演立方 · AI 商演成交机器（YANLI）
           </Text>
           <Paragraph style={{ fontSize: 16, color: '#4b5563', marginBottom: 32 }}>
@@ -47,16 +92,16 @@ export default function LandingPage() {
             onChange={(event) => setPrompt(event.target.value)}
             placeholder="例如：周五晚公司年会有200人，想找1小时脱口秀暖场"
             enterButton={<Button type="primary" size="large">生成报价方案</Button>}
-            style={{ maxWidth: 600, margin: '0 auto 20px' }}
+            style={{ maxWidth: 600, margin: '0 auto 16px' }}
           />
 
-          <Space size={10} wrap style={{ justifyContent: 'center' }}>
+          <Space size={8} wrap style={{ justifyContent: 'center' }}>
             {activityTags.map((tag) => (
               <Tag
                 key={tag}
                 onClick={() => setPrompt(`${tag}活动，帮我生成报价方案`)}
                 style={{
-                  padding: '6px 14px',
+                  padding: '6px 16px',
                   borderRadius: 999,
                   background: '#fff',
                   borderColor: '#ddd6fe',
@@ -73,11 +118,11 @@ export default function LandingPage() {
       </section>
 
       <section style={{ maxWidth: 1080, margin: '0 auto', padding: '0 24px 72px' }}>
-        <Row gutter={[18, 18]}>
+        <Row gutter={[16, 16]}>
           {highlights.map((item) => (
             <Col xs={24} md={8} key={item.value}>
               <Card hoverable style={{ borderRadius: 8, height: '100%' }} styles={{ body: { padding: 24 } }}>
-                <Space size={12} align="start">
+                <Space size={16} align="start">
                   <div style={{
                     width: 40,
                     height: 40,

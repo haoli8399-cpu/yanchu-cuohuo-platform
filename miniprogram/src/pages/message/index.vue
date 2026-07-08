@@ -2,49 +2,88 @@
   <view class="message-page">
     <CfNavBar title="消息" />
 
-    <view class="tab-row">
-      <view
-        v-for="tab in tabs"
-        :key="tab"
-        class="tab-row__item"
-        :class="{ 'tab-row__item--active': activeTab === tab }"
-        @tap="activeTab = tab"
-      >
-        <text>{{ tab }}</text>
+    <!-- 加载骨架屏 -->
+    <template v-if="loading">
+      <view class="skeleton-tab-row">
+        <view v-for="i in 4" :key="i" class="skeleton-tab" />
+      </view>
+      <view class="message-list">
+        <view v-for="i in 4" :key="i" class="skeleton-message-item">
+          <view class="skeleton-message-avatar" />
+          <view class="skeleton-message-content">
+            <view class="skeleton-line" style="width: 55%; margin-bottom: 12rpx;" />
+            <view class="skeleton-line skeleton-line--sm" style="width: 80%;" />
+          </view>
+        </view>
+      </view>
+    </template>
+
+    <!-- 错误状态 -->
+    <view v-else-if="error" class="error-state">
+      <text class="error-state__icon">😵</text>
+      <text class="error-state__title">加载失败</text>
+      <text class="error-state__desc">网络不给力，请检查网络后重试</text>
+      <view class="error-state__btn" @tap="loadMessages">
+        <text>重新加载</text>
       </view>
     </view>
 
-    <scroll-view scroll-y class="message-list" :show-scrollbar="false">
-      <view
-        v-for="item in filteredMessages"
-        :key="item.id"
-        class="message-item"
-      >
-        <view class="message-item__avatar" :class="`message-item__avatar--${item.tone}`">
-          <text>{{ item.icon }}</text>
+    <!-- 正常内容 -->
+    <template v-else>
+      <view class="tab-row">
+        <view
+          v-for="tab in tabs"
+          :key="tab"
+          class="tab-row__item"
+          :class="{ 'tab-row__item--active': activeTab === tab }"
+          @tap="activeTab = tab"
+        >
+          <text>{{ tab }}</text>
         </view>
-        <view class="message-item__content">
-          <view class="message-item__top">
-            <text class="message-item__title">{{ item.title }}</text>
-            <text class="message-item__time">{{ item.time }}</text>
-          </view>
-          <text class="message-item__summary">{{ item.summary }}</text>
-        </view>
-        <view v-if="item.unread" class="message-item__dot" />
       </view>
-      <view class="bottom-space" />
-    </scroll-view>
+
+      <scroll-view scroll-y class="message-list" :show-scrollbar="false">
+        <!-- 空状态 -->
+        <view v-if="filteredMessages.length === 0" class="empty-state">
+          <text class="empty-state__icon">📭</text>
+          <text class="empty-state__title">暂无消息</text>
+          <text class="empty-state__desc">当有新消息时，会在这里显示</text>
+        </view>
+
+        <view
+          v-for="item in filteredMessages"
+          :key="item.id"
+          class="message-item"
+        >
+          <view class="message-item__avatar" :class="`message-item__avatar--${item.tone}`">
+            <text>{{ item.icon }}</text>
+          </view>
+          <view class="message-item__content">
+            <view class="message-item__top">
+              <text class="message-item__title">{{ item.title }}</text>
+              <text class="message-item__time">{{ item.time }}</text>
+            </view>
+            <text class="message-item__summary">{{ item.summary }}</text>
+          </view>
+          <view v-if="item.unread" class="message-item__dot" />
+        </view>
+        <view class="bottom-space" />
+      </scroll-view>
+    </template>
   </view>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import CfNavBar from '@/components/CfNavBar.vue'
+
+const loading = ref(true)
+const error = ref(false)
 
 const tabs = ['全部', '方案通知', '跟进消息', '系统']
 const activeTab = ref('全部')
 
-const messages = [
+const messages = ref([
   {
     id: 'm1',
     type: '全部',
@@ -95,11 +134,29 @@ const messages = [
     summary: '本月成交率提升 20%，继续保持响应速度',
     unread: false,
   },
-]
+])
 
 const filteredMessages = computed(() => {
-  if (activeTab.value === '全部') return messages
-  return messages.filter(item => item.type === activeTab.value)
+  if (activeTab.value === '全部') return messages.value
+  return messages.value.filter(item => item.type === activeTab.value)
+})
+
+async function loadMessages() {
+  loading.value = true
+  error.value = false
+  try {
+    // 模拟数据加载（后续接入真实 API）
+    await new Promise(resolve => setTimeout(resolve, 600))
+    // TODO: 调用真实 API 获取消息列表
+  } catch (e) {
+    error.value = true
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadMessages()
 })
 </script>
 
@@ -216,5 +273,139 @@ const filteredMessages = computed(() => {
 
 .bottom-space {
   height: $space-xl;
+}
+
+// ===== 加载骨架屏 =====
+.skeleton-tab-row {
+  display: flex;
+  gap: $space-sm;
+  padding: $space-sm $space-base;
+  background: $color-bg-card;
+  border-bottom: 1rpx solid $color-border;
+}
+
+.skeleton-tab {
+  flex: 1;
+  height: 56rpx;
+  border-radius: $radius-full;
+  background: linear-gradient(90deg, $color-bg-input 25%, darken($color-bg-input, 3%) 50%, $color-bg-input 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-message-item {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  padding: $space-md;
+  border: 1rpx solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-card;
+
+  & + & {
+    margin-top: $space-sm;
+  }
+}
+
+.skeleton-message-avatar {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, $color-bg-input 25%, darken($color-bg-input, 3%) 50%, $color-bg-input 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-message-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.skeleton-line {
+  height: 28rpx;
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, $color-bg-input 25%, darken($color-bg-input, 3%) 50%, $color-bg-input 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+
+  &--sm {
+    height: 22rpx;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ===== 空状态 =====
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx $space-base;
+
+  &__icon {
+    font-size: 80rpx;
+    margin-bottom: $space-md;
+  }
+
+  &__title {
+    font-size: $text-lg;
+    font-weight: 600;
+    color: $color-text-primary;
+    margin-bottom: $space-xs;
+  }
+
+  &__desc {
+    font-size: $text-sm;
+    color: $color-text-tertiary;
+  }
+}
+
+// ===== 错误状态 =====
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx $space-base;
+
+  &__icon {
+    font-size: 96rpx;
+    margin-bottom: $space-lg;
+  }
+
+  &__title {
+    font-size: $text-xl;
+    font-weight: 600;
+    color: $color-text-primary;
+    margin-bottom: $space-sm;
+  }
+
+  &__desc {
+    font-size: $text-sm;
+    color: $color-text-secondary;
+    margin-bottom: $space-xl;
+  }
+
+  &__btn {
+    height: 80rpx;
+    padding: 0 48rpx;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-text-inverse;
+    font-size: $text-base;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:active {
+      opacity: 0.8;
+    }
+  }
 }
 </style>

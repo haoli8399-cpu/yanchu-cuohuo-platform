@@ -154,7 +154,7 @@ export default function Orders() {
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         {kpis.map((item) => (
           <Col xs={24} sm={12} lg={6} key={item.title}>
-            <Card size="small" styles={{ body: { padding: 18 } }}>
+            <Card size="small" styles={{ body: { padding: 16 } }}>
               <Statistic
                 title={item.title}
                 value={item.value}
@@ -167,7 +167,7 @@ export default function Orders() {
       </Row>
 
       <Card size="small" style={{ marginBottom: 16 }} styles={{ body: { padding: 16 } }}>
-        <Space size={12} wrap>
+        <Space size={16} wrap>
           <Input
             allowClear
             placeholder="搜索订单号"

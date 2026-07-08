@@ -43,7 +43,7 @@ export default function SupplierLayout() {
           height: 60,
           display: 'flex',
           alignItems: 'center',
-          padding: '0 20px',
+          padding: '0 24px',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}>
           <div style={{
@@ -96,7 +96,7 @@ export default function SupplierLayout() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
-              padding: '4px 14px', background: '#f5f3ff', borderRadius: 999,
+              padding: '8px 16px', background: '#f5f3ff', borderRadius: 999,
               fontSize: 12, fontWeight: 600, color: '#7c3aed',
             }}>
               <span style={{

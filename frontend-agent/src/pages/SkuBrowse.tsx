@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Card, Col, Row, Space, Tag, Typography } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import { Button, Card, Col, Empty, Row, Space, Spin, Tag, Typography } from 'antd';
 import { GiftOutlined, SmileOutlined, StarOutlined } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
@@ -53,6 +53,12 @@ export default function SkuBrowse() {
   const [type, setType] = useState('全部');
   const [price, setPrice] = useState('全部');
   const [tier, setTier] = useState('全部');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(t);
+  }, []);
 
   const filtered = useMemo(() => plans.filter((plan) => {
     const typeMatched = type === '全部' || plan.type === type;
@@ -69,10 +75,10 @@ export default function SkuBrowse() {
   return (
     <div style={{ minHeight: '100vh', background: '#f6f7fb', padding: 24, fontFamily: 'Inter, PingFang SC, sans-serif' }}>
       <div style={{ maxWidth: 1180, margin: '0 auto' }}>
-        <Title level={3} style={{ marginBottom: 6 }}>找方案</Title>
+        <Title level={3} style={{ marginBottom: 8 }}>找方案</Title>
         <Text type="secondary">演立方 YANLI · 商演找演立方</Text>
 
-        <div style={{ display: 'flex', gap: 20, marginTop: 24, alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', gap: 24, marginTop: 24, alignItems: 'flex-start' }}>
           <Card style={{ width: 200, flexShrink: 0, borderRadius: 8 }} styles={{ body: { padding: 16 } }}>
             <FilterGroup title="演出类型" options={typeFilters} value={type} onChange={setType} />
             <FilterGroup title="价格区间" options={priceFilters} value={price} onChange={setPrice} />
@@ -80,57 +86,71 @@ export default function SkuBrowse() {
           </Card>
 
           <div style={{ flex: 1, minWidth: 0 }}>
-            <Row gutter={[16, 16]}>
-              {filtered.map((plan) => {
-                const tag = supplierStyle(plan.supplierType);
-                return (
-                  <Col xs={24} lg={12} key={plan.id}>
-                    <Card hoverable style={{ borderRadius: 8, height: '100%' }} styles={{ body: { padding: 18 } }}>
-                      <div style={{ display: 'flex', gap: 16 }}>
-                        <div style={{
-                          width: 80,
-                          height: 80,
-                          borderRadius: 8,
-                          background: '#f5f3ff',
-                          color: '#7c3aed',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: 28,
-                          flexShrink: 0,
-                        }}>
-                          {iconNode(plan.icon)}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <Space style={{ width: '100%', justifyContent: 'space-between' }} align="start">
-                            <Title level={5} style={{ margin: 0, fontSize: 16 }}>{plan.name}</Title>
-                            <span style={{
-                              borderRadius: 999,
-                              padding: '2px 8px',
-                              background: tag.background,
-                              color: tag.color,
-                              fontSize: 12,
-                              fontWeight: 700,
-                              whiteSpace: 'nowrap',
+            <Spin spinning={loading} tip="正在加载方案...">
+              {filtered.length > 0 ? (
+                <Row gutter={[16, 16]}>
+                  {filtered.map((plan) => {
+                    const tag = supplierStyle(plan.supplierType);
+                    return (
+                      <Col xs={24} lg={12} key={plan.id}>
+                        <Card hoverable style={{ borderRadius: 8, height: '100%' }} styles={{ body: { padding: 16 } }}>
+                          <div style={{ display: 'flex', gap: 16 }}>
+                            <div style={{
+                              width: 80,
+                              height: 80,
+                              borderRadius: 8,
+                              background: '#f5f3ff',
+                              color: '#7c3aed',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: 28,
+                              flexShrink: 0,
                             }}>
-                              {tag.label || plan.supplier}
-                            </span>
-                          </Space>
-                          <div style={{ marginTop: 10, color: '#7c3aed', fontSize: 24, fontWeight: 800, fontFamily: "'JetBrains Mono', monospace" }}>
-                            {formatMoney(plan.price)}
+                              {iconNode(plan.icon)}
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <Space style={{ width: '100%', justifyContent: 'space-between' }} align="start">
+                                <Title level={5} style={{ margin: 0, fontSize: 16 }}>{plan.name}</Title>
+                                <span style={{
+                                  borderRadius: 999,
+                                  padding: '2px 8px',
+                                  background: tag.background,
+                                  color: tag.color,
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  whiteSpace: 'nowrap',
+                                }}>
+                                  {tag.label || plan.supplier}
+                                </span>
+                              </Space>
+                              <div style={{ marginTop: 8, color: '#7c3aed', fontSize: 24, fontWeight: 800, fontFamily: "'JetBrains Mono', monospace" }}>
+                                {formatMoney(plan.price)}
+                              </div>
+                              <Paragraph type="secondary" style={{ margin: '8px 0 0' }}>
+                                <Tag>{plan.tier}</Tag>
+                                <Tag>{plan.duration}</Tag>
+                                <Tag>{plan.people}</Tag>
+                              </Paragraph>
+                            </div>
                           </div>
-                          <Paragraph type="secondary" style={{ margin: '8px 0 0' }}>
-                            <Tag>{plan.tier}</Tag>
-                            <Tag>{plan.duration}</Tag>
-                            <Tag>{plan.people}</Tag>
-                          </Paragraph>
-                        </div>
-                      </div>
-                    </Card>
-                  </Col>
-                );
-              })}
-            </Row>
+                        </Card>
+                      </Col>
+                    );
+                  })}
+                </Row>
+              ) : (
+                <Empty
+                  description="没有匹配的方案"
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  style={{ paddingTop: 80 }}
+                >
+                  <Button type="primary" onClick={() => { setType('全部'); setPrice('全部'); setTier('全部'); }}>
+                    清除筛选
+                  </Button>
+                </Empty>
+              )}
+            </Spin>
           </div>
         </div>
       </div>
@@ -145,9 +165,9 @@ function FilterGroup(props: {
   onChange: (value: string) => void;
 }) {
   return (
-    <div style={{ marginBottom: 22 }}>
-      <Text strong style={{ display: 'block', marginBottom: 10 }}>{props.title}</Text>
-      <Space direction="vertical" size={6} style={{ width: '100%' }}>
+    <div style={{ marginBottom: 24 }}>
+      <Text strong style={{ display: 'block', marginBottom: 8 }}>{props.title}</Text>
+      <Space direction="vertical" size={8} style={{ width: '100%' }}>
         {props.options.map((item) => (
           <button
             key={item}
@@ -162,7 +182,7 @@ function FilterGroup(props: {
               color: props.value === item ? '#fff' : '#4b5563',
               fontWeight: 700,
               textAlign: 'left',
-              padding: '0 10px',
+              padding: '0 8px',
               cursor: 'pointer',
             }}
           >

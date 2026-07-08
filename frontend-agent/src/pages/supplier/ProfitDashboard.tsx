@@ -1,4 +1,5 @@
-import { Card, Row, Col, Typography, Table, Tag, Statistic } from 'antd';
+import { useEffect, useState } from 'react';
+import { Card, Empty, Row, Col, Skeleton, Typography, Table, Tag, Statistic } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
@@ -48,13 +49,46 @@ const RANK_COLUMNS = [
 ];
 
 export default function ProfitDashboard() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (loading) {
+    return (
+      <div>
+        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+          {[1, 2, 3, 4].map(i => (
+            <Col span={6} key={i}>
+              <Card size="small"><Skeleton active paragraph={{ rows: 1 }} /></Card>
+            </Col>
+          ))}
+        </Row>
+        <Card size="small" style={{ marginBottom: 24 }}><Skeleton active paragraph={{ rows: 1 }} /><div style={{ height: 150 }} /></Card>
+        <Card size="small"><Skeleton active paragraph={{ rows: 3 }} /></Card>
+      </div>
+    );
+  }
+
+  const hasData = STATS.length > 0 && RANKING.length > 0;
+
+  if (!hasData) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
+        <Empty description="暂无利润数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* KPI Stats */}
-      <Row gutter={[12, 12]} style={{ marginBottom: 20 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         {STATS.map((s) => (
           <Col span={6} key={s.label}>
-            <Card hoverable size="small" styles={{ body: { padding: '18px 20px' } }}>
+            <Card hoverable size="small" styles={{ body: { padding: '16px 24px' } }}>
               <Statistic
                 title={<Text type="secondary" style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.3 }}>{s.label}</Text>}
                 value={s.value}
@@ -74,10 +108,10 @@ export default function ProfitDashboard() {
       <Card
         title={<Text strong style={{ fontSize: 15 }}>月度利润趋势</Text>}
         size="small"
-        style={{ marginBottom: 20 }}
-        styles={{ body: { padding: '20px 24px 16px' } }}
+        style={{ marginBottom: 24 }}
+        styles={{ body: { padding: '24px 24px 16px' } }}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 20, height: 150, padding: '0 8px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, height: 150, padding: '0 8px' }}>
           {MONTHS.map((month, i) => {
             const profit = PROFIT_DATA[i] ?? 0;
             const h = (profit / MAX_PROFIT) * 120;
@@ -87,7 +121,7 @@ export default function ProfitDashboard() {
                 <Text style={{
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: 9, fontWeight: 600, color: isLatest ? '#7c3aed' : '#6b7280',
-                  marginBottom: 2,
+                  marginBottom: 0,
                 }}>
                   ¥{profit}K
                 </Text>
@@ -105,7 +139,7 @@ export default function ProfitDashboard() {
                   onMouseEnter={(e) => { e.currentTarget.style.background = '#7c3aed'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = isLatest ? '#7c3aed' : '#c4b5fd'; }}
                 />
-                <Text type="secondary" style={{ fontSize: 10, marginTop: 6 }}>{month}</Text>
+                <Text type="secondary" style={{ fontSize: 10, marginTop: 8 }}>{month}</Text>
               </div>
             );
           })}

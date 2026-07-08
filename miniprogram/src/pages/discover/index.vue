@@ -1,6 +1,28 @@
 <template>
   <view class="discover-page">
-    <scroll-view scroll-y class="page-scroll" :show-scrollbar="false">
+    <!-- 加载骨架屏 -->
+    <view v-if="loading" class="loading-skeleton">
+      <view class="skeleton-bar" style="height: 40rpx; width: 60%; margin-bottom: 24rpx;" />
+      <view class="skeleton-bar" style="height: 60rpx; width: 90%; margin-bottom: 16rpx;" />
+      <view class="skeleton-bar" style="height: 40rpx; width: 80%; margin-bottom: 32rpx;" />
+      <view class="skeleton-bar" style="height: 80rpx; width: 100%; border-radius: 48rpx; margin-bottom: 24rpx;" />
+      <view class="skeleton-bar" style="height: 48rpx; width: 50%; margin-bottom: 32rpx;" />
+      <view class="skeleton-bar" style="height: 120rpx; width: 100%; margin-bottom: 16rpx;" />
+      <view class="skeleton-bar" style="height: 120rpx; width: 100%; margin-bottom: 16rpx;" />
+      <view class="skeleton-bar" style="height: 120rpx; width: 100%;" />
+    </view>
+
+    <!-- 错误提示 -->
+    <view v-else-if="error" class="error-state">
+      <text class="error-icon">⚠️</text>
+      <text class="error-title">加载失败</text>
+      <text class="error-desc">网络异常，请检查后重试</text>
+      <view class="error-retry-btn" @click="loadData">
+        <text>重新加载</text>
+      </view>
+    </view>
+
+    <scroll-view v-else scroll-y class="page-scroll" :show-scrollbar="false">
       <!-- ===== 品牌栏 ===== -->
       <view class="brand-bar">
         <view class="brand-left">
@@ -198,6 +220,23 @@ import { ref, onMounted } from 'vue';
 
 const inputText = ref('');
 const selectedTag = ref('all');
+const loading = ref(true);
+const error = ref(false);
+
+function loadData() {
+  loading.value = true;
+  error.value = false;
+  // 模拟数据加载，实际项目替换为真实接口调用
+  setTimeout(() => {
+    loading.value = false;
+    // error.value = true; // 取消注释可测试错误状态
+  }, 800);
+}
+
+onMounted(() => {
+  uni.setNavigationBarTitle({ title: '演立方' });
+  loadData();
+});
 
 const activityTags = [
   { value: 'all', label: '全部' },
@@ -279,10 +318,6 @@ const curatedPlans = [
     sourceLabel: '独立艺人', sourceClass: 'indie', price: '¥3,500',
   },
 ];
-
-onMounted(() => {
-  uni.setNavigationBarTitle({ title: '演立方' });
-});
 
 function goSubmit(mode: 'input' | 'paste' | 'voice') {
   uni.setStorageSync('submitEntryMode', mode);
@@ -571,4 +606,56 @@ function goCaseDetail(item: any) {
 }
 
 .bottom-space { height: 160rpx; }
+
+/* ===== Loading Skeleton ===== */
+.loading-skeleton {
+  padding: 32rpx;
+}
+.skeleton-bar {
+  background: linear-gradient(90deg, #f0f0f2 25%, #e5e7eb 50%, #f0f0f2 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 8rpx;
+}
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== Error State ===== */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 64rpx 32rpx;
+  text-align: center;
+}
+.error-icon {
+  font-size: 80rpx;
+  margin-bottom: 24rpx;
+}
+.error-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: $color-text-primary;
+  margin-bottom: 12rpx;
+}
+.error-desc {
+  font-size: $text-base;
+  color: $color-text-secondary;
+  margin-bottom: 40rpx;
+}
+.error-retry-btn {
+  padding: 16rpx 48rpx;
+  background: $color-primary;
+  color: #fff;
+  border-radius: $radius-full;
+  font-size: $text-base;
+  font-weight: 600;
+}
+.error-retry-btn:active {
+  opacity: 0.8;
+}
 </style>

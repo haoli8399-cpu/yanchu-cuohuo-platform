@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Card, Row, Col, Typography, Tag, Button, Space, Tabs,
+  Card, Empty, Result, Row, Col, Skeleton, Typography, Tag, Button, Space, Tabs,
 } from 'antd';
 import {
   ArrowUpOutlined, ArrowRightOutlined,
@@ -45,14 +45,61 @@ const INSIGHTS = [
 
 export default function DailyReport() {
   const [tab, setTab] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setLoading(false);
+      // setError(true); // 取消注释可测试 error 状态
+    }, 600);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (loading) {
+    return (
+      <div>
+        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+          {[1, 2, 3, 4, 5].map(i => (
+            <Col span={24 / 5} key={i}>
+              <Card size="small"><Skeleton active paragraph={{ rows: 1 }} /></Card>
+            </Col>
+          ))}
+        </Row>
+        <Skeleton active paragraph={{ rows: 3 }} />
+        <Skeleton active paragraph={{ rows: 2 }} style={{ marginTop: 16 }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
+        <Result
+          status="error"
+          title="加载失败"
+          subTitle="日报数据加载异常，请稍后重试"
+          extra={[
+            <Button type="primary" key="retry" onClick={() => { setError(false); setLoading(true); setTimeout(() => setLoading(false), 600); }}>
+              重新加载
+            </Button>,
+          ]}
+        />
+      </div>
+    );
+  }
+
+  const filteredInsights = tab === 'all'
+    ? INSIGHTS
+    : INSIGHTS.filter(i => i.type === tab);
 
   return (
     <div>
       {/* KPI Row */}
-      <Row gutter={[12, 12]} style={{ marginBottom: 20 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         {KPI_DATA.map((kpi) => (
           <Col span={24 / 5} key={kpi.label}>
-            <Card size="small" styles={{ body: { padding: '16px 18px' } }}
+            <Card size="small" styles={{ body: { padding: '16px 16px' } }}
               hoverable
             >
               <Text type="secondary" style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.3 }}>
@@ -62,7 +109,7 @@ export default function DailyReport() {
                 fontSize: 26, fontWeight: 700, letterSpacing: -0.6,
                 fontFamily: "'JetBrains Mono', monospace", lineHeight: 1.2,
                 color: kpi.accent === 'purple' ? '#7c3aed' : kpi.accent === 'green' ? '#16a34a' : '#1a1a2e',
-                margin: '4px 0 2px',
+                margin: '8px 0 0',
               }}>
                 {kpi.value}
               </div>
@@ -78,7 +125,7 @@ export default function DailyReport() {
       </Row>
 
       {/* Section: 小演发现 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div>
           <Title level={4} style={{ margin: 0, fontSize: 16 }}>小演发现</Title>
           <Text type="secondary" style={{ fontSize: 11 }}>AI 实时监控 · 主动推送风险与机会</Text>
@@ -97,10 +144,11 @@ export default function DailyReport() {
         />
       </div>
 
-      <Row gutter={[14, 14]}>
+      <Row gutter={[16, 16]}>
         {/* Left: Insights */}
         <Col xs={24} lg={16}>
-          {INSIGHTS.map((item, i) => (
+          {filteredInsights.length > 0 ? (
+            filteredInsights.map((item, i) => (
             <Card
               key={i}
               size="small"
@@ -110,13 +158,13 @@ export default function DailyReport() {
               }}
               hoverable
             >
-              <Space style={{ marginBottom: 4 }}>
+              <Space style={{ marginBottom: 8 }}>
                 <Tag color={item.color} style={{ fontSize: 10, fontWeight: 700, border: 'none' }}>
                   {item.icon} {item.badge}
                 </Tag>
               </Space>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 3 }}>{item.title}</div>
-              <Paragraph style={{ fontSize: 12, color: '#4B5563', marginBottom: 2, whiteSpace: 'pre-line' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 0 }}>{item.title}</div>
+              <Paragraph style={{ fontSize: 12, color: '#4B5563', marginBottom: 0, whiteSpace: 'pre-line' }}>
                 {item.body}
               </Paragraph>
               {item.meta && (
@@ -131,7 +179,14 @@ export default function DailyReport() {
                 </Space>
               </div>
             </Card>
-          ))}
+          ))
+          ) : (
+            <Empty
+              description="暂无相关洞察"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              style={{ paddingTop: 40 }}
+            />
+          )}
         </Col>
 
         {/* Right: Won + Lost */}
@@ -140,13 +195,13 @@ export default function DailyReport() {
           <div style={{
             background: '#0f0f1a', borderRadius: 16,
             padding: 24, position: 'relative', overflow: 'hidden',
-            border: '1px solid rgba(124,58,237,0.15)', marginBottom: 10,
+            border: '1px solid rgba(124,58,237,0.15)', marginBottom: 8,
           }}>
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0, height: 2,
               background: 'linear-gradient(90deg, #7c3aed, #a78bfa, transparent)',
             }} />
-            <Space style={{ marginBottom: 10 }}>
+            <Space style={{ marginBottom: 8 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: '50%',
                 background: 'rgba(22,163,74,0.15)',
@@ -155,10 +210,10 @@ export default function DailyReport() {
               }}>✓</div>
               <Text style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600, fontSize: 14 }}>成交</Text>
             </Space>
-            <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 14 }}>
+            <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 16 }}>
               XX 公司年会脱口秀
             </div>
-            <Row gutter={[0, 4]} style={{ marginBottom: 16 }}>
+            <Row gutter={[0, 8]} style={{ marginBottom: 16 }}>
               <Col span={12}><Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>方案 <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>T3 · 60min</span></Text></Col>
               <Col span={12}><Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>金额 <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>¥6,000</span></Text></Col>
               <Col span={12}><Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>毛利率 <span style={{ color: '#16a34a', fontWeight: 600 }}>33%</span></Text></Col>
@@ -171,15 +226,15 @@ export default function DailyReport() {
 
           {/* Lost Analysis */}
           <Card size="small">
-            <Space style={{ marginBottom: 6 }}>
+            <Space style={{ marginBottom: 8 }}>
               <Text strong style={{ fontSize: 12 }}>丢单复盘</Text>
               <Text type="secondary" style={{ fontSize: 10 }}>小演分析</Text>
             </Space>
-            <Paragraph style={{ fontSize: 12, color: '#4B5563', marginBottom: 6 }}>
+            <Paragraph style={{ fontSize: 12, color: '#4B5563', marginBottom: 8 }}>
               <Text strong>XX商场开业</Text> · 丢单原因：预算过低
             </Paragraph>
             <div style={{
-              padding: '8px 10px', background: '#f9fafb', borderRadius: 4,
+              padding: '8px 8px', background: '#f9fafb', borderRadius: 4,
               fontSize: 11, color: '#6b7280', borderLeft: '2px solid #f59e0b', lineHeight: 1.6,
             }}>
               同类需求最低成交价 ¥4,800，该客户预算仅 ¥3,000。建议放弃或推荐 T5 经济方案。
@@ -191,11 +246,11 @@ export default function DailyReport() {
       {/* Funnel */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 16,
-        padding: '10px 20px', marginTop: 18,
+        padding: '8px 24px', marginTop: 16,
         background: '#f9fafb', borderRadius: 10,
       }}>
         <Text strong style={{ fontSize: 13, whiteSpace: 'nowrap' }}>本周漏斗</Text>
-        <Space size={4} wrap>
+        <Space size={8} wrap>
           {[{ label: '需求', n: 8 }, { label: '已确认', n: 6 }, { label: '已报价', n: 5 },
             { label: '谈判', n: 3 }, { label: '成交', n: 2, won: true },
           ].map((s, i) => (

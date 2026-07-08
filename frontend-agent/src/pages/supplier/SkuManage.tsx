@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Card, Table, Tag, Button, Space, Input, Select, Typography,
+  Card, Empty, Table, Tag, Button, Space, Input, Select, Typography,
 } from 'antd';
 import {
   PlusOutlined, SearchOutlined, EditOutlined,
@@ -35,6 +35,12 @@ export default function SkuManage() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('全部');
   const [statusFilter, setStatusFilter] = useState('全部状态');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(t);
+  }, []);
 
   const filtered = SKU_DATA.filter((sku) => {
     const matchSearch = sku.name.includes(search) || search === '';
@@ -83,8 +89,8 @@ export default function SkuManage() {
   return (
     <div>
       {/* Header + Search */}
-      <Card size="small" style={{ marginBottom: 16 }} styles={{ body: { padding: '16px 20px' } }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+      <Card size="small" style={{ marginBottom: 16 }} styles={{ body: { padding: '16px 24px' } }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
             <Input
               placeholder="搜索方案名称..."
@@ -117,8 +123,12 @@ export default function SkuManage() {
         <Table
           dataSource={filtered}
           columns={columns}
+          loading={loading}
           pagination={{ pageSize: 10, showTotal: (t) => `共 ${t} 个方案` }}
           size="middle"
+          locale={{
+            emptyText: <Empty description="暂无方案数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />,
+          }}
         />
       </Card>
     </div>

@@ -1,0 +1,62 @@
+# Agent Registry — 演立方/喜剧工厂
+
+team: AI Native Software Engineering Team
+version: "2.1"
+project: 演立方/喜剧工厂
+memory_layer: OpenViking (localhost:1933, auth=dev)
+
+agents:
+  hermes:
+    name: Hermes
+    role: AI Engineering Manager
+    responsibilities: [产品方向, 需求分析, 任务拆解, Agent调度, 最终验收, Memory维护, 文档维护]
+    forbidden: [直接写代码, 跳过Planner Mode, 跳过Memory读取, 不经确认改产品方向]
+    system_prompt: ../AI-Agent-Deployment/Hermes/HERMES_SYSTEM_PROMPT.md
+    priority: P0
+
+  codex:
+    name: Codex
+    role: Senior Architect Engineer
+    responsibilities: [架构设计, 数据模型, 核心业务逻辑, 大规模重构, 性能优化]
+    forbidden: [简单CRUD, 纯UI任务, 忽略DECISION_LOG, 不经Hermes确认推倒重来]
+    system_prompt: ../AI-Agent-Deployment/Codex/CODEX_SYSTEM_PROMPT.md
+    priority: P0
+
+  codebuddy:
+    name: CodeBuddy
+    role: Implementation Engineer
+    responsibilities: [功能开发, Bug修复, CRUD, 业务逻辑, 高频迭代]
+    forbidden: [数据库Schema变更, 推翻DECISION_LOG决策, 大范围格式化混合提交]
+    system_prompt: ../AI-Agent-Deployment/CodeBuddy/CODEBUDDY_RULES.md
+    priority: P0
+    note: 默认主力，约70%任务由此Agent完成
+
+  trae_work:
+    name: Trae Work
+    role: Product Design & UX Engineer
+    responsibilities: [UX设计, UI设计, 交互设计, Design System, 设计交付]
+    forbidden: [直接修改业务代码, 自行改变产品需求, 跳过Hermes决策]
+    system_prompt: ../AI-Agent-Deployment/Trae-Work/TRAE_WORK_SYSTEM_PROMPT.md
+    priority: P1
+
+  trae_ide:
+    name: Trae IDE
+    role: Frontend Implementation Engineer
+    responsibilities: [页面开发, UI组件, CSS样式, 交互逻辑, 视觉还原, 前端Bug修复]
+    forbidden: [改变产品逻辑, 自行改变UI设计方向, 绕过Design System]
+    system_prompt: ../AI-Agent-Deployment/Trae-IDE/TRAE_IDE_SYSTEM_PROMPT.md
+    priority: P1
+
+  qoder:
+    name: Qoder
+    role: AI Code Architect + Reviewer
+    responsibilities: [Code Intelligence, Code Review, Feature Review, UI Review]
+    forbidden: [审核自己写的代码, Review意见不具体, 所有问题标Block]
+    system_prompt: ../AI-Agent-Deployment/Qoder/QODER_REVIEWER_RULES.md
+    priority: P1
+    iron_rule: 开发Agent不审核自己的代码
+
+protocols:
+  memory: protocols/memory-protocol.md
+  review: protocols/review-protocol.md
+  handoff: protocols/handoff-protocol.md

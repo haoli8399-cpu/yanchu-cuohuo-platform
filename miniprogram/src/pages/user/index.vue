@@ -1,86 +1,132 @@
 <template>
   <view class="user-page page-with-tabbar">
-    <!-- Profile Header -->
-    <view class="user-page__header user-header-purple">
-      <view class="user-page__profile">
-        <image src="/static/images/performer-avatar.jpg" mode="aspectFill" class="user-page__avatar" />
-        <view class="user-page__info">
-          <text class="user-page__name">星辰文化传媒</text>
-          <view class="user-page__badges">
-            <view class="user-page__badge user-page__badge--role"><text>活动公司</text></view>
-            <view class="user-page__badge user-page__badge--verified"><text>认证企业</text></view>
+    <!-- 加载骨架屏 -->
+    <template v-if="loading">
+      <view class="skeleton-header">
+        <view class="skeleton-avatar-lg" />
+        <view class="skeleton-header-info">
+          <view class="skeleton-line" style="width: 200rpx; margin-bottom: 16rpx;" />
+          <view class="skeleton-badges">
+            <view class="skeleton-badge" />
+            <view class="skeleton-badge" style="width: 120rpx;" />
           </view>
         </view>
       </view>
-    </view>
-
-    <!-- Data Overview -->
-    <view class="user-page__overview card">
-      <view class="user-page__overview-item">
-        <text class="user-page__overview-num">12</text>
-        <text class="user-page__overview-label">需求总数</text>
-      </view>
-      <view class="user-page__overview-divider" />
-      <view class="user-page__overview-item">
-        <text class="user-page__overview-num user-page__overview-num--pending">5</text>
-        <text class="user-page__overview-label">进行中</text>
-      </view>
-      <view class="user-page__overview-divider" />
-      <view class="user-page__overview-item">
-        <text class="user-page__overview-num user-page__overview-num--confirmed">7</text>
-        <text class="user-page__overview-label">已签约</text>
-      </view>
-    </view>
-
-    <!-- Menu Group 1 -->
-    <view class="user-page__menu card">
-      <view v-for="item in menuGroup1" :key="item.label" class="user-page__menu-item" @tap="handleMenuTap(item)">
-        <view class="user-page__menu-icon" :style="{ backgroundColor: item.iconBg }">
-          <text>{{ item.icon }}</text>
+      <view class="skeleton-overview card" style="margin-top: -48rpx; position: relative; z-index: 1;">
+        <view v-for="i in 3" :key="i" class="skeleton-overview-item">
+          <view class="skeleton-line" style="width: 60rpx; height: 48rpx; margin: 0 auto 8rpx;" />
+          <view class="skeleton-line skeleton-line--sm" style="width: 80rpx; margin: 0 auto;" />
         </view>
-        <text class="user-page__menu-text">{{ item.label }}</text>
-        <text class="user-page__menu-arrow">></text>
+      </view>
+      <view class="skeleton-menu card" v-for="g in 2" :key="g">
+        <view v-for="i in 4" :key="i" class="skeleton-menu-item">
+          <view class="skeleton-menu-icon" />
+          <view class="skeleton-line" style="width: 140rpx;" />
+        </view>
+      </view>
+    </template>
+
+    <!-- 错误状态 -->
+    <view v-else-if="error" class="error-state">
+      <text class="error-state__icon">😵</text>
+      <text class="error-state__title">加载失败</text>
+      <text class="error-state__desc">网络不给力，请检查网络后重试</text>
+      <view class="error-state__btn" @tap="loadUserData">
+        <text>重新加载</text>
       </view>
     </view>
 
-    <!-- Menu Group 2 -->
-    <view class="user-page__menu card">
-      <view v-for="item in menuGroup2" :key="item.label" class="user-page__menu-item" @tap="handleMenuTap(item)">
-        <view class="user-page__menu-icon" :style="{ backgroundColor: item.iconBg }">
-          <text>{{ item.icon }}</text>
+    <!-- 正常内容 -->
+    <template v-else>
+      <!-- Profile Header -->
+      <view class="user-page__header user-header-purple">
+        <view class="user-page__profile">
+          <image src="/static/images/performer-avatar.jpg" mode="aspectFill" class="user-page__avatar" />
+          <view class="user-page__info">
+            <text class="user-page__name">星辰文化传媒</text>
+            <view class="user-page__badges">
+              <view class="user-page__badge user-page__badge--role"><text>活动公司</text></view>
+              <view class="user-page__badge user-page__badge--verified"><text>认证企业</text></view>
+            </view>
+          </view>
         </view>
-        <text class="user-page__menu-text">{{ item.label }}</text>
-        <text class="user-page__menu-arrow">></text>
       </view>
-    </view>
+
+      <!-- Data Overview -->
+      <view class="user-page__overview card">
+        <view class="user-page__overview-item">
+          <text class="user-page__overview-num">12</text>
+          <text class="user-page__overview-label">需求总数</text>
+        </view>
+        <view class="user-page__overview-divider" />
+        <view class="user-page__overview-item">
+          <text class="user-page__overview-num user-page__overview-num--pending">5</text>
+          <text class="user-page__overview-label">进行中</text>
+        </view>
+        <view class="user-page__overview-divider" />
+        <view class="user-page__overview-item">
+          <text class="user-page__overview-num user-page__overview-num--confirmed">7</text>
+          <text class="user-page__overview-label">已签约</text>
+        </view>
+      </view>
+
+      <!-- Menu Group 1 -->
+      <view class="user-page__menu card">
+        <view v-for="item in menuGroup1" :key="item.label" class="user-page__menu-item" @tap="handleMenuTap(item)">
+          <view class="user-page__menu-icon" :style="{ backgroundColor: item.iconBg }">
+            <text>{{ item.icon }}</text>
+          </view>
+          <text class="user-page__menu-text">{{ item.label }}</text>
+          <text class="user-page__menu-arrow">></text>
+        </view>
+      </view>
+
+      <!-- Menu Group 2 -->
+      <view class="user-page__menu card">
+        <view v-for="item in menuGroup2" :key="item.label" class="user-page__menu-item" @tap="handleMenuTap(item)">
+          <view class="user-page__menu-icon" :style="{ backgroundColor: item.iconBg }">
+            <text>{{ item.icon }}</text>
+          </view>
+          <text class="user-page__menu-text">{{ item.label }}</text>
+          <text class="user-page__menu-arrow">></text>
+        </view>
+      </view>
   
-    <!-- 最近订单 -->
-    <view class="orders-section">
-      <view class="section-title-bar">
-        <text class="section-title">最近订单</text>
-        <text class="section-link" @click="goOrders">查看全部 →</text>
-      </view>
-      <view class="order-tabs">
-        <text class="order-tab" :class="{ active: orderTab === 'all' }" @click="orderTab = 'all'">全部</text>
-        <text class="order-tab" :class="{ active: orderTab === 'pending' }" @click="orderTab = 'pending'">进行中</text>
-        <text class="order-tab" :class="{ active: orderTab === 'done' }" @click="orderTab = 'done'">已完成</text>
-      </view>
-      <view class="order-card" v-for="o in recentOrders" :key="o.id" @click="goOrderDetail(o.id)">
-        <view class="order-card-header">
-          <text class="order-name">{{ o.name }}</text>
-          <text class="order-status" :class="'status-' + o.statusColor">{{ o.status }}</text>
+      <!-- 最近订单 -->
+      <view class="orders-section">
+        <view class="section-title-bar">
+          <text class="section-title">最近订单</text>
+          <text class="section-link" @click="goOrders">查看全部 →</text>
         </view>
-        <text class="order-meta">{{ o.date }} · {{ o.sku }}</text>
-        <view class="order-card-footer">
-          <text class="order-amount">{{ o.amount }}</text>
+        <view class="order-tabs">
+          <text class="order-tab" :class="{ active: orderTab === 'all' }" @click="orderTab = 'all'">全部</text>
+          <text class="order-tab" :class="{ active: orderTab === 'pending' }" @click="orderTab = 'pending'">进行中</text>
+          <text class="order-tab" :class="{ active: orderTab === 'done' }" @click="orderTab = 'done'">已完成</text>
+        </view>
+        <!-- 订单空状态 -->
+        <view v-if="recentOrders.length === 0" class="empty-state-mini">
+          <text class="empty-state-mini__text">暂无订单记录</text>
+        </view>
+        <view class="order-card" v-for="o in recentOrders" :key="o.id" @click="goOrderDetail(o.id)">
+          <view class="order-card-header">
+            <text class="order-name">{{ o.name }}</text>
+            <text class="order-status" :class="'status-' + o.statusColor">{{ o.status }}</text>
+          </view>
+          <text class="order-meta">{{ o.date }} · {{ o.sku }}</text>
+          <view class="order-card-footer">
+            <text class="order-amount">{{ o.amount }}</text>
+          </view>
         </view>
       </view>
-    </view>
+    </template>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+
+const loading = ref(true)
+const error = ref(false)
 
 // 订单 tab 状态
 const orderTab = ref<'all' | 'pending' | 'done'>('all')
@@ -109,12 +155,26 @@ const recentOrders = computed(() => {
   return allOrders
 })
 
+async function loadUserData() {
+  loading.value = true
+  error.value = false
+  try {
+    // 模拟数据加载（后续接入真实 API）
+    await new Promise(resolve => setTimeout(resolve, 600))
+    // TODO: 调用真实 API 获取用户信息
+  } catch (e) {
+    error.value = true
+  } finally {
+    loading.value = false
+  }
+}
+
 function goOrders() {
-  uni.navigateTo({ url: '/pages/orders/index' })
+  uni.navigateTo({ url: '/pages/user/orders/index' })
 }
 
 function goOrderDetail(id: string) {
-  uni.navigateTo({ url: `/pages/orders/detail?id=${id}` })
+  uni.navigateTo({ url: `/pages/user/orders/index?id=${id}` })
 }
 
 const menuGroup1 = [
@@ -135,6 +195,10 @@ const menuGroup2 = [
 function handleMenuTap(item: typeof menuGroup1[0]) {
   uni.showToast({ title: item.label, icon: 'none' })
 }
+
+onMounted(() => {
+  loadUserData()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -271,3 +335,152 @@ function handleMenuTap(item: typeof menuGroup1[0]) {
 .order-card-footer { margin-top: 8rpx; }
 .order-amount { font-size: $text-lg; font-weight: 800; color: $color-primary; font-family: 'JetBrains Mono', monospace; }
 .order-card:active,.quick-grid-item:active{opacity:.7;transform:scale(.98)}
+
+// ===== 加载骨架屏 =====
+.skeleton-header {
+  background: linear-gradient(135deg, $color-primary, $color-primary-active);
+  padding: $space-xl $space-base 80rpx;
+  display: flex;
+  align-items: center;
+}
+
+.skeleton-avatar-lg {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(255,255,255,0.3);
+  margin-right: $space-lg;
+  background: rgba(255,255,255,0.2);
+  animation: shimmer-light 1.5s ease-in-out infinite;
+}
+
+.skeleton-header-info {
+  flex: 1;
+}
+
+.skeleton-badges {
+  display: flex;
+  gap: $space-sm;
+}
+
+.skeleton-badge {
+  width: 100rpx;
+  height: 32rpx;
+  border-radius: $radius-full;
+  background: rgba(255,255,255,0.2);
+  animation: shimmer-light 1.5s ease-in-out infinite;
+}
+
+.skeleton-overview {
+  display: flex;
+  align-items: center;
+}
+
+.skeleton-overview-item {
+  flex: 1;
+  text-align: center;
+}
+
+.skeleton-menu {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.skeleton-menu-item {
+  display: flex;
+  align-items: center;
+  padding: $space-lg $space-lg;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.skeleton-menu-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  margin-right: $space-md;
+  background: linear-gradient(90deg, $color-bg-input 25%, darken($color-bg-input, 3%) 50%, $color-bg-input 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 28rpx;
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, $color-bg-input 25%, darken($color-bg-input, 3%) 50%, $color-bg-input 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+
+  &--sm {
+    height: 22rpx;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes shimmer-light {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.4; }
+}
+
+// ===== 错误状态 =====
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx $space-base 120rpx;
+
+  &__icon {
+    font-size: 96rpx;
+    margin-bottom: $space-lg;
+  }
+
+  &__title {
+    font-size: $text-xl;
+    font-weight: 600;
+    color: $color-text-primary;
+    margin-bottom: $space-sm;
+  }
+
+  &__desc {
+    font-size: $text-sm;
+    color: $color-text-secondary;
+    margin-bottom: $space-xl;
+  }
+
+  &__btn {
+    height: 80rpx;
+    padding: 0 48rpx;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-text-inverse;
+    font-size: $text-base;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:active {
+      opacity: 0.8;
+    }
+  }
+}
+
+// ===== 订单空状态 =====
+.empty-state-mini {
+  padding: 48rpx 0;
+  text-align: center;
+
+  &__text {
+    font-size: $text-sm;
+    color: $color-text-tertiary;
+  }
+}

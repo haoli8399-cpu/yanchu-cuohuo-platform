@@ -2,7 +2,47 @@
   <view class="order-page">
     <CfNavBar title="订单详情" :showBack="true" backText="返回" />
 
-    <scroll-view scroll-y class="order-page__scroll" :show-scrollbar="false">
+    <!-- 加载骨架屏 -->
+    <template v-if="loading">
+      <scroll-view scroll-y class="order-page__scroll" :show-scrollbar="false">
+        <view class="skeleton-state-chain">
+          <view v-for="i in 6" :key="i" class="skeleton-state-node" />
+        </view>
+        <view class="skeleton-card">
+          <view class="skeleton-card-header">
+            <view class="skeleton-line" style="width: 50%;" />
+            <view class="skeleton-line" style="width: 80rpx; height: 36rpx; border-radius: $radius-full;" />
+          </view>
+          <view v-for="i in 3" :key="i" class="skeleton-card-row">
+            <view class="skeleton-line skeleton-line--sm" style="width: 80rpx;" />
+            <view class="skeleton-line skeleton-line--sm" style="width: 280rpx;" />
+          </view>
+        </view>
+        <view class="skeleton-won-card">
+          <view class="skeleton-won-circle" />
+          <view class="skeleton-line" style="width: 120rpx; margin: 0 auto 24rpx;" />
+          <view class="skeleton-won-grid">
+            <view v-for="i in 4" :key="i" class="skeleton-won-stat">
+              <view class="skeleton-line skeleton-line--sm" style="width: 60rpx; margin: 0 auto 8rpx;" />
+              <view class="skeleton-line" style="width: 100rpx; margin: 0 auto;" />
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </template>
+
+    <!-- 错误状态 -->
+    <view v-else-if="error" class="error-state">
+      <text class="error-state__icon">😵</text>
+      <text class="error-state__title">加载失败</text>
+      <text class="error-state__desc">网络不给力，请检查网络后重试</text>
+      <view class="error-state__btn" @tap="loadOrderDetail">
+        <text>重新加载</text>
+      </view>
+    </view>
+
+    <!-- 正常内容 -->
+    <scroll-view v-else scroll-y class="order-page__scroll" :show-scrollbar="false">
       <view class="state-card">
         <view class="state-chain">
           <block v-for="(node, index) in states" :key="node.key">
@@ -63,8 +103,12 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import CfNavBar from '@/components/CfNavBar.vue'
 import CfStatusTag from '@/components/CfStatusTag.vue'
+
+const loading = ref(true)
+const error = ref(false)
 
 const states = [
   { key: 'new', tone: 'new' },
@@ -82,6 +126,20 @@ const wonStats = [
   { label: '周期', value: '行业平均 5 天' },
 ]
 
+async function loadOrderDetail() {
+  loading.value = true
+  error.value = false
+  try {
+    // 模拟数据加载（后续接入真实 API）
+    await new Promise(resolve => setTimeout(resolve, 600))
+    // TODO: 调用真实 API 获取订单详情
+  } catch (e) {
+    error.value = true
+  } finally {
+    loading.value = false
+  }
+}
+
 function viewFullOrder() {
   uni.showToast({ title: '订单信息已展开', icon: 'none' })
 }
@@ -93,6 +151,10 @@ function inviteReview() {
 function contactAgent() {
   uni.showToast({ title: '小演已接入', icon: 'success' })
 }
+
+onMounted(() => {
+  loadOrderDetail()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -312,6 +374,148 @@ function contactAgent() {
   &__btn--primary {
     background: $color-primary;
     color: $color-text-inverse;
+  }
+}
+
+// ===== 加载骨架屏 =====
+.skeleton-state-chain {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: $space-sm $space-base;
+  margin: $space-md $space-base 0;
+  background: $color-bg-card;
+  border: 1rpx solid $color-border;
+  border-radius: $radius-md;
+  overflow-x: auto;
+}
+
+.skeleton-state-node {
+  flex-shrink: 0;
+  width: 80rpx;
+  height: 44rpx;
+  border-radius: $radius-full;
+  background: linear-gradient(90deg, $color-bg-input 25%, darken($color-bg-input, 3%) 50%, $color-bg-input 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-card {
+  margin: $space-md $space-base 0;
+  padding: $space-md;
+  border: 1rpx solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg-card;
+}
+
+.skeleton-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-sm;
+  margin-bottom: $space-sm;
+}
+
+.skeleton-card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: $space-md;
+  padding: $space-xs 0;
+}
+
+.skeleton-won-card {
+  margin: $space-md $space-base 0;
+  padding: $space-xl $space-md $space-md;
+  background: $color-stage-dark;
+  border-radius: $radius-md;
+  text-align: center;
+}
+
+.skeleton-won-circle {
+  width: 80rpx;
+  height: 80rpx;
+  margin: 0 auto $space-sm;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  animation: shimmer-light 1.5s ease-in-out infinite;
+}
+
+.skeleton-won-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-sm;
+}
+
+.skeleton-won-stat {
+  padding: $space-sm;
+  border: 1rpx solid rgba(255,255,255,0.1);
+  border-radius: $radius-sm;
+}
+
+.skeleton-line {
+  height: 28rpx;
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, $color-bg-input 25%, darken($color-bg-input, 3%) 50%, $color-bg-input 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+
+  &--sm {
+    height: 22rpx;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes shimmer-light {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+  100% { opacity: 0.3; }
+}
+
+// ===== 错误状态 =====
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx $space-base 120rpx;
+
+  &__icon {
+    font-size: 96rpx;
+    margin-bottom: $space-lg;
+  }
+
+  &__title {
+    font-size: $text-xl;
+    font-weight: 600;
+    color: $color-text-primary;
+    margin-bottom: $space-sm;
+  }
+
+  &__desc {
+    font-size: $text-sm;
+    color: $color-text-secondary;
+    margin-bottom: $space-xl;
+  }
+
+  &__btn {
+    height: 80rpx;
+    padding: 0 48rpx;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-text-inverse;
+    font-size: $text-base;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:active {
+      opacity: 0.8;
+    }
   }
 }
 </style>

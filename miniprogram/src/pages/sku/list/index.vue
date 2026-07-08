@@ -41,8 +41,27 @@
       </view>
     </view>
 
+    <!-- 加载中 -->
+    <view v-if="loading" class="sku-loading">
+      <view class="sku-loading-card" v-for="i in 3" :key="i">
+        <view class="sku-loading-img" />
+        <view class="sku-loading-body">
+          <view class="sku-loading-line" style="width: 60%;" />
+          <view class="sku-loading-line" style="width: 40%;" />
+          <view class="sku-loading-line" style="width: 30%;" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 空结果 -->
+    <view v-else-if="skuList.length === 0" class="sku-empty-state">
+      <text class="sku-empty-icon">📋</text>
+      <text class="sku-empty-text">暂无匹配方案</text>
+      <text class="sku-empty-hint">换个筛选条件试试</text>
+    </view>
+
     <!-- SKU Cards -->
-    <view class="sku-list-page__list">
+    <view v-else class="sku-list-page__list">
       <view
         v-for="item in skuList"
         :key="item.id"
@@ -78,6 +97,8 @@ import { ShowTypeLabels } from '@/types'
 
 const searchText = ref('')
 const activeCategory = ref('全部')
+const loading = ref(true)
+const error = ref(false)
 const categories = ['全部', '脱口秀', '即兴喜剧', '漫才', '新喜剧', '魔术喜剧', '亲子喜剧']
 const filters = [
   { label: '价格排序', onTap: () => {} },
@@ -95,6 +116,11 @@ const skuList = ref<Sku[]>([
 function goDetail(id: string) {
   uni.navigateTo({ url: `/pages/sku/detail/index?id=${id}` })
 }
+
+// 模拟加载，实际项目替换为真实接口
+setTimeout(() => {
+  loading.value = false;
+}, 800);
 </script>
 
 <style lang="scss" scoped>

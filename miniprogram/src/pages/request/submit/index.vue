@@ -61,6 +61,20 @@
           </view>
         </view>
 
+        <!-- AI typing 动画 -->
+        <view class="typing-indicator" v-if="aiTyping">
+          <view class="typing-dot" />
+          <view class="typing-dot" />
+          <view class="typing-dot" />
+          <text class="typing-text">小演正在思考...</text>
+        </view>
+
+        <!-- 发送失败提示 -->
+        <view class="send-error" v-if="sendError">
+          <text class="send-error-text">发送失败，请检查网络后重试</text>
+          <text class="send-error-retry" @click="sendError = false">重试</text>
+        </view>
+
         <!-- 快捷回复芯片 -->
         <view class="quick-chips" v-if="showChips">
           <text class="chip" v-for="c in currentChips" :key="c" @click="onChip(c)">{{ c }}</text>
@@ -123,6 +137,8 @@ const inputText = ref('');
 const showChips = ref(true);
 const scrollInto = ref('');
 const isFirstEntry = ref(true);
+const aiTyping = ref(false);
+const sendError = ref(false);
 
 const messages = ref<{ from: string; text: string; plan?: any }[]>([]);
 const currentChips = ref(['50-100人', '100-300人', '300-500人', '脱口秀', '年会', '团建']);
@@ -139,14 +155,17 @@ onMounted(() => {
 
 function onSend() {
   if (!inputText.value.trim()) return;
+  sendError.value = false;
   isFirstEntry.value = false;
   messages.value.push({ from: 'user', text: inputText.value.trim() });
   inputText.value = '';
   showChips.value = false;
   scrollInto.value = 'msg-' + (messages.value.length - 1);
+  aiTyping.value = true;
 
   // Simulate AI reply with inline plan card
   setTimeout(() => {
+    aiTyping.value = false;
     messages.value.push({
       from: 'ai',
       text: '收到！根据你的需求，我推荐以下方案：',
@@ -162,7 +181,7 @@ function onSend() {
     currentChips.value = ['确认这个方案', '换个便宜点的', '想要更高级别', '修改人数'];
     showChips.value = true;
     scrollInto.value = 'chat-bottom';
-  }, 600);
+  }, 1200);
 }
 
 function onChip(text: string) {
@@ -386,5 +405,53 @@ function onSkuSubmit() {
   height: 80rpx; line-height: 80rpx; text-align: center;
   background: $color-primary; color: $color-text-inverse;
   border-radius: $radius-full; font-size: $text-base; font-weight: 600;
+}
+
+/* ===== AI Typing Indicator ===== */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 0;
+}
+.typing-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: $color-primary;
+  animation: typing-bounce 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing-bounce {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+.typing-text {
+  font-size: $text-sm;
+  color: $color-text-tertiary;
+  margin-left: 8rpx;
+}
+
+/* ===== Send Error ===== */
+.send-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 24rpx;
+  margin: 12rpx 0;
+  background: #fef2f2;
+  border-radius: $radius-sm;
+  border: 2rpx solid rgba($color-danger, 0.2);
+}
+.send-error-text {
+  font-size: $text-sm;
+  color: $color-danger;
+}
+.send-error-retry {
+  font-size: $text-sm;
+  font-weight: 600;
+  color: $color-primary;
+  padding: 4rpx 16rpx;
 }
 </style>
