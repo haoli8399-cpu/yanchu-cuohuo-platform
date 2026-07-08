@@ -1359,27 +1359,173 @@ Response 200:
 
 ---
 
+### 2.17 案例管理 - `/v1/cases`
+
+#### GET `/v1/cases`
+案例列表（公开）
+
+```
+Query:
+  status?: 'draft' | 'published' | 'archived'
+  sku_id?: string
+  page?: number
+  pageSize?: number
+
+Response 200:
+{ code: 0, data: { items: [], total: number, page: number, pageSize: number }, message: "ok" }
+```
+
+#### GET `/v1/cases/:id`
+案例详情（公开）
+
+#### POST `/v1/cases`
+创建案例（admin）
+
+#### PUT `/v1/cases/:id`
+更新案例（admin）
+
+#### DELETE `/v1/cases/:id`
+删除案例（admin）
+
+---
+
+### 2.18 AI 模板管理 - `/v1/ai-templates`
+
+#### GET `/v1/ai-templates`
+模板列表（公开）
+
+```
+Query:
+  business_line?: BusinessLine
+  status?: 'active' | 'inactive'
+  page?: number
+  pageSize?: number
+
+Response 200:
+{ code: 0, data: { items: [], total: number, page: number, pageSize: number }, message: "ok" }
+```
+
+#### GET `/v1/ai-templates/:id`
+模板详情（公开）
+
+#### POST `/v1/ai-templates`
+创建模板（admin）
+
+#### PUT `/v1/ai-templates/:id`
+更新模板（admin）
+
+#### DELETE `/v1/ai-templates/:id`
+删除模板（admin）
+
+---
+
+### 2.19 商机管理 - `/v1/opportunities`
+
+#### GET `/v1/opportunities`
+商机列表（agent/admin）
+
+```
+Query:
+  status?: 'new' | 'qualified' | 'quoted' | 'negotiating' | 'pending_client' | 'won' | 'lost' | 'invalid'
+  priority?: 'high' | 'medium' | 'low'
+  assigned_to?: string
+  page?: number
+  pageSize?: number
+
+Response 200:
+{ code: 0, data: { items: [], total: number, page: number, pageSize: number }, message: "ok" }
+```
+
+#### GET `/v1/opportunities/:id`
+商机详情（需登录）
+
+#### POST `/v1/opportunities`
+创建商机（agent/admin）
+
+#### PATCH `/v1/opportunities/:id/status`
+商机状态流转（agent/admin）
+
+#### PATCH `/v1/opportunities/:id`
+更新优先级、分配人、下一步动作（agent/admin）
+
+#### GET `/v1/opportunities/stats`
+商机统计（agent/admin）
+
+---
+
+### 2.20 报价管理 - `/v1/quotes`
+
+#### GET `/v1/quotes/by-demand/:demand_id`
+按需求查看报价版本（需登录）
+
+#### GET `/v1/quotes/by-opportunity/:opportunity_id`
+按商机查看报价版本（需登录）
+
+#### GET `/v1/quotes/:id`
+报价详情（需登录）
+
+#### POST `/v1/quotes`
+创建报价（agent/admin）
+
+#### PUT `/v1/quotes/:id`
+更新报价（agent/admin）
+
+---
+
+### 2.21 跟进记录 - `/v1/follow-ups`
+
+#### GET `/v1/follow-ups/by-opportunity/:opportunity_id`
+查看某商机的跟进记录（需登录）
+
+#### GET `/v1/follow-ups/:id`
+跟进详情（需登录）
+
+#### POST `/v1/follow-ups`
+创建跟进记录（agent/admin）
+
+#### GET `/v1/follow-ups/pending`
+待跟进列表（agent/admin）
+
+---
+
+### 2.22 AI 反馈 - `/v1/ai-feedback`
+
+#### POST `/v1/ai-feedback`
+记录 AI 推荐反馈（需登录）
+
+#### GET `/v1/ai-feedback/stats`
+AI 反馈采纳率统计（agent/admin）
+
+#### GET `/v1/ai-feedback`
+AI 反馈日志列表（需登录）
+
+---
+
 ## 三、路由汇总
 
 | 路由组 | 路径 | 需要权限 | 端点数 |
 |--------|------|:------:|:-----:|
 | Auth | `/v1/auth` | 公开 | 4 |
 | SKU | `/v1/skus` | 读公开/写 admin | 5 |
-| 需求 | `/v1/demands` | agent/client/admin | 7 |
-| 订单 | `/v1/orders` | admin | 2 |
+| 需求 | `/v1/demands` | agent/client/admin | 11 |
+| 订单 | `/v1/orders` | admin | 3 |
 | 签约 | `/v1/contracts` | admin | 2 |
-| 演员 | `/v1/performers` | admin/公开 | 4 |
-| 咖位 | `/v1/performers/:id/tier` | admin | 3 |
-| 信誉分 | `/v1/performers/:id/credit` | admin/performer | 2 |
-| 排期 | `/v1/assignments` | admin/performer | 5 |
 | 付款 | `/v1/payments` | admin/finance | 2 |
-| 结算 | `/v1/settlements` | admin/finance | 3 |
-| 评价 | `/v1/reviews` | agent/performer | 2 |
+| 演员 | `/v1/performers` | admin/公开 | 10 |
 | 价格配置 | `/v1/price-configs` | admin | 2 |
-| 活动公司 | `/v1/companies` | admin/agent | 4 |
-| 运营工具 | `/v1/admin` | admin | 3 |
+| 结算 | `/v1/settlements` | admin/finance | 3 |
+| 排期 | `/v1/assignments` | admin/performer | 5 |
+| 评价 | `/v1/reviews` | agent/performer | 2 |
+| 活动公司 | `/v1/companies` | admin/agent | 5 |
+| 运营工具 | `/v1/admin` | admin | 5 |
 | 通知 | `/v1/notifications` | admin | 1 |
-| **合计** | **16 组** | | **51 端点** |
+| 案例 | `/v1/cases` | 读公开/写 admin | 5 |
+| AI 模板 | `/v1/ai-templates` | 读公开/写 admin | 5 |
+| 商机 | `/v1/opportunities` | agent/admin | 6 |
+| 报价 | `/v1/quotes` | agent/admin | 5 |
+| 跟进 | `/v1/follow-ups` | agent/admin | 4 |
+| AI 反馈 | `/v1/ai-feedback` | agent/admin | 3 |
+| **合计** | **20 组** | | **88 端点** |
 
 ---
 
