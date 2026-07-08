@@ -71,12 +71,15 @@
       </view>
     </view>
 
+    <XiaoYanFloat context-type="performer" />
+
     <CfTabBar currentTab="performer" />
   </view>
 </template>
 
 <script setup lang="ts">
 import CfTabBar from '@/components/CfTabBar.vue'
+import XiaoYanFloat from '@/components/XiaoYanFloat.vue'
 
 const menuGroup1 = [
   { label: '我的作品', icon: '🎬', iconBg: '#f5f3ff' },

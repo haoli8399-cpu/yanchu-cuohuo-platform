@@ -5,7 +5,7 @@ import { query } from '../utils/db.js';
 import { successResponse } from '../utils/response.js';
 
 const insightBody = z.object({
-  context_type: z.enum(['opportunity', 'sku', 'profit', 'order']).optional(),
+  context_type: z.enum(['opportunity', 'sku', 'profit', 'order', 'performer']).optional(),
   opportunity_id: z.string().uuid().optional(),
   sku_id: z.string().uuid().optional(),
   time_range: z.enum(['today', 'week', 'month']).optional(),
@@ -74,6 +74,72 @@ export default async function aiRoutes(app: FastifyInstance) {
         insights.push(`📈 近 7 天成交 ${won} 单，收入 ¥${revenue.toLocaleString()}，毛利 ¥${profit.toLocaleString()}`);
       } else {
         insights.push(`⚠️ 近 7 天尚无成交，需要加大跟进力度`);
+      }
+    }
+
+    // 独立艺人洞察：排期/信誉分/近期收入（Phase 1 扩展）
+    if (context_type === 'performer') {
+      const uid = (req.user as { sub?: string } | undefined)?.sub ?? '';
+
+      // 近 7 天演出场数 + 总收入
+      try {
+        const week = await query<{ cnt: number; income: number }>(
+          `SELECT COUNT(*)::int AS cnt, COALESCE(SUM(negotiated_price), 0)::int AS income
+           FROM assignments WHERE performer_id = $1 AND arrival_time >= now() - interval '7 days'`,
+          [uid]
+        );
+        const w = week.rows[0] ?? { cnt: 0, income: 0 };
+        insights.push(`📅 近 7 天你有 ${Number(w.cnt)} 场演出，总收入 ¥${Number(w.income).toLocaleString()}`);
+      } catch {
+        insights.push('📅 近 7 天演出数据暂不可用');
+      }
+
+      // 下周空档提醒
+      try {
+        const gap = await query<{ dow: string }>(
+          `SELECT to_char(arrival_time, 'FMDay') AS dow FROM assignments
+           WHERE performer_id = $1 AND arrival_time >= now() AND arrival_time < now() + interval '7 days'
+           ORDER BY arrival_time`,
+          [uid]
+        );
+        const days = gap.rows.map((r) => r.dow);
+        insights.push(days.length ? `🗓️ 下周 ${days.join('/')} 有演出` : '🗓️ 下周暂无安排，空档可接单');
+      } catch {
+        insights.push('🗓️ 下周档期数据暂不可用');
+      }
+
+      // 信誉分状态（较上周变化）
+      try {
+        const credit = await query<{ score: number }>(
+          `SELECT score FROM credit_score_logs WHERE performer_id = $1 ORDER BY created_at DESC LIMIT 2`,
+          [uid]
+        );
+        if (credit.rows.length > 0) {
+          const cur = Number(credit.rows[0].score);
+          const prev = credit.rows[1] ? Number(credit.rows[1].score) : cur;
+          const diff = cur - prev;
+          insights.push(`⭐ 信誉分 ${cur}，较上周 ${diff >= 0 ? '+' : ''}${diff}`);
+        } else {
+          insights.push('⭐ 暂无信誉分记录');
+        }
+      } catch {
+        insights.push('⭐ 信誉分数据暂不可用');
+      }
+
+      // 收入趋势（本月预计 vs 上月）
+      try {
+        const trend = await query<{ this_month: number; last_month: number }>(
+          `SELECT
+             COALESCE(SUM(negotiated_price) FILTER (WHERE arrival_time >= date_trunc('month', now())), 0)::int AS this_month,
+             COALESCE(SUM(negotiated_price) FILTER (WHERE arrival_time >= date_trunc('month', now()) - interval '1 month' AND arrival_time < date_trunc('month', now())), 0)::int AS last_month
+           FROM assignments WHERE performer_id = $1`,
+          [uid]
+        );
+        const t = trend.rows[0] ?? { this_month: 0, last_month: 0 };
+        const pct = t.last_month > 0 ? Math.round(((t.this_month - t.last_month) / t.last_month) * 100) : (t.this_month > 0 ? 100 : 0);
+        insights.push(`💰 本月预计收入 ¥${Number(t.this_month).toLocaleString()}，较上月 ${pct >= 0 ? '+' : ''}${pct}%`);
+      } catch {
+        insights.push('💰 收入趋势数据暂不可用');
       }
     }
 
