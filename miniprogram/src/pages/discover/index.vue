@@ -80,6 +80,16 @@
         </view>
       </view>
 
+      <!-- ===== 独立艺人工作台入口（仅艺人角色可见）===== -->
+      <view v-if="isPerformer" class="performer-entry" @tap="goPerformerWorkbench">
+        <text class="performer-entry__icon">🎭</text>
+        <view class="performer-entry__body">
+          <text class="performer-entry__title">独立艺人工作台</text>
+          <text class="performer-entry__desc">管理档期 · 接收订单 · 查看收益</text>
+        </view>
+        <text class="performer-entry__arrow">→</text>
+      </view>
+
       <!-- ===== 区块1: AI最近生成方案 ===== -->
       <view class="section-block">
         <view class="section-header" @click="goAllPlans">
@@ -217,11 +227,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 
 const inputText = ref('');
 const selectedTag = ref('all');
 const loading = ref(true);
 const error = ref(false);
+const isPerformer = ref(false);
+
+function syncRole() {
+  // 从本地存储读取角色，艺人(performer)可见工作台入口
+  isPerformer.value = uni.getStorageSync('user_role') === 'performer';
+}
 
 function loadData() {
   loading.value = true;
@@ -233,10 +250,17 @@ function loadData() {
   }, 800);
 }
 
+onShow(syncRole);
+
 onMounted(() => {
   uni.setNavigationBarTitle({ title: '演立方' });
+  syncRole();
   loadData();
 });
+
+function goPerformerWorkbench() {
+  uni.navigateTo({ url: '/pages/user/performer/index' });
+}
 
 const activityTags = [
   { value: 'all', label: '全部' },
@@ -603,6 +627,45 @@ function goCaseDetail(item: any) {
 .curated-price {
   color: $color-primary; font-size: $text-md; font-weight: 800;
   font-family: 'JetBrains Mono', monospace;
+}
+
+/* ===== 独立艺人工作台入口 ===== */
+.performer-entry {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin: 24rpx 32rpx 0;
+  padding: 24rpx 20rpx;
+  background: #ffffff;
+  border-left: 6rpx solid #7c3aed;
+  border-radius: 16rpx;
+  box-shadow: $shadow-sm;
+}
+.performer-entry:active { opacity: 0.85; }
+.performer-entry__icon {
+  font-size: 40rpx;
+  flex-shrink: 0;
+}
+.performer-entry__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.performer-entry__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: $color-text-primary;
+}
+.performer-entry__desc {
+  font-size: 22rpx;
+  color: #6b7280;
+  margin-top: 4rpx;
+}
+.performer-entry__arrow {
+  font-size: 28rpx;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
 }
 
 .bottom-space { height: 160rpx; }
