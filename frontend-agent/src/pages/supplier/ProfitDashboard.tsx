@@ -1,7 +1,7 @@
 import { Card, Row, Col, Typography, Table, Tag, Statistic } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 /* ===== Mock Data ===== */
 const STATS = [
@@ -79,7 +79,8 @@ export default function ProfitDashboard() {
       >
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 20, height: 150, padding: '0 8px' }}>
           {MONTHS.map((month, i) => {
-            const h = (PROFIT_DATA[i] / MAX_PROFIT) * 120;
+            const profit = PROFIT_DATA[i] ?? 0;
+            const h = (profit / MAX_PROFIT) * 120;
             const isLatest = i === MONTHS.length - 1;
             return (
               <div key={month} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
@@ -88,10 +89,10 @@ export default function ProfitDashboard() {
                   fontSize: 9, fontWeight: 600, color: isLatest ? '#7c3aed' : '#6b7280',
                   marginBottom: 2,
                 }}>
-                  ¥{PROFIT_DATA[i]}K
+                  ¥{profit}K
                 </Text>
                 <div
-                  title={`${month}: ¥${PROFIT_DATA[i]}K`}
+                  title={`${month}: ¥${profit}K`}
                   style={{
                     width: '100%', maxWidth: 48,
                     height: h,

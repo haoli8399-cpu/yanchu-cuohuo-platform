@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import {
-  Card, Table, Tag, Button, Space, Input, Select, Typography, Badge, Tooltip,
+  Card, Table, Tag, Button, Space, Input, Select, Typography,
 } from 'antd';
 import {
   PlusOutlined, SearchOutlined, EditOutlined,
-  StopOutlined, CheckCircleOutlined,
 } from '@ant-design/icons';
 
 const { Text } = Typography;
@@ -40,7 +39,7 @@ export default function SkuManage() {
   const filtered = SKU_DATA.filter((sku) => {
     const matchSearch = sku.name.includes(search) || search === '';
     const matchType = typeFilter === '全部' || sku.type === typeFilter;
-    const statusLabel = STATUS_MAP[sku.status].label;
+    const statusLabel = STATUS_MAP[sku.status]?.label ?? sku.status;
     const matchStatus = statusFilter === '全部状态' || statusLabel === statusFilter;
     return matchSearch && matchType && matchStatus;
   });
@@ -63,13 +62,13 @@ export default function SkuManage() {
     {
       title: '状态', dataIndex: 'status', key: 'status',
       render: (s: string) => {
-        const st = STATUS_MAP[s];
+        const st = STATUS_MAP[s] ?? { color: 'default', label: s };
         return <Tag color={st.color} style={{ fontWeight: 600, border: 'none' }}>{st.label}</Tag>;
       },
     },
     {
       title: '操作', key: 'actions',
-      render: (_: unknown, record: typeof SKU_DATA[0]) => (
+      render: (_: unknown, record: (typeof SKU_DATA)[number]) => (
         <Space size="small">
           <Button type="link" size="small" icon={<EditOutlined />}>编辑</Button>
           <Button type="link" size="small">

@@ -39,8 +39,7 @@ const PLANS = [
 ];
 
 export default function SalesWarRoom() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selected, setSelected] = useState(0);
+  const [, setSelected] = useState(0);
   const [copied, setCopied] = useState(false);
 
   const handleCopyScript = () => {
