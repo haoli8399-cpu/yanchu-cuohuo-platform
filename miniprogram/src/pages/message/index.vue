@@ -55,6 +55,7 @@
           :key="item.id"
           class="message-item"
           :class="`message-item--${item.tone}`"
+          @tap="openDetail(item.id)"
         >
           <view class="message-item__avatar" :class="`message-item__avatar--${item.tone}`">
             <text>{{ item.icon }}</text>
@@ -154,6 +155,10 @@ async function loadMessages() {
   } finally {
     loading.value = false
   }
+}
+
+function openDetail(id: string) {
+  uni.navigateTo({ url: `/pages/message/detail/index?id=${id}` })
 }
 
 onMounted(() => {

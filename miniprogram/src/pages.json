@@ -104,9 +104,63 @@
       }
     },
     {
+      "path": "pages/message/detail/index",
+      "style": {
+        "navigationBarTitleText": "消息详情"
+      }
+    },
+    {
       "path": "pages/user/orders/index",
       "style": {
         "navigationBarTitleText": "订单详情"
+      }
+    },
+    {
+      "path": "pages/profile/demand/index",
+      "style": {
+        "navigationBarTitleText": "我的需求"
+      }
+    },
+    {
+      "path": "pages/profile/favorites/index",
+      "style": {
+        "navigationBarTitleText": "我的收藏"
+      }
+    },
+    {
+      "path": "pages/profile/company/index",
+      "style": {
+        "navigationBarTitleText": "企业信息"
+      }
+    },
+    {
+      "path": "pages/profile/invoice/index",
+      "style": {
+        "navigationBarTitleText": "发票管理"
+      }
+    },
+    {
+      "path": "pages/profile/contact/index",
+      "style": {
+        "navigationBarTitleText": "联系客服"
+      }
+    },
+    {
+      "path": "pages/profile/feedback/index",
+      "style": {
+        "navigationBarTitleText": "意见反馈"
+      }
+    },
+    {
+      "path": "pages/profile/about/index",
+      "style": {
+        "navigationBarTitleText": "关于我们"
+      }
+    },
+    {
+      "path": "pages/profile/settings/index",
+      "style": {
+        "navigationBarTitleText": "设置"
       }
     },
   ],
