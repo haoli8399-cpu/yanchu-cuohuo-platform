@@ -80,6 +80,43 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
+
+// 订单 tab 状态
+const orderTab = ref<'all' | 'pending' | 'done'>('all')
+
+// 最近订单 mock 数据
+interface OrderItem {
+  id: string
+  name: string
+  date: string
+  sku: string
+  amount: string
+  status: string
+  statusColor: 'purple' | 'green' | 'orange'
+}
+
+const allOrders: OrderItem[] = [
+  { id: '1', name: '脱口秀年会专场', date: '2026-07-05', sku: '脱口秀·T3·60min', amount: '¥6,000', status: '已签约', statusColor: 'green' },
+  { id: '2', name: '企业团建喜剧秀', date: '2026-06-28', sku: '脱口秀·T4·45min', amount: '¥4,500', status: '已完成', statusColor: 'purple' },
+  { id: '3', name: '品牌发布会', date: '2026-06-20', sku: '魔术脱口秀·T2·90min', amount: '¥9,000', status: '进行中', statusColor: 'orange' },
+]
+
+const recentOrders = computed(() => {
+  if (orderTab.value === 'all') return allOrders
+  if (orderTab.value === 'pending') return allOrders.filter(o => o.status === '进行中')
+  if (orderTab.value === 'done') return allOrders.filter(o => o.status === '已完成' || o.status === '已签约')
+  return allOrders
+})
+
+function goOrders() {
+  uni.navigateTo({ url: '/pages/orders/index' })
+}
+
+function goOrderDetail(id: string) {
+  uni.navigateTo({ url: `/pages/orders/detail?id=${id}` })
+}
+
 const menuGroup1 = [
   { label: '我的需求', icon: '📋', iconBg: '#f5f3ff' },
   { label: '我的收藏', icon: '❤️', iconBg: '#fef2f2' },

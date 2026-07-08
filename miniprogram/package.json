@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "uni",
-    "dev:mp-weixin": "uni -p mp-weixin",
-    "build": "uni build",
-    "build:mp-weixin": "uni build -p mp-weixin",
+    "dev": "node ./node_modules/@dcloudio/vite-plugin-uni/bin/uni.js",
+    "dev:mp-weixin": "node ./node_modules/@dcloudio/vite-plugin-uni/bin/uni.js -p mp-weixin",
+    "build": "node ./node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build",
+    "build:mp-weixin": "node ./node_modules/@dcloudio/vite-plugin-uni/bin/uni.js build -p mp-weixin",
     "preview": "vite preview"
   },
   "dependencies": {

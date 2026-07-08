@@ -67,11 +67,6 @@
       <text class="sku-detail-page__price-note">最终价格根据具体需求确定，含演员差旅费</text>
     </view>
 
-    <!-- Fixed CTA -->
-    <view class="fixed-bottom">
-      <button class="btn btn-ghost" @tap="handleConsult">咨询</button>
-      <button class="btn btn-primary" style="flex: 1;" @tap="handleBook">立即预约</button>
-    </view>
   </view>
 
     <!-- 底部操作栏 -->
