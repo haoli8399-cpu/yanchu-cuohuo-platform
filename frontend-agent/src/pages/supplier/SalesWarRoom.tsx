@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Card, Typography, Tag, Button, Space, Tooltip } from 'antd';
-import { BulbOutlined, CopyOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Card, Typography, Tag, Button, Space, Tooltip, Segmented } from 'antd';
+import { BulbOutlined, CopyOutlined, ClockCircleOutlined, UnorderedListOutlined, AppstoreOutlined } from '@ant-design/icons';
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -39,8 +40,12 @@ const PLANS = [
 ];
 
 export default function SalesWarRoom() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [, setSelected] = useState(0);
   const [copied, setCopied] = useState(false);
+
+  const isKanban = location.pathname.includes('/kanban');
 
   const handleCopyScript = () => {
     navigator.clipboard.writeText('王经理好，上次聊的脱口秀方案，这周您这边方便确认一下吗？如果时间不合适，我们也可以调整。');
@@ -49,7 +54,26 @@ export default function SalesWarRoom() {
   };
 
   return (
-    <div style={{ display: 'flex', gap: 0, height: 'calc(100vh - 108px)', position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 108px)' }}>
+      {/* 顶部切换栏 */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '8px 0', marginBottom: 8,
+      }}>
+        <Segmented
+          value={isKanban ? 'kanban' : 'list'}
+          onChange={(val) => {
+            if (val === 'kanban') navigate('/supplier/kanban');
+            else navigate('/supplier/war-room');
+          }}
+          options={[
+            { label: <span><UnorderedListOutlined style={{ marginRight: 4 }} />列表</span>, value: 'list' },
+            { label: <span><AppstoreOutlined style={{ marginRight: 4 }} />Kanban</span>, value: 'kanban' },
+          ]}
+        />
+      </div>
+
+      <div style={{ display: 'flex', gap: 0, flex: 1, position: 'relative' }}>
       {/* Left: Queue */}
       <div style={{
         width: 240, flexShrink: 0,
@@ -207,6 +231,7 @@ export default function SalesWarRoom() {
           </Button>
         </Space>
       </div>
+    </div>
     </div>
   );
 }

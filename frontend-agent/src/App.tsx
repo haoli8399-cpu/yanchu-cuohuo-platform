@@ -15,6 +15,7 @@ import FloatingPhoneButton from './components/FloatingPhoneButton';
 import SupplierLayout from './pages/supplier/SupplierLayout';
 import DailyReport from './pages/supplier/DailyReport';
 import SalesWarRoom from './pages/supplier/SalesWarRoom';
+import SalesKanban from './pages/supplier/SalesKanban';
 import SkuBrowse from "./pages/SkuBrowse";
 import SkuManage from './pages/supplier/SkuManage';
 import Orders from './pages/supplier/Orders';
@@ -47,6 +48,7 @@ export default function App() {
               <Route index element={<Navigate to="/supplier/daily-report" replace />} />
               <Route path="daily-report" element={<DailyReport />} />
               <Route path="war-room" element={<SalesWarRoom />} />
+              <Route path="kanban" element={<SalesKanban />} />
               <Route path="skus" element={<SkuManage />} />
               <Route path="profit" element={<ProfitDashboard />} />
               <Route path="orders" element={<Orders />} />
