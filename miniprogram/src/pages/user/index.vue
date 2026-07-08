@@ -144,7 +144,7 @@ interface OrderItem {
 
 const allOrders: OrderItem[] = [
   { id: '1', name: '脱口秀年会专场', date: '2026-07-05', sku: '脱口秀·T3·60min', amount: '¥6,000', status: '已签约', statusColor: 'green' },
-  { id: '2', name: '企业团建喜剧秀', date: '2026-06-28', sku: '脱口秀·T4·45min', amount: '¥4,500', status: '已完成', statusColor: 'purple' },
+  { id: '2', name: '企业团建喜剧秀', date: '2026-06-28', sku: '脱口秀·T4·45min', amount: '¥4,500', status: '已完成', statusColor: 'gray' },
   { id: '3', name: '品牌发布会', date: '2026-06-20', sku: '魔术脱口秀·T2·90min', amount: '¥9,000', status: '进行中', statusColor: 'orange' },
 ]
 
@@ -349,10 +349,10 @@ onMounted(() => {
 }
 .user-stat-label { font-size: 22rpx; color: $color-text-secondary; margin-top: 8rpx; }
 
-.orders-section { margin-top: 32rpx; padding: 0 4rpx; }
+.orders-section { margin-top: 32rpx; padding: 24rpx $space-base; background: $color-bg-page; border-radius: $radius-md; }
 .section-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16rpx; }
 .section-link { font-size: $text-xs; color: $color-primary; }
-.order-tabs { display: flex; gap: 16rpx; margin-bottom: 16rpx; }
+.order-tabs { display: flex; gap: 16rpx; margin-bottom: 24rpx; }
 .order-tab { font-size: $text-sm; color: $color-text-secondary; padding: 4rpx 0; }
 .order-tab.active { color: $color-primary; font-weight: 600; border-bottom: 4rpx solid $color-primary; }
 .order-card { cursor: pointer; 
@@ -360,12 +360,13 @@ onMounted(() => {
   border-radius: $radius-md; border: 2rpx solid $color-border; margin-bottom: 16rpx;
 }
 .order-card:active { opacity: 0.8; }
-.order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8rpx; }
+.order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12rpx; }
 .order-name { font-size: $text-base; font-weight: 600; color: $color-text-primary; }
 .order-status { font-size: $text-xs; font-weight: 600; padding: 4rpx 12rpx; border-radius: $radius-full; }
 .status-purple { background: $color-primary-subtle; color: $color-primary; }
 .status-green { background: #f0fdf4; color: $color-success; }
 .status-orange { background: #fffbeb; color: #f59e0b; }
+.status-gray { background: $color-bg-input; color: $color-text-tertiary; }
 .order-meta { font-size: $text-xs; color: $color-text-secondary; }
 .order-card-footer { margin-top: 8rpx; }
 .order-amount { font-size: $text-lg; font-weight: 800; color: $color-primary; font-family: 'JetBrains Mono', monospace; }

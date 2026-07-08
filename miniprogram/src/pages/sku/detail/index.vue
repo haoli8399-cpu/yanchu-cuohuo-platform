@@ -1,6 +1,5 @@
 <template>
   <view class="sku-detail-page page-with-cta">
-    <CfNavBar title="方案详情" :showBack="true" backText="返回" />
 
     <!-- 加载骨架屏 -->
     <view v-if="loading" class="sku-detail-skeleton">
@@ -135,7 +134,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import CfNavBar from '@/components/CfNavBar.vue'
 import type { Sku, Performer, UserRole } from '@/types'
 
 const loading = ref(true)
@@ -455,6 +453,6 @@ onMounted(() => {
   text-align: center; border-radius: $radius-full;
   font-size: $text-base; font-weight: 600;
 }
-.outline-btn { border: 2rpx solid $color-primary; color: $color-primary; background: $color-bg-card; }
+.outline-btn { border: 2rpx solid $color-primary; color: $color-primary; background: $color-primary-subtle; }
 .primary-btn { background: $color-primary; color: $color-text-inverse; }
 .bottom-btn:active { opacity: 0.8; }
