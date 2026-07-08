@@ -183,7 +183,7 @@ onMounted(() => {
 .state-chain {
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: 8rpx;
   overflow-x: auto;
 }
 
@@ -327,7 +327,7 @@ onMounted(() => {
   }
 
   &__stat-value { font-family: 'JetBrains Mono', monospace;
-    margin-top: 2rpx;
+    margin-top: 4rpx;
     color: $color-text-inverse;
     font-size: $text-base;
     font-weight: 800;
