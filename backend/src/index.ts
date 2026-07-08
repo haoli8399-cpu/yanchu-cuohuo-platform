@@ -113,6 +113,7 @@ await app.register(opportunityRoutes, { prefix: '/v1/opportunities' });
 await app.register(quoteRoutes, { prefix: '/v1/quotes' });
 await app.register(followUpRoutes, { prefix: '/v1/follow-ups' });
 await app.register(aiFeedbackRoutes, { prefix: '/v1/ai-feedback' });
+await app.register(aiRoutes, { prefix: '/v1/ai' });
 
 // ============================================================
 // 启动服务器
