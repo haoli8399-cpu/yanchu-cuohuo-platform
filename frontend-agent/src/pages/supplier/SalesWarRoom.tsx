@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, Typography, Tag, Button, Space, Tooltip } from 'antd';
 import { BulbOutlined, CopyOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import XiaoYanFloat from '../../components/XiaoYanFloat';
 
 const { Text, Title, Paragraph } = Typography;
 

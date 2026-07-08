@@ -15,7 +15,7 @@ export default async function aiRoutes(app: FastifyInstance) {
   app.post('/insight', {
     preHandler: [authMiddleware],
   }, async (req: FastifyRequest, reply: FastifyReply) => {
-    const { context_type, opportunity_id, sku_id, time_range } = insightBody.parse(req.body);
+    const { context_type, opportunity_id, sku_id, time_range: _time_range } = insightBody.parse(req.body);
 
     // Generate context-aware insights without calling external AI (fast, free)
     const insights: string[] = [];
@@ -27,7 +27,7 @@ export default async function aiRoutes(app: FastifyInstance) {
          WHERE o.id = $1`, [opportunity_id]);
       if (opp.rows.length > 0) {
         const o = opp.rows[0];
-        const hoursAgo = Math.round((Date.now() - new Date(o.created_at).getTime()) / 3600000);
+        const hoursAgo = Math.round((Date.now() - new Date(String(o.created_at)).getTime()) / 3600000);
         
         if (o.status === 'new' && hoursAgo > 2) {
           insights.push(`🔴 ${o.title} 已等待 ${hoursAgo} 小时，建议立即处理`);
@@ -51,11 +51,7 @@ export default async function aiRoutes(app: FastifyInstance) {
       const sku = await query('SELECT name, base_price, status FROM skus WHERE id = $1', [sku_id]);
       if (sku.rows.length > 0) {
         const s = sku.rows[0];
-        const orders = await query(
-          `SELECT COUNT(*) FROM quotes q JOIN opportunities o ON o.id = q.opportunity_id 
-           WHERE o.status = 'won' AND $1 = ANY(q.items_snapshot::jsonb->0->>'sku_id'::text IS NOT NULL)`, 
-           [] // simplified — in production use proper query
-        );
+        // orders query (available for future use)
         insights.push(`📊 ${s.name} 标准价 ¥${s.base_price}`);
       }
     }
@@ -71,9 +67,9 @@ export default async function aiRoutes(app: FastifyInstance) {
         WHERE o.created_at >= now() - interval '7 days'
       `);
       const s = stats.rows[0];
-      const won = parseInt(s.won) || 0;
-      const revenue = parseInt(s.revenue) || 0;
-      const profit = parseInt(s.profit) || 0;
+      const won = parseInt(String(s.won)) || 0;
+      const revenue = parseInt(String(s.revenue)) || 0;
+      const profit = parseInt(String(s.profit)) || 0;
       if (won > 0) {
         insights.push(`📈 近 7 天成交 ${won} 单，收入 ¥${revenue.toLocaleString()}，毛利 ¥${profit.toLocaleString()}`);
       } else {

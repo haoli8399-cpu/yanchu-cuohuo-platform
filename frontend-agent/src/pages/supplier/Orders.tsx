@@ -16,6 +16,7 @@ import {
   Typography,
 } from 'antd';
 import {
+import XiaoYanFloat from '../../components/XiaoYanFloat';
   CheckCircleOutlined,
   ClockCircleOutlined,
   FieldTimeOutlined,

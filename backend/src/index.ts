@@ -24,6 +24,7 @@ import notificationRoutes from './api/notifications.js';
 import authRoutes from './api/auth.js';
 import caseRoutes from './api/cases.js';
 import aiTemplateRoutes from './api/ai-templates.js';
+import aiRoutes from './api/ai.js';
 import opportunityRoutes from './api/opportunities.js';
 import quoteRoutes from './api/quotes.js';
 import followUpRoutes from './api/follow-ups.js';

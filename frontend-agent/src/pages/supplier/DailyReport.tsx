@@ -3,6 +3,7 @@ import {
   Card, Row, Col, Typography, Tag, Button, Space, Tabs,
 } from 'antd';
 import {
+import XiaoYanFloat from '../../components/XiaoYanFloat';
   ArrowUpOutlined, ArrowRightOutlined,
   AlertOutlined, BulbOutlined, SoundOutlined,
 } from '@ant-design/icons';
