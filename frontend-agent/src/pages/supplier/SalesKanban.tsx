@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Card, Typography, Tag, Badge } from 'antd';
+import { Card, Typography, Badge } from 'antd';
 import { DollarOutlined, UserOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
@@ -49,7 +49,7 @@ function PriorityTag({ p }: { p: OppCard['priority'] }) {
     medium: { color: '#f59e0b', icon: '🟡' },
     low: { color: '#6b7280', icon: '⚪' },
   };
-  const m = map[p];
+  const m = map[p]!;
   return (
     <span style={{ fontSize: 11, color: m.color, fontWeight: 600 }}>
       {m.icon} {p === 'high' ? '高' : p === 'medium' ? '中' : '低'}
@@ -71,7 +71,8 @@ export default function SalesKanban() {
   COLUMNS.forEach(col => { grouped[col.key] = []; });
   grouped['lost'] = [];
   opps.forEach(o => {
-    if (grouped[o.status]) grouped[o.status].push(o);
+    const arr = grouped[o.status];
+    if (arr) arr.push(o);
   });
 
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
@@ -131,7 +132,7 @@ export default function SalesKanban() {
               <Text strong style={{ fontSize: 13, color: '#1f2937' }}>{col.label}</Text>
             </div>
             <Badge
-              count={grouped[col.key].length}
+              count={grouped[col.key]?.length ?? 0}
               style={{ backgroundColor: col.color }}
               overflowCount={99}
             />
@@ -139,7 +140,7 @@ export default function SalesKanban() {
 
           {/* 卡片列表 */}
           <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {grouped[col.key].map(opp => (
+            {(grouped[col.key] ?? []).map(opp => (
               <Card
                 key={opp.id}
                 size="small"

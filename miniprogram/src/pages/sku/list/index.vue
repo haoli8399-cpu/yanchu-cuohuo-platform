@@ -53,6 +53,14 @@
       </view>
     </view>
 
+    <!-- 错误状态 -->
+    <view v-else-if="error" class="sku-error-state">
+      <text class="sku-error-icon">😵</text>
+      <text class="sku-error-text">加载失败</text>
+      <text class="sku-error-hint">网络不给力，请检查后重试</text>
+      <view class="sku-error-retry" @tap="loadSkus"><text>重新加载</text></view>
+    </view>
+
     <!-- 空结果 -->
     <view v-else-if="skuList.length === 0" class="sku-empty-state">
       <text class="sku-empty-icon">📋</text>
@@ -132,10 +140,17 @@ function goDetail(id: string) {
   uni.navigateTo({ url: `/pages/sku/detail/index?id=${id}` })
 }
 
-// 模拟加载，实际项目替换为真实接口
-setTimeout(() => {
-  loading.value = false;
-}, 800);
+function loadSkus() {
+  loading.value = true
+  error.value = false
+  // 模拟数据加载，实际项目替换为真实接口调用
+  setTimeout(() => {
+    loading.value = false
+    // error.value = true; // 取消注释可测试错误状态
+  }, 800)
+}
+
+loadSkus()
 
 userRole.value = (uni.getStorageSync('user_role') as UserRole) || 'client'
 </script>
@@ -303,3 +318,84 @@ userRole.value = (uni.getStorageSync('user_role') as UserRole) || 'client'
 .supplier-badge.self { background: $color-primary-subtle; color: $color-primary; }
 .supplier-badge.broker { background: $color-bg-input; color: $color-text-secondary; }
 .supplier-badge.indie { background: #ecfdf5; color: #059669; }
+
+/* ===== 加载骨架屏 ===== */
+.sku-loading {
+  padding: 0 $space-base $space-xl;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+.sku-loading-card {
+  display: flex;
+  gap: $space-md;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  overflow: hidden;
+  box-shadow: $shadow-sm;
+  padding: $space-md;
+}
+.sku-loading-img {
+  width: 240rpx;
+  height: 200rpx;
+  flex-shrink: 0;
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, $color-bg-input 25%, darken($color-bg-input, 3%) 50%, $color-bg-input 75%);
+  background-size: 200% 100%;
+  animation: sku-shimmer 1.5s ease-in-out infinite;
+}
+.sku-loading-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: $space-sm;
+}
+.sku-loading-line {
+  height: 28rpx;
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, $color-bg-input 25%, darken($color-bg-input, 3%) 50%, $color-bg-input 75%);
+  background-size: 200% 100%;
+  animation: sku-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes sku-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== 空状态 ===== */
+.sku-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 160rpx $space-base;
+}
+.sku-empty-icon { font-size: 80rpx; margin-bottom: $space-md; }
+.sku-empty-text { font-size: $text-lg; font-weight: 700; color: $color-text-primary; margin-bottom: $space-xs; }
+.sku-empty-hint { font-size: $text-sm; color: $color-text-secondary; }
+
+/* ===== 错误状态 ===== */
+.sku-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 160rpx $space-base;
+}
+.sku-error-icon { font-size: 80rpx; margin-bottom: $space-md; }
+.sku-error-text { font-size: $text-lg; font-weight: 700; color: $color-text-primary; margin-bottom: $space-xs; }
+.sku-error-hint { font-size: $text-sm; color: $color-text-secondary; margin-bottom: $space-lg; }
+.sku-error-retry {
+  height: 72rpx;
+  padding: 0 48rpx;
+  border-radius: $radius-full;
+  background: $color-primary;
+  color: $color-text-inverse;
+  font-size: $text-base;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:active { opacity: 0.8; }
+}

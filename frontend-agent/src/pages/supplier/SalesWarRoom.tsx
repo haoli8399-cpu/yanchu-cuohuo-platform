@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Card, Empty, Skeleton, Typography, Tag, Button, Space, Tooltip, Segmented } from 'antd';
+import { Card, Empty, Result, Skeleton, Typography, Tag, Button, Space, Tooltip, Segmented } from 'antd';
 import { BulbOutlined, CopyOutlined, ClockCircleOutlined, UnorderedListOutlined, AppstoreOutlined } from '@ant-design/icons';
 
 const { Text, Title, Paragraph } = Typography;
@@ -45,11 +45,15 @@ export default function SalesWarRoom() {
   const [, setSelected] = useState(0);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const isKanban = location.pathname.includes('/kanban');
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 600);
+    const t = setTimeout(() => {
+      setLoading(false);
+      // setError(true); // 取消注释可测试错误状态
+    }, 600);
     return () => clearTimeout(t);
   }, []);
 
@@ -71,6 +75,23 @@ export default function SalesWarRoom() {
             <Skeleton active paragraph={{ rows: 4 }} />
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 108px)' }}>
+        <Result
+          status="error"
+          title="加载失败"
+          subTitle="商机数据加载异常，请稍后重试"
+          extra={[
+            <Button type="primary" key="retry" onClick={() => { setError(false); setLoading(true); setTimeout(() => setLoading(false), 600); }}>
+              重新加载
+            </Button>,
+          ]}
+        />
       </div>
     );
   }

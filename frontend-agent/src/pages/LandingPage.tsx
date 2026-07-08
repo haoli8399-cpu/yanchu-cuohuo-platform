@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Col, Input, Result, Row, Skeleton, Space, Tag, Typography } from 'antd';
-import { ArrowRightOutlined, BuildingOutlined, DollarOutlined, TeamOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, ApartmentOutlined, DollarOutlined, TeamOutlined, ThunderboltOutlined } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -169,7 +169,7 @@ export default function LandingPage() {
                 body: { padding: 32, textAlign: 'center' },
               }}
             >
-              <BuildingOutlined style={{ fontSize: 40, color: '#7c3aed', marginBottom: 16 }} />
+              <ApartmentOutlined style={{ fontSize: 40, color: '#7c3aed', marginBottom: 16 }} />
               <div style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 8 }}>我是活动公司</div>
               <Text type="secondary">撮合演员、出方案、管履约 · 一站式搞定</Text>
             </Card>
