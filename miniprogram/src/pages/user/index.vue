@@ -56,7 +56,7 @@
       <view class="user-page__overview card">
         <view class="user-page__overview-item">
           <text class="user-page__overview-num">12</text>
-          <text class="user-page__overview-label">需求总数</text>
+          <text class="user-page__overview-label">本月需求</text>
         </view>
         <view class="user-page__overview-divider" />
         <view class="user-page__overview-item">
@@ -193,7 +193,42 @@ const menuGroup2 = [
 ]
 
 function handleMenuTap(item: typeof menuGroup1[0]) {
-  uni.showToast({ title: item.label, icon: 'none' })
+  if (item.label === '我的需求') {
+    uni.navigateTo({ url: '/pages/profile/demand/index' })
+    return
+  }
+  if (item.label === '我的收藏') {
+    uni.navigateTo({ url: '/pages/profile/favorites/index' })
+    return
+  }
+  if (item.label === '历史订单') {
+    uni.navigateTo({ url: '/pages/user/orders/index' })
+    return
+  }
+  if (item.label === '企业信息') {
+    uni.navigateTo({ url: '/pages/profile/company/index' })
+    return
+  }
+  if (item.label === '发票管理') {
+    uni.navigateTo({ url: '/pages/profile/invoice/index' })
+    return
+  }
+  if (item.label === '联系客服') {
+    uni.navigateTo({ url: '/pages/profile/contact/index' })
+    return
+  }
+  if (item.label === '意见反馈') {
+    uni.navigateTo({ url: '/pages/profile/feedback/index' })
+    return
+  }
+  if (item.label === '关于我们') {
+    uni.navigateTo({ url: '/pages/profile/about/index' })
+    return
+  }
+  if (item.label === '设置') {
+    uni.navigateTo({ url: '/pages/profile/settings/index' })
+    return
+  }
 }
 
 onMounted(() => {

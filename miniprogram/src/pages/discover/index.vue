@@ -257,12 +257,12 @@ const recentPlans = [
   {
     id: 'magic-estate', name: 'XX地产开盘 · 魔术喜剧 T4 45min',
     meta: '匹配 87% · 可调整艺人级别', matchTag: '可调整', note: '',
-    price: '¥3,800', color: 'var(--color-primary)',
+    price: '¥3,800', color: 'var(--color-warning)',
   },
   {
     id: 'improv-bank', name: '某银行答谢 · 即兴喜剧 60min',
     meta: '匹配 82% · 需确认人数', matchTag: '待补信息', note: '',
-    price: '¥4,500', color: 'var(--color-primary)',
+    price: '¥4,500', color: 'var(--color-text-tertiary)',
   },
 ];
 
@@ -591,7 +591,7 @@ function goCaseDetail(item: any) {
 .curated-cover {
   height: 100rpx; display: flex; align-items: center; justify-content: center; font-size: 32rpx;
 }
-.curated-body { padding: 8rpx 16rpx; }
+.curated-body { padding: 16rpx; }
 .curated-name { display: block; font-size: $text-sm; font-weight: 700; color: $color-text-primary; margin-bottom: 4rpx; }
 .curated-tags { margin-bottom: 4rpx; }
 .curated-tag {

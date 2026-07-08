@@ -34,7 +34,7 @@
     {
       "path": "pages/request/submit/index",
       "style": {
-        "navigationBarTitleText": "提交需求"
+        "navigationBarTitleText": ""
       }
     },
     {
@@ -46,7 +46,7 @@
     {
       "path": "pages/user/index",
       "style": {
-        "navigationBarTitleText": "我的"
+        "navigationBarTitleText": ""
       }
     },
     {
@@ -100,7 +100,7 @@
     {
       "path": "pages/message/index",
       "style": {
-        "navigationBarTitleText": "消息"
+        "navigationStyle": "custom"
       }
     },
     {
@@ -108,7 +108,7 @@
       "style": {
         "navigationBarTitleText": "订单详情"
       }
-    }
+    },
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",

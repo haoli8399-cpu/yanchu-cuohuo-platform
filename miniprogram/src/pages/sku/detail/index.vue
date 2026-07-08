@@ -124,10 +124,10 @@
 
     <!-- 底部操作栏（非加载/错误时显示） -->
     <view v-if="!loading && !error" class="detail-bottom-bar">
-      <view class="bottom-btn outline-btn" @click="onGetQuote">
+      <view class="bottom-btn outline-btn" style="flex: 1;" @click="onGetQuote">
         <text>获取报价</text>
       </view>
-      <view class="bottom-btn primary-btn" @click="onContactAgent">
+      <view class="bottom-btn primary-btn" style="flex: 2;" @click="onContactAgent">
         <text>联系小演</text>
       </view>
   </view>

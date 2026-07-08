@@ -54,6 +54,7 @@
           v-for="item in filteredMessages"
           :key="item.id"
           class="message-item"
+          :class="`message-item--${item.tone}`"
         >
           <view class="message-item__avatar" :class="`message-item__avatar--${item.tone}`">
             <text>{{ item.icon }}</text>
@@ -205,9 +206,14 @@ onMounted(() => {
   gap: $space-sm;
   padding: $space-md;
   border: 1rpx solid $color-border;
-  border-left: 6rpx solid $color-primary-light;
+  border-left: 6rpx solid $color-border;
   border-radius: $radius-md;
   background: $color-bg-card;
+
+  &--agent { border-left-color: $color-primary; }
+  &--follow { border-left-color: $color-danger; }
+  &--plan { border-left-color: $color-info; }
+  &--system { border-left-color: $color-success; }
 
   & + & {
     margin-top: $space-sm;
@@ -300,9 +306,14 @@ onMounted(() => {
   gap: $space-sm;
   padding: $space-md;
   border: 1rpx solid $color-border;
-  border-left: 6rpx solid $color-primary-light;
+  border-left: 6rpx solid $color-border;
   border-radius: $radius-md;
   background: $color-bg-card;
+
+  &--agent { border-left-color: $color-primary; }
+  &--follow { border-left-color: $color-danger; }
+  &--plan { border-left-color: $color-info; }
+  &--system { border-left-color: $color-success; }
 
   & + & {
     margin-top: $space-sm;

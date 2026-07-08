@@ -333,6 +333,11 @@ function onSkuSubmit() {
   font-size: $text-sm; font-weight: 600; color: $color-primary;
 }
 .chip:active { background: $color-primary-subtle; }
+.chip.active {
+  background: $color-primary;
+  color: #fff;
+  border-color: $color-primary;
+}
 
 /* Input bar */
 .bottom-bar {
