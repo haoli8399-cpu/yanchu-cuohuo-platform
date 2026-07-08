@@ -72,7 +72,7 @@ export default async function quoteRoutes(app: FastifyInstance) {
     preHandler: [authMiddleware, requireRole('agent', 'admin'), validate({ body: createBodySchema })],
   }, async (req: FastifyRequest, reply: FastifyReply) => {
     const body = createBodySchema.parse(req.body);
-    const user = req.user as any;
+    const userId = req.user?.sub ?? '';
 
     // 自动计算版本号
     const lastVersion = await query(
@@ -93,7 +93,7 @@ export default async function quoteRoutes(app: FastifyInstance) {
       `INSERT INTO quotes (demand_id, opportunity_id, version, total_price, channel_price, cost_price, margin, valid_until, items_snapshot, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
       [body.demand_id, body.opportunity_id, version, body.total_price, chPrice, costPrice, margin,
-       body.valid_until || null, JSON.stringify(body.items_snapshot || []), user.id]
+       body.valid_until || null, JSON.stringify(body.items_snapshot || []), userId]
     );
 
     return reply.status(201).send(successResponse(result.rows[0]));
@@ -107,7 +107,7 @@ export default async function quoteRoutes(app: FastifyInstance) {
     const body = updateBodySchema.parse(req.body);
 
     const setClauses: string[] = ['updated_at = now()'];
-    const params: any[] = [];
+    const params: unknown[] = [];
     let idx = 1;
 
     if (body.total_price !== undefined) { setClauses.push(`total_price = $${idx++}`); params.push(body.total_price); }

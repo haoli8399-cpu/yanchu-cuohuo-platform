@@ -117,7 +117,7 @@ export default async function opportunityRoutes(app: FastifyInstance) {
     preHandler: [authMiddleware, requireRole('agent', 'admin'), validate({ body: createBodySchema })],
   }, async (req: FastifyRequest, reply: FastifyReply) => {
     const body = createBodySchema.parse(req.body);
-    const userId = String((req.user as any)?.id || '');
+    const userId = req.user?.sub ?? '';
 
     const exist = await query('SELECT id FROM opportunities WHERE demand_id = $1', [body.demand_id]);
     if (exist.rows.length > 0) {

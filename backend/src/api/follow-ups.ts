@@ -51,7 +51,7 @@ export default async function followUpRoutes(app: FastifyInstance) {
     preHandler: [authMiddleware, requireRole('agent', 'admin'), validate({ body: createBodySchema })],
   }, async (req: FastifyRequest, reply: FastifyReply) => {
     const body = createBodySchema.parse(req.body);
-    const userId = String((req.user as any)?.id || '');
+    const userId = req.user?.sub ?? '';
 
     const result = await query(
       `INSERT INTO follow_up_logs (opportunity_id, action_type, content, ai_suggested_script, outcome, next_follow_up_at, created_by)

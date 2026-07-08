@@ -1,14 +1,24 @@
 // 结算统计API
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { query } from '../utils/db.js';
 import { successResponse, errorResponse } from '../utils/response.js';
+
+const settlementQuerySchema = z.object({
+  period: z.string().optional(),
+  performer_id: z.string().uuid().optional(),
+});
+
+const markSettledBodySchema = z.object({
+  paid_at: z.string().min(1).optional(),
+});
 
 export default async function settlementRoutes(app: FastifyInstance) {
   // 结算汇总
   app.get('/', { preHandler: [authMiddleware, requireRole('admin', 'finance')] },
     async (req, reply) => {
-      const { period, performer_id } = req.query as Record<string, string>;
+      const { period, performer_id } = settlementQuerySchema.parse(req.query);
 
       let where = "WHERE 1=1";
       const params: unknown[] = [];
@@ -43,7 +53,7 @@ export default async function settlementRoutes(app: FastifyInstance) {
   app.patch('/:id/mark-settled', { preHandler: [authMiddleware, requireRole('admin', 'finance')] },
     async (req, reply) => {
       const { id } = req.params as { id: string };
-      const paid_at = (req.body as Record<string,string>)?.paid_at || new Date().toISOString();
+      const { paid_at = new Date().toISOString() } = markSettledBodySchema.parse(req.body ?? {});
 
       const old = await query('SELECT * FROM settlements WHERE id = $1', [id]);
       if (old.rows.length === 0) return reply.status(404).send(errorResponse(7001, '结算记录不存在'));
@@ -68,7 +78,7 @@ export default async function settlementRoutes(app: FastifyInstance) {
   // ==========================================================
   app.get('/export', { preHandler: [authMiddleware, requireRole('admin', 'finance')] },
     async (req, reply) => {
-      const { period, performer_id } = req.query as Record<string, string>;
+      const { period, performer_id } = settlementQuerySchema.parse(req.query);
 
       let where = "WHERE 1=1";
       const params: unknown[] = [];

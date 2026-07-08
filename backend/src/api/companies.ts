@@ -26,7 +26,7 @@ export default async function companyRoutes(app: FastifyInstance) {
       query(`SELECT * FROM company_profiles ${w} ORDER BY created_at DESC LIMIT $${i++} OFFSET $${i++}`,[...p,ps,(pg-1)*ps]),
       query(`SELECT COUNT(*) FROM company_profiles ${w}`,p)
     ]);
-    return reply.send({code:0,data:{items:items.rows,total:Number(count.rows[0].count),page:pg,pageSize:ps},message:'ok'});
+    return reply.send(successResponse({items:items.rows,total:Number(count.rows[0].count),page:pg,pageSize:ps}));
   });
 
   app.get('/:id', { preHandler: [authMiddleware] }, async (req, reply) => {

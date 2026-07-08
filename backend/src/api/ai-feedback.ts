@@ -19,6 +19,12 @@ const createBodySchema = z.object({
   ai_model: z.string().optional(),
 });
 
+interface FeedbackStatsRow {
+  accepted: string;
+  rejected: string;
+  type_count: string;
+  feedback_type: string;
+}
 
 export default async function aiFeedbackRoutes(app: FastifyInstance) {
 
@@ -27,7 +33,7 @@ export default async function aiFeedbackRoutes(app: FastifyInstance) {
     preHandler: [authMiddleware, validate({ body: createBodySchema })],
   }, async (req: FastifyRequest, reply: FastifyReply) => {
     const body = createBodySchema.parse(req.body);
-    const userId = String((req.user as any)?.id || '');
+    const userId = req.user?.sub ?? '';
 
     // 如果是 reject，自动标记对应的 quote
     if (!body.was_accepted && body.quote_id) {
@@ -51,7 +57,7 @@ export default async function aiFeedbackRoutes(app: FastifyInstance) {
   app.get('/stats', {
     preHandler: [authMiddleware, requireRole('agent', 'admin')],
   }, async (_req: FastifyRequest, reply: FastifyReply) => {
-    const result = await query(`
+    const result = await query<FeedbackStatsRow>(`
       SELECT
         COUNT(*) as total,
         COUNT(*) FILTER (WHERE was_accepted = true) as accepted,
@@ -65,9 +71,9 @@ export default async function aiFeedbackRoutes(app: FastifyInstance) {
     `);
     return reply.send(successResponse({
       summary: result.rows.length > 0 ? {
-        total: result.rows.reduce((s: number, r: any) => s + parseInt(r.type_count, 10), 0),
-        accepted: result.rows.filter((r: any) => r.accepted > 0).reduce((s: number, r: any) => s + parseInt(r.accepted, 10), 0),
-        rejected: result.rows.filter((r: any) => r.rejected > 0).reduce((s: number, r: any) => s + parseInt(r.rejected, 10), 0),
+        total: result.rows.reduce((s, r) => s + parseInt(r.type_count, 10), 0),
+        accepted: result.rows.filter((r) => Number(r.accepted) > 0).reduce((s, r) => s + parseInt(r.accepted, 10), 0),
+        rejected: result.rows.filter((r) => Number(r.rejected) > 0).reduce((s, r) => s + parseInt(r.rejected, 10), 0),
       } : { total: 0, accepted: 0, rejected: 0 },
       byType: result.rows,
     }));

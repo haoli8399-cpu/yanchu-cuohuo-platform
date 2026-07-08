@@ -1,8 +1,24 @@
 // 运营工具API
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { query } from '../utils/db.js';
 import { successResponse, errorResponse } from '../utils/response.js';
+
+const operationLogsQuerySchema = z.object({
+  module: z.string().optional(),
+  operator_id: z.string().uuid().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().positive().max(100).default(20),
+});
+
+const searchQuerySchema = z.object({
+  q: z.string().optional().default(''),
+});
+
+const undoBodySchema = z.object({
+  log_id: z.string().uuid().optional(),
+});
 
 export default async function adminRoutes(app: FastifyInstance) {
   app.get('/dashboard', { preHandler: [authMiddleware, requireRole('admin')] }, async (_req, reply) => {
@@ -33,21 +49,21 @@ export default async function adminRoutes(app: FastifyInstance) {
   });
 
   app.get('/operation-logs', { preHandler: [authMiddleware, requireRole('admin')] }, async (req, reply) => {
-    const { module, operator_id, page, pageSize } = req.query as Record<string,string>;
+    const { module, operator_id, page, pageSize } = operationLogsQuerySchema.parse(req.query);
     const cond: string[] = []; const p: unknown[] = []; let i=1;
     if (module) { cond.push(`module=$${i++}`); p.push(module); }
     if (operator_id) { cond.push(`operator_id=$${i++}`); p.push(operator_id); }
     const w=cond.length?`WHERE ${cond.join(' AND ')}`:'';
-    const pg=Math.max(1,Number(page)||1); const ps=Math.min(100,Number(pageSize)||20);
+    const pg=page; const ps=pageSize;
     const [items,count]=await Promise.all([
       query(`SELECT o.*, u.name as operator_name FROM operation_logs o LEFT JOIN users u ON o.operator_id=u.id ${w} ORDER BY o.created_at DESC LIMIT $${i++} OFFSET $${i++}`,[...p,ps,(pg-1)*ps]),
       query(`SELECT COUNT(*) FROM operation_logs ${w}`,p)
     ]);
-    return reply.send({code:0,data:{items:items.rows,total:Number(count.rows[0].count),page:pg,pageSize:ps},message:'ok'});
+    return reply.send(successResponse({items:items.rows,total:Number(count.rows[0].count),page:pg,pageSize:ps}));
   });
 
   app.get('/search', { preHandler: [authMiddleware] }, async (req, reply) => {
-    const q = (req.query as Record<string,string>).q || '';
+    const { q } = searchQuerySchema.parse(req.query);
     const like = `%${q}%`;
     const [performers,skus,demands,companies] = await Promise.all([
       query('SELECT id,name,tier FROM performers WHERE name ILIKE $1 OR style_tags::text ILIKE $1 LIMIT 20',[like]),
@@ -63,7 +79,7 @@ export default async function adminRoutes(app: FastifyInstance) {
   // 查询最近5分钟内的操作日志，支持撤销（回滚现场/更新/删除）
   // ==========================================================
   app.post('/undo', { preHandler: [authMiddleware, requireRole('admin')] }, async (req, reply) => {
-    const { log_id } = (req.body as Record<string,string>) || {};
+    const { log_id } = undoBodySchema.parse(req.body ?? {});
 
     if (!log_id) {
       return reply.status(400).send(errorResponse(9991, '请提供要撤销的操作日志ID'));
