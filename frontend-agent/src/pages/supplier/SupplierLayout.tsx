@@ -8,6 +8,7 @@ import {
   FundOutlined,
   OrderedListOutlined,
 } from '@ant-design/icons';
+import XiaoYanFloat from '../../components/XiaoYanFloat';
 
 const { Sider, Content, Header } = Layout;
 const { Text } = Typography;
@@ -110,6 +111,7 @@ export default function SupplierLayout() {
           <Outlet />
         </Content>
       </Layout>
+      <XiaoYanFloat context_type="opportunity" />
     </Layout>
   );
 }

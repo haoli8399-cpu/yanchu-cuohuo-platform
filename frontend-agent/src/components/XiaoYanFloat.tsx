@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, Typography, Button, Spin } from 'antd';
 import { BulbOutlined, CloseOutlined } from '@ant-design/icons';
-import { apiClient } from '../services/apiClient';
+import { getAiInsight } from '../services/apiClient';
 
 const { Text } = Typography;
 
@@ -21,10 +21,9 @@ export default function XiaoYanFloat({ context_type, opportunity_id, sku_id, tim
   const fetchInsights = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.post('/ai/insight', {
+      const data = await getAiInsight({
         context_type, opportunity_id, sku_id, time_range,
       });
-      const data = (res as any).data || res;
       setInsights(data.insights || []);
       setHasNew(false);
     } catch {

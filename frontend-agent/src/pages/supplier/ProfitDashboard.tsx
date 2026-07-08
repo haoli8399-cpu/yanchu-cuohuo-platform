@@ -1,6 +1,5 @@
 import { Card, Row, Col, Typography, Table, Tag, Statistic } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import XiaoYanFloat from '../../components/XiaoYanFloat';
 
 const { Text } = Typography;
 

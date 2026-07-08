@@ -3,7 +3,6 @@ import {
   Card, Table, Tag, Button, Space, Input, Select, Typography,
 } from 'antd';
 import {
-import XiaoYanFloat from '../../components/XiaoYanFloat';
   PlusOutlined, SearchOutlined, EditOutlined,
 } from '@ant-design/icons';
 

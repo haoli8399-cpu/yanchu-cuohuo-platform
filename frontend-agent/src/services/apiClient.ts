@@ -56,3 +56,7 @@ export const getDemandList = (params: Record<string, string | number>) => {
 };
 
 export const getDemandDetail = (id: string) => request(`/v1/demands/${id}`);
+
+// AI 洞察（小演悬浮组件）
+export const getAiInsight = (body: Record<string, unknown>) =>
+  request<{ insights: string[] }>('/v1/ai/insight', { method: 'POST', body: JSON.stringify(body) });
