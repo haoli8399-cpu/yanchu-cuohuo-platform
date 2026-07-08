@@ -1,6 +1,6 @@
 <template>
   <view class="message-page">
-    <CfNavBar title="消息" />
+    <CfNavBar title="" />
 
     <!-- 加载骨架屏 -->
     <template v-if="loading">
@@ -205,6 +205,7 @@ onMounted(() => {
   gap: $space-sm;
   padding: $space-md;
   border: 1rpx solid $color-border;
+  border-left: 6rpx solid $color-primary-light;
   border-radius: $radius-md;
   background: $color-bg-card;
 
@@ -256,7 +257,7 @@ onMounted(() => {
     display: block;
     margin-top: 4rpx;
     color: $color-text-secondary;
-    font-size: $text-sm;
+    font-size: $text-base;
     line-height: 1.45;
   }
 
@@ -264,8 +265,8 @@ onMounted(() => {
     position: absolute;
     top: $space-md;
     right: $space-md;
-    width: 16rpx;
-    height: 16rpx;
+    width: 20rpx;
+    height: 20rpx;
     border-radius: 50%;
     background: $color-danger;
   }
@@ -299,6 +300,7 @@ onMounted(() => {
   gap: $space-sm;
   padding: $space-md;
   border: 1rpx solid $color-border;
+  border-left: 6rpx solid $color-primary-light;
   border-radius: $radius-md;
   background: $color-bg-card;
 
