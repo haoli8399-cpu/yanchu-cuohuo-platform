@@ -21,7 +21,7 @@ const COLUMNS: { key: OppStatus; label: string; color: string; bg: string }[] = 
   { key: 'new', label: '新商机', color: '#3b82f6', bg: '#eff6ff' },
   { key: 'qualified', label: '已确认', color: '#8b5cf6', bg: '#f5f3ff' },
   { key: 'quoted', label: '已报价', color: '#f59e0b', bg: '#fffbeb' },
-  { key: 'negotiating', label: '谈判中', color: '#ec4899', bg: '#fdf2f8' },
+  { key: 'negotiating', label: '谈判中', color: '#f59e0b', bg: '#fdf2f8' },
   { key: 'won', label: '已成交', color: '#16a34a', bg: '#f0fdf4' },
 ];
 

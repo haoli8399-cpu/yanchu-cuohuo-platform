@@ -9,6 +9,7 @@ import {
   OrderedListOutlined,
   TeamOutlined,
   GlobalOutlined,
+  ColumnHeightOutlined,
 } from '@ant-design/icons';
 import XiaoYanFloat from '../../components/XiaoYanFloat';
 
@@ -23,6 +24,7 @@ const MENU_ITEMS = [
   { key: '/supplier/orders', icon: <OrderedListOutlined />, label: '订单管理' },
   { key: '/supplier/performers', icon: <TeamOutlined />, label: '艺人管理' },
   { key: '/supplier/overview', icon: <GlobalOutlined />, label: '公司总览' },
+  { key: '/supplier/kanban', icon: <ColumnHeightOutlined />, label: 'Kanban看板' },
 ];
 
 export default function SupplierLayout() {

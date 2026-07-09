@@ -83,7 +83,7 @@ export default function DemandDetail() {
                 </Descriptions>
               )}
               {p.price_detail && (
-                <div style={{ marginTop: 12, padding: 12, background: '#f9f0ff', borderRadius: 8 }}>
+                <div style={{ marginTop: 12, padding: 12, background: '#f5f3ff', borderRadius: 8 }}>
                   <Text strong style={{ fontSize: 18, color: '#7c3aed' }}>
                     ¥{(p.price_detail.total_price || p.price_detail.base_price)?.toLocaleString()}
                   </Text>

@@ -68,7 +68,7 @@ export default function RequestHistory() {
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col span={6}><Card><Statistic title="总需求" value={demands.length} prefix={<ShoppingCartOutlined />} /></Card></Col>
         <Col span={6}><Card><Statistic title="总消费" value={demands.reduce((s:number,d:any)=>s+(d.budget||0),0)} prefix={<DollarOutlined />} suffix="元" /></Card></Col>
-        <Col span={6}><Card><Statistic title="已完成" value={demands.filter((d:any)=>d.status==='finished'||d.status==='settled').length} prefix={<CheckCircleOutlined />} valueStyle={{color:'#3f8600'}} /></Card></Col>
+        <Col span={6}><Card><Statistic title="已完成" value={demands.filter((d:any)=>d.status==='finished'||d.status==='settled').length} prefix={<CheckCircleOutlined />} valueStyle={{color:'#16a34a'}} /></Card></Col>
       </Row>
       <Table columns={columns} dataSource={demands} rowKey="id" loading={loading} locale={{ emptyText: '暂无需求记录' }}
         pagination={{ pageSize: 20 }} size="middle" />

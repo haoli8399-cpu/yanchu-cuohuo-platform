@@ -49,11 +49,11 @@ export default function SkuDetail() {
           <Descriptions.Item label="适用场景">{sku.applicable_scenes?.join('、') || '-'}</Descriptions.Item>
         </Descriptions>
 
-        <div style={{ marginTop: 24, padding: 16, background: '#f9f0ff', borderRadius: 8 }}>
+        <div style={{ marginTop: 24, padding: 16, background: '#f5f3ff', borderRadius: 8 }}>
           <Text type="secondary">甲方标准价</Text>
           <div style={{ fontSize: 28, fontWeight: 'bold', color: '#7c3aed' }}>¥{sku.base_price?.toLocaleString()}</div>
           <Text type="secondary" style={{ fontSize: 13 }}>活动公司渠道价（7折）：</Text>
-          <Text strong style={{ fontSize: 20, color: '#52c41a' }}> ¥{agentPrice.toLocaleString()}</Text>
+          <Text strong style={{ fontSize: 20, color: '#7c3aed' }}> ¥{agentPrice.toLocaleString()}</Text>
         </div>
 
         <Button type="primary" size="large" block style={{ marginTop: 24, minHeight: 48, height: 48 }}

@@ -147,7 +147,7 @@ export default function Orders() {
       align: 'right',
       render: (_, record) => (
         <Space size="small">
-          <Button type="link" style={{ paddingRight: 0 }} onClick={() => console.log(record.orderNo)}>
+          <Button type="link" style={{ paddingRight: 0 }} onClick={() => { /* TODO: 跳转订单详情 */ }}>
             查看详情
           </Button>
           <Button type="link" style={{ paddingRight: 0 }} icon={<RobotOutlined />}

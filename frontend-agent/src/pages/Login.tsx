@@ -36,7 +36,7 @@ export default function Login() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f7' }}>
       <Card style={{ width: 400, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         <Title level={3} style={{ textAlign: 'center', marginBottom: 8 }}>演立方</Title>
         <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginBottom: 24 }}>活动公司登录</Text>

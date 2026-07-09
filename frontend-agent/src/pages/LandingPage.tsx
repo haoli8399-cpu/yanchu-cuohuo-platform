@@ -78,7 +78,7 @@ export default function LandingPage() {
             <Text strong style={{ color: '#7c3aed', fontSize: 16 }}>演立方 YANLI</Text>
           </Space>
 
-          <Title style={{ fontSize: 48, lineHeight: 1.12, marginBottom: 16, color: '#111827' }}>
+          <Title style={{ fontSize: 48, lineHeight: 1.12, marginBottom: 16, color: '#1a1a2e' }}>
             有商演需求？一句话，成交一场演出。
           </Title>
           <Text style={{ display: 'block', fontSize: 18, color: '#7c3aed', fontWeight: 700, marginBottom: 16 }}>
@@ -92,6 +92,10 @@ export default function LandingPage() {
             size="large"
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
+            onSearch={(value) => {
+              const q = (value || prompt).trim();
+              if (q) navigate(`/browse?prompt=${encodeURIComponent(q)}`);
+            }}
             placeholder="例如：周五晚公司年会有200人，想找1小时脱口秀暖场"
             enterButton={<Button type="primary" size="large">生成报价方案</Button>}
             style={{ maxWidth: 600, margin: '0 auto 16px' }}
@@ -139,7 +143,7 @@ export default function LandingPage() {
                     {item.icon}
                   </div>
                   <div>
-                    <div style={{ fontSize: 30, fontWeight: 800, color: '#111827', fontFamily: "'JetBrains Mono', monospace" }}>
+                    <div style={{ fontSize: 30, fontWeight: 800, color: '#1a1a2e', fontFamily: "'JetBrains Mono', monospace" }}>
                       {item.value}
                     </div>
                     <Text type="secondary">{item.label}</Text>
@@ -170,7 +174,7 @@ export default function LandingPage() {
               }}
             >
               <ApartmentOutlined style={{ fontSize: 40, color: '#7c3aed', marginBottom: 16 }} />
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 8 }}>我是活动公司</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e', marginBottom: 8 }}>我是活动公司</div>
               <Text type="secondary">撮合演员、出方案、管履约 · 一站式搞定</Text>
             </Card>
           </Col>
@@ -190,7 +194,7 @@ export default function LandingPage() {
               }}
             >
               <TeamOutlined style={{ fontSize: 40, color: '#7c3aed', marginBottom: 16 }} />
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 8 }}>我是甲方/散客</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e', marginBottom: 8 }}>我是甲方/散客</div>
               <Text type="secondary">浏览方案、看报价、直接下单 · 简单快捷</Text>
             </Card>
           </Col>
